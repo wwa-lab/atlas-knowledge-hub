@@ -2,4 +2,10 @@
 
 Backend implementation placeholder.
 
-Do not add a production backend, authentication, database, or permission system until explicitly requested. Future backend work should expose internal APIs for workspaces, batches, files, reviews, Wiki pages, and graph metadata.
+Selected backend direction:
+
+- Java + Spring Boot.
+- PostgreSQL for persistent metadata.
+- Flyway for schema migrations.
+
+Do not add a production backend, authentication, database, or permission system until explicitly requested or until the roadmap phase calls for it. Future backend work should expose internal APIs for workspaces, batches, files, reviews, Wiki pages, source chunks, and graph metadata.

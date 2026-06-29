@@ -12,13 +12,16 @@
 - Simulate folder and zip upload.
 - Show file inventory, file tree, and batch creation.
 - Generate mock statuses and reports.
+- Start lightweight SDD artifacts for feature implementation decisions.
 
 ## Phase 2: Batch Document Conversion Integration
 
+- Scaffold Java + Spring Boot backend only when integration work begins.
 - Add converter adapter interfaces.
 - Wrap `trinity-office` for Office-to-PDF conversion.
 - Wrap `document-normalize` for PDF-to-Markdown and image extraction.
 - Keep execution local or internal only.
+- Add PostgreSQL and Flyway only when persistent batch metadata is needed.
 
 ## Phase 3: Markdown Normalization And Review Workflow
 

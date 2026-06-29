@@ -41,6 +41,17 @@ The initial MVP is intentionally lightweight:
 
 The MVP does not include real OCR, authentication, production databases, external cloud services, or real RAG.
 
+## Technology Direction
+
+Atlas will use a lightweight SDD workflow for feature planning once implementation begins. The selected implementation stack is:
+
+- Frontend: Vue 3 + Vite + TypeScript after the static prototype is validated.
+- Backend: Java + Spring Boot.
+- Database: PostgreSQL.
+- Database migration: Flyway.
+
+Do not scaffold these frameworks until the relevant roadmap phase begins or the user explicitly requests implementation.
+
 ## Repository Structure
 
 ```text

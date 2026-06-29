@@ -27,6 +27,15 @@ The internal tools `trinity-office` and `document-normalize` are wrapped as conv
 
 Keep the MVP small and understandable. Prefer static HTML/CSS/JS and documentation before introducing a framework, service mesh, database, or queue.
 
+## Technology Decisions
+
+- Use lightweight SDD for feature planning when implementation begins.
+- Frontend direction: Vue 3 + Vite + TypeScript after prototype validation.
+- Backend direction: Java + Spring Boot.
+- Database direction: PostgreSQL.
+- Migration direction: Flyway.
+- Do not introduce framework scaffolding, a production database, or migration files before the project reaches the relevant implementation phase or the user explicitly asks.
+
 ## Workspace Separation
 
 Keep these assets separate:
