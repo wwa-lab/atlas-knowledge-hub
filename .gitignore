@@ -1,0 +1,42 @@
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and local runtime output
+*.log
+logs/
+tmp/
+temp/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+coverage/
+
+# Python local state
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Real or generated document content must not be committed
+samples/input/*
+samples/output/*
+!samples/input/.gitkeep
+!samples/output/.gitkeep
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx

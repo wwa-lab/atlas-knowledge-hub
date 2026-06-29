@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas Knowledge Hub Prototype</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #677283;
+      --line: #dbe1e8;
+      --blue: #2563eb;
+      --green: #16803c;
+      --amber: #b7791f;
+      --red: #c2410c;
+      --chip: #eef4ff;
+      --shadow: 0 8px 24px rgba(21, 34, 50, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: #111827;
+      color: #e5e7eb;
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      border: 0;
+      color: #cbd5e1;
+      background: transparent;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: #1f2937;
+      color: #fff;
+    }
+
+    .side-note {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+      border-top: 1px solid #2f3a49;
+      padding-top: 14px;
+    }
+
+    .main {
+      padding: 24px;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    .title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button {
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: #fff;
+      border-radius: 8px;
+      padding: 9px 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .button.secondary {
+      background: #fff;
+      color: var(--blue);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 18px;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      border-color: #9db7f4;
+    }
+
+    .card h2,
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .card p,
+    .panel p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: var(--chip);
+      color: #234c9c;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .space-layout {
+      display: grid;
+      gap: 16px;
+    }
+
+    .space-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      padding: 12px 14px;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      color: var(--blue);
+      border-color: var(--blue);
+      font-weight: 700;
+    }
+
+    .tab-body {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .file-tree,
+    .status-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .file-row,
+    .status-row,
+    .review-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+    }
+
+    .file-row span:first-child,
+    .status-row span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .tag {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #eef2f7;
+      color: #475569;
+      white-space: nowrap;
+    }
+
+    .tag.ok {
+      background: #e7f7ec;
+      color: var(--green);
+    }
+
+    .tag.warn {
+      background: #fff7e6;
+      color: var(--amber);
+    }
+
+    .tag.fail {
+      background: #fff1ec;
+      color: var(--red);
+    }
+
+    .progress {
+      height: 9px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 72%;
+      background: var(--blue);
+    }
+
+    .wiki {
+      max-width: 880px;
+      line-height: 1.68;
+    }
+
+    .wiki h2 {
+      margin-top: 0;
+    }
+
+    .concept {
+      color: var(--green);
+      border-bottom: 1px solid rgba(22, 128, 60, 0.45);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .trace {
+      margin-top: 14px;
+      padding: 10px;
+      background: #f1f5f9;
+      border-left: 4px solid #94a3b8;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .graph-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    svg {
+      display: block;
+      min-width: 760px;
+      width: 100%;
+      height: 420px;
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .source-preview,
+    .markdown-preview {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 260px;
+    }
+
+    .ask-box {
+      display: grid;
+      gap: 12px;
+      max-width: 900px;
+    }
+
+    .ask-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ask-input input {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    .answer {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .side-note {
+        position: static;
+        margin-top: 18px;
+      }
+
+      .grid,
+      .two-col,
+      .review-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar,
+      .space-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>Atlas Knowledge Hub</div>
+      </div>
+      <nav class="nav">
+        <button class="active" data-view="home">知识空间</button>
+        <button data-view="space">IBM i Modernization</button>
+        <button data-view="review">Review Queue</button>
+        <button data-view="settings">设置</button>
+      </nav>
+      <div class="side-note">内部原型。仅使用 mock 数据，不上传真实公司文档。</div>
+    </aside>
+
+    <main class="main">
+      <section id="home-view">
+        <div class="topbar">
+          <div class="title">
+            <h1>知识空间</h1>
+            <p>把项目文档包转成可追溯、可审核、可浏览的知识资产。</p>
+          </div>
+          <button class="button">新建空间</button>
+        </div>
+
+        <div class="grid">
+          <article class="card" data-open-space>
+            <h2>IBM i Modernization</h2>
+            <p>应用盘点、RPG 服务、数据库对象、接口依赖和迁移策略。</p>
+            <div class="meta">
+              <span class="chip">42 documents</span>
+              <span class="chip">18 Wiki pages</span>
+              <span class="chip">6 pending reviews</span>
+            </div>
+          </article>
+          <article class="card">
+            <h2>Core Banking Runbook</h2>
+            <p>演示占位空间，展示运行手册和系统依赖的整理方式。</p>
+            <div class="meta">
+              <span class="chip">Mock</span>
+              <span class="chip">Draft</span>
+            </div>
+          </article>
+          <article class="card">
+            <h2>Delivery Playbook</h2>
+            <p>演示占位空间，展示交付方法、模板和经验沉淀。</p>
+            <div class="meta">
+              <span class="chip">Mock</span>
+              <span class="chip">Review required</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="space-view" class="hidden">
+        <div class="space-layout">
+          <div class="space-header">
+            <div class="title">
+              <h1>IBM i Modernization</h1>
+              <p>从文档包到 LM Wiki、知识图谱和 Ask 的内部知识空间。</p>
+              <div class="meta">
+                <span class="chip">Owner: SME Team</span>
+                <span class="chip">Batch: batch-2026-001</span>
+                <span class="chip">Review required: 6</span>
+              </div>
+            </div>
+            <div>
+              <button class="button">上传文件夹 / ZIP</button>
+              <button class="button secondary">导出报告</button>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="docs">文档</button>
+            <button class="tab" data-tab="wiki">Wiki</button>
+            <button class="tab" data-tab="graph">图谱</button>
+            <button class="tab" data-tab="review">Review</button>
+            <button class="tab" data-tab="ask">Ask</button>
+          </div>
+
+          <div id="tab-docs" class="tab-body">
+            <div class="two-col">
+              <section class="panel" style="padding:16px;">
+                <h2>Mock 文件树</h2>
+                <div class="file-tree">
+                  <div class="file-row"><span>01-discovery/overview.pptx</span><span class="tag ok">PDF_CONVERTED</span></div>
+                  <div class="file-row"><span>01-discovery/app-inventory.xlsx</span><span class="tag ok">MARKDOWN_GENERATED</span></div>
+                  <div class="file-row"><span>02-architecture/interfaces.pdf</span><span class="tag warn">REVIEW_REQUIRED</span></div>
+                  <div class="file-row"><span>03-migration/risk-notes.docx</span><span class="tag warn">LOW_CONFIDENCE</span></div>
+                  <div class="file-row"><span>archive/scan-legacy.png</span><span class="tag fail">OCR_REQUIRED</span></div>
+                </div>
+              </section>
+              <section class="panel" style="padding:16px;">
+                <h2>批处理状态</h2>
+                <p>Mock batch upload and parsing status. Converter adapters wrap internal tools only.</p>
+                <div class="progress"><span></span></div>
+                <div class="status-list">
+                  <div class="status-row"><span>文件盘点</span><span class="tag ok">42 / 42</span></div>
+                  <div class="status-row"><span>Office 转 PDF via trinity-office</span><span class="tag ok">35 / 36</span></div>
+                  <div class="status-row"><span>PDF 转 Markdown via document-normalize</span><span class="tag warn">31 / 42</span></div>
+                  <div class="status-row"><span>低置信度检测</span><span class="tag warn">6 items</span></div>
+                  <div class="status-row"><span>发布到 LM Wiki</span><span class="tag">18 pages</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div id="tab-wiki" class="tab-body hidden">
+            <article class="wiki">
+              <h2>Application Inventory Overview</h2>
+              <p>
+                The <span class="concept">IBM i Core System</span> contains batch programs,
+                <span class="concept">RPG services</span>, database objects, and integration jobs.
+                The modernization scope prioritizes <span class="concept">interface dependency mapping</span>
+                before migration wave planning.
+              </p>
+              <h3>Key Concepts</h3>
+              <p>
+                <span class="concept">Batch Job Chain</span> controls nightly settlement processing.
+                <span class="concept">DB2 for i</span> stores core operational records. Reviewed Wiki pages
+                will later generate graph nodes and Ask citations.
+              </p>
+              <div class="trace">
+                source_trace: source_file="overview.pptx", pdf_file="overview.pdf", page=12,
+                chunk_id="batch-2026-001:file-003:page-012:block-02", confidence=0.91,
+                review_status="REVIEW_REQUIRED"
+              </div>
+            </article>
+          </div>
+
+          <div id="tab-graph" class="tab-body hidden">
+            <h2>Mock 知识图谱</h2>
+            <p>Lightweight graph derived from approved or reviewable Wiki content.</p>
+            <div class="graph-wrap">
+              <svg viewBox="0 0 900 420" aria-label="Mock knowledge graph">
+                <defs>
+                  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="#64748b"></path>
+                  </marker>
+                </defs>
+                <g stroke="#64748b" stroke-width="2" marker-end="url(#arrow)">
+                  <line x1="160" y1="205" x2="330" y2="110"></line>
+                  <line x1="160" y1="205" x2="330" y2="290"></line>
+                  <line x1="430" y1="110" x2="610" y2="110"></line>
+                  <line x1="430" y1="290" x2="610" y2="250"></line>
+                  <line x1="700" y1="110" x2="700" y2="230"></line>
+                </g>
+                <g font-family="Arial, PingFang SC, sans-serif" font-size="14" text-anchor="middle">
+                  <circle cx="140" cy="205" r="62" fill="#dbeafe" stroke="#2563eb"></circle>
+                  <text x="140" y="200">Knowledge</text><text x="140" y="218">Space</text>
+
+                  <rect x="315" y="75" width="130" height="70" rx="8" fill="#ecfdf5" stroke="#16803c"></rect>
+                  <text x="380" y="105">WikiPage</text><text x="380" y="124">Inventory</text>
+
+                  <rect x="315" y="255" width="130" height="70" rx="8" fill="#fff7ed" stroke="#c2410c"></rect>
+                  <text x="380" y="284">Document</text><text x="380" y="303">overview.pptx</text>
+
+                  <circle cx="670" cy="110" r="58" fill="#f0f9ff" stroke="#0284c7"></circle>
+                  <text x="670" y="105">Concept</text><text x="670" y="123">RPG Services</text>
+
+                  <circle cx="670" cy="250" r="58" fill="#fefce8" stroke="#b7791f"></circle>
+                  <text x="670" y="245">SourceChunk</text><text x="670" y="263">page 12</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <div id="tab-review" class="tab-body hidden">
+            <h2>SME Review</h2>
+            <div class="review-row" style="margin:12px 0;">
+              <span>03-migration/risk-notes.docx / page 8 / block 03</span>
+              <span class="tag warn">LOW_CONFIDENCE 0.62</span>
+            </div>
+            <div class="review-grid">
+              <div class="source-preview">
+                <h3>Source Preview</h3>
+                <p>Mock PDF page preview. Real source preview will show generated PDF page image and extracted assets.</p>
+                <p><strong>Trace:</strong> risk-notes.docx -> risk-notes.pdf -> page 8</p>
+              </div>
+              <div class="markdown-preview">
+                <h3>Generated Markdown</h3>
+                <p>The migration risk depends on interface sequencing and nightly batch cutover windows.</p>
+                <p><strong>review_status:</strong> REVIEW_REQUIRED</p>
+                <p><strong>Actions:</strong></p>
+                <button class="button">Approve</button>
+                <button class="button secondary">Need Fix</button>
+                <button class="button secondary">OCR Required</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-ask" class="tab-body hidden">
+            <div class="ask-box">
+              <h2>Ask Atlas</h2>
+              <p>Mock Ask interface. Future answers must cite approved Wiki pages and source chunks.</p>
+              <div class="ask-input">
+                <input value="Which systems depend on IBM i batch jobs?" aria-label="Ask question">
+                <button class="button">Ask</button>
+              </div>
+              <div class="answer">
+                <strong>Draft answer:</strong> The mock graph shows RPG services, batch job chains, and DB2 for i objects as
+                related modernization concepts. This answer is not production RAG and should be treated as review-required.
+                <br><br>
+                <strong>Citations:</strong> Application Inventory Overview, page 12, chunk block-02.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="review-view" class="hidden">
+        <div class="topbar">
+          <div class="title">
+            <h1>Review Queue</h1>
+            <p>需要 SME 审核的低置信度、LLM 生成或 OCR 待处理内容。</p>
+          </div>
+        </div>
+        <div class="panel" style="padding:16px;">
+          <div class="status-list">
+            <div class="status-row"><span>risk-notes.docx / page 8</span><span class="tag warn">LOW_CONFIDENCE</span></div>
+            <div class="status-row"><span>interfaces.pdf / page 4</span><span class="tag warn">REVIEW_REQUIRED</span></div>
+            <div class="status-row"><span>scan-legacy.png</span><span class="tag fail">OCR_REQUIRED</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings-view" class="hidden">
+        <div class="topbar">
+          <div class="title">
+            <h1>设置</h1>
+            <p>Adapter configuration placeholder. No external cloud services.</p>
+          </div>
+        </div>
+        <div class="panel" style="padding:16px;">
+          <h2>Converter Adapters</h2>
+          <p>Office to PDF: trinity-office adapter</p>
+          <p>PDF to Markdown: document-normalize adapter</p>
+          <p>Future parsers: MinerU, Docling, PaddleOCR, internal OCR, Copilot Vision.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const views = {
+      home: document.getElementById("home-view"),
+      space: document.getElementById("space-view"),
+      review: document.getElementById("review-view"),
+      settings: document.getElementById("settings-view")
+    };
+
+    const navButtons = document.querySelectorAll(".nav button");
+    const tabs = document.querySelectorAll(".tab");
+
+    function showView(name) {
+      Object.entries(views).forEach(([key, node]) => {
+        node.classList.toggle("hidden", key !== name);
+      });
+      navButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === name);
+      });
+    }
+
+    function showTab(name) {
+      tabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.tab === name);
+      });
+      ["docs", "wiki", "graph", "review", "ask"].forEach((tabName) => {
+        document.getElementById(`tab-${tabName}`).classList.toggle("hidden", tabName !== name);
+      });
+    }
+
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => showView(button.dataset.view));
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => showTab(tab.dataset.tab));
+    });
+
+    document.querySelector("[data-open-space]").addEventListener("click", () => showView("space"));
+  </script>
+</body>
+</html>
