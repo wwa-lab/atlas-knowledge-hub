@@ -6,17 +6,21 @@
   <title>Atlas Knowledge Hub Prototype</title>
   <style>
     :root {
-      --bg: #f6f7f9;
+      --bg: #f4f6f7;
       --panel: #ffffff;
-      --ink: #17202a;
-      --muted: #677283;
-      --line: #dbe1e8;
+      --panel-soft: #f8faf9;
+      --ink: #17211b;
+      --muted: #68766f;
+      --line: #dde5df;
+      --primary: #16834a;
+      --primary-dark: #0f6b3a;
+      --primary-soft: #e8f6ee;
       --blue: #2563eb;
-      --green: #16803c;
-      --amber: #b7791f;
-      --red: #c2410c;
-      --chip: #eef4ff;
-      --shadow: 0 8px 24px rgba(21, 34, 50, 0.08);
+      --orange: #d97706;
+      --red: #dc2626;
+      --gray: #64748b;
+      --shadow: 0 12px 30px rgba(30, 50, 40, 0.08);
+      --radius: 8px;
     }
 
     * {
@@ -31,375 +35,1021 @@
       letter-spacing: 0;
     }
 
-    button {
+    button,
+    input,
+    textarea {
       font: inherit;
     }
 
-    .app {
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
       display: grid;
-      grid-template-columns: 248px minmax(0, 1fr);
+      grid-template-columns: 236px minmax(0, 1fr);
       min-height: 100vh;
     }
 
     .sidebar {
-      background: #111827;
-      color: #e5e7eb;
-      padding: 22px 18px;
       position: sticky;
       top: 0;
       height: 100vh;
+      padding: 22px 18px;
+      color: #d9e5de;
+      background: #13201a;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-weight: 700;
-      font-size: 18px;
       margin-bottom: 28px;
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      background: #2563eb;
-      color: #fff;
+      font-size: 17px;
       font-weight: 800;
     }
 
-    .nav {
+    .brand-mark {
       display: grid;
-      gap: 8px;
-    }
-
-    .nav button {
-      border: 0;
-      color: #cbd5e1;
-      background: transparent;
-      text-align: left;
-      padding: 10px 12px;
+      width: 34px;
+      height: 34px;
+      place-items: center;
       border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .nav button.active,
-    .nav button:hover {
-      background: #1f2937;
       color: #fff;
+      background: linear-gradient(135deg, #20a35b, #0f6b3a);
     }
 
-    .side-note {
+    .side-nav {
+      display: grid;
+      gap: 7px;
+    }
+
+    .side-nav button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      color: #bfd0c6;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+    }
+
+    .side-nav button.active,
+    .side-nav button:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .side-footer {
       position: absolute;
-      left: 18px;
       right: 18px;
-      bottom: 18px;
-      color: #94a3b8;
+      bottom: 20px;
+      left: 18px;
+      padding-top: 14px;
+      color: #93a99d;
       font-size: 12px;
       line-height: 1.5;
-      border-top: 1px solid #2f3a49;
-      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.13);
     }
 
     .main {
-      padding: 24px;
       min-width: 0;
+      padding: 26px 28px 34px;
     }
 
-    .topbar {
+    .page-head,
+    .space-head {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 20px;
+      gap: 18px;
+      margin-bottom: 18px;
     }
 
-    .title h1 {
+    .title-block h1 {
       margin: 0;
-      font-size: 26px;
-      line-height: 1.2;
+      font-size: 28px;
+      line-height: 1.18;
     }
 
-    .title p {
-      margin: 6px 0 0;
+    .title-block p {
+      margin: 7px 0 0;
       color: var(--muted);
       font-size: 14px;
     }
 
-    .button {
-      border: 1px solid var(--blue);
-      background: var(--blue);
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 38px;
+      padding: 8px 13px;
       color: #fff;
-      border-radius: 8px;
-      padding: 9px 13px;
-      cursor: pointer;
       white-space: nowrap;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      box-shadow: 0 7px 18px rgba(22, 131, 74, 0.17);
     }
 
-    .button.secondary {
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn.secondary {
+      color: var(--primary-dark);
       background: #fff;
-      color: var(--blue);
+      border-color: #bddccb;
+      box-shadow: none;
     }
 
-    .grid {
+    .dialog-hero {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      padding: 34px 28px 46px;
+      margin-bottom: 22px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 28% 18%, rgba(22, 131, 74, 0.08), transparent 34%),
+        linear-gradient(180deg, #fff, #f8fbf9);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .dialog-center {
+      width: min(820px, 100%);
+      text-align: center;
+    }
+
+    .dialog-center h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+
+    .dialog-center p {
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .prompt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 22px auto 24px;
+    }
+
+    .prompt-chip {
+      padding: 9px 14px;
+      color: #37453d;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(30, 50, 40, 0.06);
+    }
+
+    .dialog-box {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      min-height: 158px;
+      padding: 14px;
+      text-align: left;
+      background: #fff;
+      border: 1.5px solid #17bf6b;
+      border-radius: 12px;
+      box-shadow: 0 18px 38px rgba(22, 131, 74, 0.13);
+    }
+
+    .dialog-input {
+      width: 100%;
+      min-height: 70px;
+      padding: 3px 2px;
+      color: #223027;
+      resize: none;
+      background: transparent;
+      border: 0;
+      outline: none;
+    }
+
+    .dialog-input::placeholder {
+      color: #8a968f;
+    }
+
+    .dialog-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .tool-left,
+    .tool-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mini-btn,
+    .icon-btn,
+    .model-select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      color: #526158;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .icon-btn {
+      width: 30px;
+      padding: 0;
+      border-color: transparent;
+      color: #7a887f;
+      background: transparent;
+      font-size: 17px;
+    }
+
+    .send-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: #17bf6b;
+      border-radius: 50%;
+    }
+
+    .knowledge-popover {
+      position: absolute;
+      z-index: 3;
+      bottom: 96px;
+      left: 50%;
+      width: 304px;
+      padding: 12px;
+      text-align: left;
+      background: #fff;
+      border: 1px solid #d4ddd7;
+      border-radius: var(--radius);
+      box-shadow: 0 18px 36px rgba(30, 50, 40, 0.16);
+      transform: translateX(-150%);
+    }
+
+    .knowledge-popover h3 {
+      margin: 2px 2px 10px;
+      color: #4a584f;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .kb-list {
+      display: grid;
+      gap: 4px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .kb-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 8px;
+      color: #26342d;
+      border-radius: var(--radius);
+    }
+
+    .kb-item.selected {
+      color: #08a85a;
+      background: #e8f7ee;
+    }
+
+    .folder-icon {
+      color: currentColor;
+      font-size: 15px;
+    }
+
+    .kb-count {
+      color: #7b887f;
+      font-size: 12px;
+    }
+
+    .selected-kb-card {
+      position: absolute;
+      z-index: 4;
+      bottom: 116px;
+      left: 50%;
+      width: 260px;
+      padding: 14px 15px;
+      text-align: left;
+      background: #fff;
+      border: 1px solid #dde5df;
+      border-radius: var(--radius);
+      box-shadow: 0 18px 36px rgba(30, 50, 40, 0.14);
+      transform: translateX(6%);
+    }
+
+    .selected-kb-card strong {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 15px;
+    }
+
+    .selected-kb-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 8px 0 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .section-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .cards {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
     }
 
     .card,
-    .panel {
+    .panel,
+    .metric,
+    .wiki-main,
+    .wiki-rail,
+    .graph-canvas,
+    .review-pane,
+    .chat-panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
 
     .card {
+      display: grid;
+      min-height: 218px;
       padding: 18px;
-      cursor: pointer;
+      text-align: left;
+      border-color: var(--line);
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .card:hover {
-      border-color: #9db7f4;
+      transform: translateY(-2px);
+      border-color: #9ecfac;
+      box-shadow: 0 18px 38px rgba(28, 69, 48, 0.13);
     }
 
     .card h2,
     .panel h2,
-    .panel h3 {
+    .panel h3,
+    .wiki-main h2,
+    .wiki-rail h3,
+    .review-pane h3,
+    .chat-panel h3 {
       margin: 0;
+      line-height: 1.25;
+    }
+
+    .card h2 {
       font-size: 18px;
     }
 
-    .card p,
-    .panel p {
+    .card p {
+      margin: 10px 0 14px;
       color: var(--muted);
+      font-size: 13px;
       line-height: 1.55;
     }
 
-    .meta {
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .stat {
+      padding: 8px;
+      background: var(--panel-soft);
+      border: 1px solid #e5ece7;
+      border-radius: var(--radius);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .card-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border-radius: 999px;
+    }
+
+    .badge.healthy,
+    .badge.approved {
+      color: #11663a;
+      background: #e8f6ee;
+    }
+
+    .badge.review,
+    .badge.ocr {
+      color: #a05a00;
+      background: #fff4df;
+    }
+
+    .badge.parsing,
+    .badge.medium {
+      color: #1f54b8;
+      background: #e9f0ff;
+    }
+
+    .badge.failed,
+    .badge.needfix {
+      color: #b42318;
+      background: #fff0ed;
+    }
+
+    .crumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .space-panel {
+      padding: 18px;
+      margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .space-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 12px;
     }
 
-    .chip {
-      background: var(--chip);
-      color: #234c9c;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
-
-    .space-layout {
-      display: grid;
-      gap: 16px;
-    }
-
-    .space-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
-    }
-
     .tabs {
       display: flex;
       gap: 8px;
-      border-bottom: 1px solid var(--line);
+      padding: 0 2px;
+      margin-bottom: 14px;
       overflow-x: auto;
+      border-bottom: 1px solid var(--line);
     }
 
     .tab {
-      border: 0;
-      background: transparent;
       padding: 12px 14px;
-      cursor: pointer;
       color: var(--muted);
-      border-bottom: 3px solid transparent;
       white-space: nowrap;
+      background: transparent;
+      border: 0;
+      border-bottom: 3px solid transparent;
     }
 
     .tab.active {
-      color: var(--blue);
-      border-color: var(--blue);
-      font-weight: 700;
+      color: var(--primary-dark);
+      font-weight: 800;
+      border-color: var(--primary);
     }
 
-    .tab-body {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
+    .tab-view {
+      display: none;
     }
 
-    .two-col {
+    .tab-view.active,
+    .view.active {
+      display: block;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .split,
+    .review-grid,
+    .ask-grid {
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) 350px;
       gap: 16px;
     }
 
-    .file-tree,
-    .status-list {
+    .doc-grid {
       display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
-    .file-row,
-    .status-row,
-    .review-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px;
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      min-width: 0;
+    .metric {
+      padding: 12px;
+      box-shadow: none;
     }
 
-    .file-row span:first-child,
-    .status-row span:first-child {
-      min-width: 0;
-      overflow-wrap: anywhere;
+    .metric strong {
+      display: block;
+      font-size: 22px;
     }
 
-    .tag {
+    .metric span {
+      color: var(--muted);
       font-size: 12px;
-      border-radius: 999px;
-      padding: 4px 8px;
-      background: #eef2f7;
-      color: #475569;
-      white-space: nowrap;
     }
 
-    .tag.ok {
-      background: #e7f7ec;
-      color: var(--green);
+    .progress-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
     }
 
-    .tag.warn {
-      background: #fff7e6;
-      color: var(--amber);
-    }
-
-    .tag.fail {
-      background: #fff1ec;
-      color: var(--red);
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .progress {
       height: 9px;
-      background: #e5e7eb;
-      border-radius: 99px;
       overflow: hidden;
-      margin: 12px 0;
+      background: #e8eee9;
+      border-radius: 999px;
     }
 
     .progress span {
       display: block;
       height: 100%;
-      width: 72%;
-      background: var(--blue);
+      background: linear-gradient(90deg, #21a55d, #73c791);
     }
 
-    .wiki {
-      max-width: 880px;
-      line-height: 1.68;
-    }
-
-    .wiki h2 {
-      margin-top: 0;
-    }
-
-    .concept {
-      color: var(--green);
-      border-bottom: 1px solid rgba(22, 128, 60, 0.45);
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .trace {
+    .file-tree {
+      display: grid;
+      gap: 10px;
       margin-top: 14px;
-      padding: 10px;
-      background: #f1f5f9;
-      border-left: 4px solid #94a3b8;
-      color: #475569;
+    }
+
+    .file-row,
+    .queue-row,
+    .concept-row,
+    .source-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 11px;
+      background: var(--panel-soft);
+      border: 1px solid #e4ebe6;
+      border-radius: var(--radius);
+    }
+
+    .file-path,
+    .queue-row span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #26342d;
       font-size: 13px;
     }
 
-    .graph-wrap {
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fbfdff;
-    }
-
-    svg {
-      display: block;
-      min-width: 760px;
-      width: 100%;
-      height: 420px;
-    }
-
-    .review-grid {
+    .wiki-layout {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 260px minmax(0, 1fr) 300px;
       gap: 16px;
     }
 
-    .source-preview,
-    .markdown-preview {
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      min-height: 260px;
+    .wiki-rail {
+      padding: 15px;
+      box-shadow: none;
     }
 
-    .ask-box {
+    .search {
+      width: 100%;
+      height: 38px;
+      padding: 0 11px;
+      margin: 12px 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .search:focus,
+    textarea:focus,
+    .ask-input:focus {
+      border-color: #8ccaa4;
+      box-shadow: 0 0 0 3px rgba(22, 131, 74, 0.1);
+    }
+
+    .index-list,
+    .recent-list,
+    .related-list {
       display: grid;
+      gap: 8px;
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .index-list button {
+      width: 100%;
+      padding: 9px 10px;
+      color: #304039;
+      text-align: left;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .index-list button:hover,
+    .index-list button.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-color: #aad5ba;
+    }
+
+    .recent-list li,
+    .related-list li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .wiki-main {
+      padding: 20px 24px;
+      box-shadow: none;
+    }
+
+    .wiki-main header {
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wiki-main h2 {
+      font-size: 24px;
+    }
+
+    .wiki-section {
+      padding: 12px 0;
+      border-bottom: 1px solid #edf2ee;
+      scroll-margin-top: 24px;
+    }
+
+    .wiki-section.highlight {
+      padding-right: 12px;
+      padding-left: 12px;
+      margin-right: -12px;
+      margin-left: -12px;
+      background: #f0fbf4;
+      border-radius: var(--radius);
+    }
+
+    .wiki-section h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .wiki-section p,
+    .wiki-section li {
+      color: #34443b;
+      line-height: 1.68;
+    }
+
+    .concept {
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-decoration: underline;
+      text-decoration-color: rgba(22, 131, 74, 0.35);
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .trace {
+      padding: 10px 12px;
+      margin-top: 10px;
+      color: #526257;
+      font-size: 12px;
+      line-height: 1.5;
+      background: #f3f7f4;
+      border-left: 3px solid #98cdaa;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .metadata-list {
+      display: grid;
+      gap: 11px;
+      margin-top: 14px;
+    }
+
+    .metadata-list div {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf2ee;
+    }
+
+    .metadata-list strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .graph-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 16px;
+    }
+
+    .graph-canvas {
+      position: relative;
+      min-height: 600px;
+      overflow: hidden;
+      background: #fbfdfc;
+      box-shadow: none;
+    }
+
+    .graph-svg {
+      display: block;
+      width: 100%;
+      min-width: 880px;
+      height: 600px;
+    }
+
+    .graph-node {
+      cursor: pointer;
+    }
+
+    .graph-label {
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 700;
+      fill: #1f2d25;
+    }
+
+    .graph-tooltip {
+      position: absolute;
+      z-index: 3;
+      display: none;
+      max-width: 260px;
+      padding: 9px 11px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.45;
+      background: rgba(17, 32, 25, 0.95);
+      border-radius: var(--radius);
+      pointer-events: none;
+      box-shadow: var(--shadow);
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 12px;
-      max-width: 900px;
+      padding: 9px 10px;
+      background: var(--panel-soft);
+      border: 1px solid #e5ece7;
+      border-radius: var(--radius);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 7px;
+      border-radius: 50%;
+      vertical-align: -1px;
+    }
+
+    .dot.blue { background: var(--blue); }
+    .dot.green { background: var(--primary); }
+    .dot.orange { background: var(--orange); }
+    .dot.gray { background: var(--gray); }
+    .dot.red { background: var(--red); }
+
+    .review-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .review-pane {
+      min-height: 390px;
+      padding: 16px;
+      box-shadow: none;
+    }
+
+    .pdf-preview {
+      display: grid;
+      place-items: center;
+      min-height: 270px;
+      margin-top: 14px;
+      color: #748278;
+      text-align: center;
+      background:
+        linear-gradient(90deg, rgba(22, 131, 74, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(22, 131, 74, 0.08) 1px, transparent 1px),
+        #f9fbfa;
+      background-size: 26px 26px;
+      border: 1px dashed #bad2c3;
+      border-radius: var(--radius);
+    }
+
+    .markdown-preview {
+      min-height: 250px;
+      padding: 14px;
+      margin-top: 12px;
+      color: #314139;
+      line-height: 1.62;
+      background: var(--panel-soft);
+      border: 1px solid #e5ece7;
+      border-radius: var(--radius);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 82px;
+      padding: 10px;
+      margin-top: 12px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .queue {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .ask-grid {
+      grid-template-columns: minmax(0, 1fr) 320px;
+    }
+
+    .chat-panel {
+      padding: 16px;
+      box-shadow: none;
+    }
+
+    .message {
+      max-width: 86%;
+      padding: 12px 13px;
+      margin-bottom: 12px;
+      line-height: 1.55;
+      border-radius: var(--radius);
+    }
+
+    .message.user {
+      margin-left: auto;
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .message.answer {
+      background: var(--panel-soft);
+      border: 1px solid #e5ece7;
+    }
+
+    .references {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      margin: 12px 0 0;
+      list-style: none;
+    }
+
+    .references li {
+      padding: 9px 10px;
+      color: #405249;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .ask-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
     }
 
     .ask-input {
-      display: flex;
-      gap: 8px;
-    }
-
-    .ask-input input {
       flex: 1;
       min-width: 0;
-      padding: 11px 12px;
+      height: 40px;
+      padding: 0 12px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      font: inherit;
-    }
-
-    .answer {
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      line-height: 1.6;
+      border-radius: var(--radius);
+      outline: none;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
-    @media (max-width: 920px) {
-      .app {
+    @media (max-width: 1180px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .knowledge-popover {
+        left: 26px;
+        transform: none;
+      }
+
+      .selected-kb-card {
+        right: 26px;
+        left: auto;
+        transform: none;
+      }
+
+      .wiki-layout,
+      .graph-layout,
+      .doc-grid,
+      .split,
+      .ask-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
         grid-template-columns: 1fr;
       }
 
@@ -408,307 +1058,770 @@
         height: auto;
       }
 
-      .side-note {
+      .side-footer {
         position: static;
-        margin-top: 18px;
+        margin-top: 20px;
       }
 
-      .grid,
-      .two-col,
-      .review-grid {
+      .main {
+        padding: 20px 16px;
+      }
+
+      .page-head,
+      .space-head,
+      .review-grid,
+      .ask-input-row {
+        flex-direction: column;
         grid-template-columns: 1fr;
       }
 
-      .topbar,
-      .space-header {
+      .cards,
+      .metric-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog-hero {
+        min-height: 560px;
+        padding: 26px 16px 34px;
+      }
+
+      .dialog-center h2 {
+        font-size: 24px;
+      }
+
+      .knowledge-popover,
+      .selected-kb-card {
+        position: static;
+        width: 100%;
+        margin: 12px 0;
+        transform: none;
+      }
+
+      .dialog-tools {
         align-items: stretch;
         flex-direction: column;
+      }
+
+      .tool-left,
+      .tool-right {
+        flex-wrap: wrap;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="shell">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">A</div>
         <div>Atlas Knowledge Hub</div>
       </div>
-      <nav class="nav">
-        <button class="active" data-view="home">知识空间</button>
-        <button data-view="space">IBM i Modernization</button>
-        <button data-view="review">Review Queue</button>
-        <button data-view="settings">设置</button>
-      </nav>
-      <div class="side-note">内部原型。仅使用 mock 数据，不上传真实公司文档。</div>
+      <nav class="side-nav" id="sideNav" aria-label="主导航"></nav>
+      <div class="side-footer">内部产品原型。仅使用 mock 数据，可直接打开 HTML 文件演示。</div>
     </aside>
 
     <main class="main">
-      <section id="home-view">
-        <div class="topbar">
-          <div class="title">
-            <h1>知识空间</h1>
-            <p>把项目文档包转成可追溯、可审核、可浏览的知识资产。</p>
-          </div>
-          <button class="button">新建空间</button>
-        </div>
-
-        <div class="grid">
-          <article class="card" data-open-space>
-            <h2>IBM i Modernization</h2>
-            <p>应用盘点、RPG 服务、数据库对象、接口依赖和迁移策略。</p>
-            <div class="meta">
-              <span class="chip">42 documents</span>
-              <span class="chip">18 Wiki pages</span>
-              <span class="chip">6 pending reviews</span>
-            </div>
-          </article>
-          <article class="card">
-            <h2>Core Banking Runbook</h2>
-            <p>演示占位空间，展示运行手册和系统依赖的整理方式。</p>
-            <div class="meta">
-              <span class="chip">Mock</span>
-              <span class="chip">Draft</span>
-            </div>
-          </article>
-          <article class="card">
-            <h2>Delivery Playbook</h2>
-            <p>演示占位空间，展示交付方法、模板和经验沉淀。</p>
-            <div class="meta">
-              <span class="chip">Mock</span>
-              <span class="chip">Review required</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section id="space-view" class="hidden">
-        <div class="space-layout">
-          <div class="space-header">
-            <div class="title">
-              <h1>IBM i Modernization</h1>
-              <p>从文档包到 LM Wiki、知识图谱和 Ask 的内部知识空间。</p>
-              <div class="meta">
-                <span class="chip">Owner: SME Team</span>
-                <span class="chip">Batch: batch-2026-001</span>
-                <span class="chip">Review required: 6</span>
-              </div>
-            </div>
-            <div>
-              <button class="button">上传文件夹 / ZIP</button>
-              <button class="button secondary">导出报告</button>
-            </div>
-          </div>
-
-          <div class="tabs" role="tablist">
-            <button class="tab active" data-tab="docs">文档</button>
-            <button class="tab" data-tab="wiki">Wiki</button>
-            <button class="tab" data-tab="graph">图谱</button>
-            <button class="tab" data-tab="review">Review</button>
-            <button class="tab" data-tab="ask">Ask</button>
-          </div>
-
-          <div id="tab-docs" class="tab-body">
-            <div class="two-col">
-              <section class="panel" style="padding:16px;">
-                <h2>Mock 文件树</h2>
-                <div class="file-tree">
-                  <div class="file-row"><span>01-discovery/overview.pptx</span><span class="tag ok">PDF_CONVERTED</span></div>
-                  <div class="file-row"><span>01-discovery/app-inventory.xlsx</span><span class="tag ok">MARKDOWN_GENERATED</span></div>
-                  <div class="file-row"><span>02-architecture/interfaces.pdf</span><span class="tag warn">REVIEW_REQUIRED</span></div>
-                  <div class="file-row"><span>03-migration/risk-notes.docx</span><span class="tag warn">LOW_CONFIDENCE</span></div>
-                  <div class="file-row"><span>archive/scan-legacy.png</span><span class="tag fail">OCR_REQUIRED</span></div>
-                </div>
-              </section>
-              <section class="panel" style="padding:16px;">
-                <h2>批处理状态</h2>
-                <p>Mock batch upload and parsing status. Converter adapters wrap internal tools only.</p>
-                <div class="progress"><span></span></div>
-                <div class="status-list">
-                  <div class="status-row"><span>文件盘点</span><span class="tag ok">42 / 42</span></div>
-                  <div class="status-row"><span>Office 转 PDF via trinity-office</span><span class="tag ok">35 / 36</span></div>
-                  <div class="status-row"><span>PDF 转 Markdown via document-normalize</span><span class="tag warn">31 / 42</span></div>
-                  <div class="status-row"><span>低置信度检测</span><span class="tag warn">6 items</span></div>
-                  <div class="status-row"><span>发布到 LM Wiki</span><span class="tag">18 pages</span></div>
-                </div>
-              </section>
-            </div>
-          </div>
-
-          <div id="tab-wiki" class="tab-body hidden">
-            <article class="wiki">
-              <h2>Application Inventory Overview</h2>
-              <p>
-                The <span class="concept">IBM i Core System</span> contains batch programs,
-                <span class="concept">RPG services</span>, database objects, and integration jobs.
-                The modernization scope prioritizes <span class="concept">interface dependency mapping</span>
-                before migration wave planning.
-              </p>
-              <h3>Key Concepts</h3>
-              <p>
-                <span class="concept">Batch Job Chain</span> controls nightly settlement processing.
-                <span class="concept">DB2 for i</span> stores core operational records. Reviewed Wiki pages
-                will later generate graph nodes and Ask citations.
-              </p>
-              <div class="trace">
-                source_trace: source_file="overview.pptx", pdf_file="overview.pdf", page=12,
-                chunk_id="batch-2026-001:file-003:page-012:block-02", confidence=0.91,
-                review_status="REVIEW_REQUIRED"
-              </div>
-            </article>
-          </div>
-
-          <div id="tab-graph" class="tab-body hidden">
-            <h2>Mock 知识图谱</h2>
-            <p>Lightweight graph derived from approved or reviewable Wiki content.</p>
-            <div class="graph-wrap">
-              <svg viewBox="0 0 900 420" aria-label="Mock knowledge graph">
-                <defs>
-                  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                    <path d="M0,0 L8,4 L0,8 Z" fill="#64748b"></path>
-                  </marker>
-                </defs>
-                <g stroke="#64748b" stroke-width="2" marker-end="url(#arrow)">
-                  <line x1="160" y1="205" x2="330" y2="110"></line>
-                  <line x1="160" y1="205" x2="330" y2="290"></line>
-                  <line x1="430" y1="110" x2="610" y2="110"></line>
-                  <line x1="430" y1="290" x2="610" y2="250"></line>
-                  <line x1="700" y1="110" x2="700" y2="230"></line>
-                </g>
-                <g font-family="Arial, PingFang SC, sans-serif" font-size="14" text-anchor="middle">
-                  <circle cx="140" cy="205" r="62" fill="#dbeafe" stroke="#2563eb"></circle>
-                  <text x="140" y="200">Knowledge</text><text x="140" y="218">Space</text>
-
-                  <rect x="315" y="75" width="130" height="70" rx="8" fill="#ecfdf5" stroke="#16803c"></rect>
-                  <text x="380" y="105">WikiPage</text><text x="380" y="124">Inventory</text>
-
-                  <rect x="315" y="255" width="130" height="70" rx="8" fill="#fff7ed" stroke="#c2410c"></rect>
-                  <text x="380" y="284">Document</text><text x="380" y="303">overview.pptx</text>
-
-                  <circle cx="670" cy="110" r="58" fill="#f0f9ff" stroke="#0284c7"></circle>
-                  <text x="670" y="105">Concept</text><text x="670" y="123">RPG Services</text>
-
-                  <circle cx="670" cy="250" r="58" fill="#fefce8" stroke="#b7791f"></circle>
-                  <text x="670" y="245">SourceChunk</text><text x="670" y="263">page 12</text>
-                </g>
-              </svg>
-            </div>
-          </div>
-
-          <div id="tab-review" class="tab-body hidden">
-            <h2>SME Review</h2>
-            <div class="review-row" style="margin:12px 0;">
-              <span>03-migration/risk-notes.docx / page 8 / block 03</span>
-              <span class="tag warn">LOW_CONFIDENCE 0.62</span>
-            </div>
-            <div class="review-grid">
-              <div class="source-preview">
-                <h3>Source Preview</h3>
-                <p>Mock PDF page preview. Real source preview will show generated PDF page image and extracted assets.</p>
-                <p><strong>Trace:</strong> risk-notes.docx -> risk-notes.pdf -> page 8</p>
-              </div>
-              <div class="markdown-preview">
-                <h3>Generated Markdown</h3>
-                <p>The migration risk depends on interface sequencing and nightly batch cutover windows.</p>
-                <p><strong>review_status:</strong> REVIEW_REQUIRED</p>
-                <p><strong>Actions:</strong></p>
-                <button class="button">Approve</button>
-                <button class="button secondary">Need Fix</button>
-                <button class="button secondary">OCR Required</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="tab-ask" class="tab-body hidden">
-            <div class="ask-box">
-              <h2>Ask Atlas</h2>
-              <p>Mock Ask interface. Future answers must cite approved Wiki pages and source chunks.</p>
-              <div class="ask-input">
-                <input value="Which systems depend on IBM i batch jobs?" aria-label="Ask question">
-                <button class="button">Ask</button>
-              </div>
-              <div class="answer">
-                <strong>Draft answer:</strong> The mock graph shows RPG services, batch job chains, and DB2 for i objects as
-                related modernization concepts. This answer is not production RAG and should be treated as review-required.
-                <br><br>
-                <strong>Citations:</strong> Application Inventory Overview, page 12, chunk block-02.
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="review-view" class="hidden">
-        <div class="topbar">
-          <div class="title">
-            <h1>Review Queue</h1>
-            <p>需要 SME 审核的低置信度、LLM 生成或 OCR 待处理内容。</p>
-          </div>
-        </div>
-        <div class="panel" style="padding:16px;">
-          <div class="status-list">
-            <div class="status-row"><span>risk-notes.docx / page 8</span><span class="tag warn">LOW_CONFIDENCE</span></div>
-            <div class="status-row"><span>interfaces.pdf / page 4</span><span class="tag warn">REVIEW_REQUIRED</span></div>
-            <div class="status-row"><span>scan-legacy.png</span><span class="tag fail">OCR_REQUIRED</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="settings-view" class="hidden">
-        <div class="topbar">
-          <div class="title">
-            <h1>设置</h1>
-            <p>Adapter configuration placeholder. No external cloud services.</p>
-          </div>
-        </div>
-        <div class="panel" style="padding:16px;">
-          <h2>Converter Adapters</h2>
-          <p>Office to PDF: trinity-office adapter</p>
-          <p>PDF to Markdown: document-normalize adapter</p>
-          <p>Future parsers: MinerU, Docling, PaddleOCR, internal OCR, Copilot Vision.</p>
-        </div>
-      </section>
+      <section class="view active" id="homeView"></section>
+      <section class="view" id="spaceView"></section>
     </main>
   </div>
 
   <script>
-    const views = {
-      home: document.getElementById("home-view"),
-      space: document.getElementById("space-view"),
-      review: document.getElementById("review-view"),
-      settings: document.getElementById("settings-view")
+    // Mock data
+    const appData = {
+      nav: ["全部", "收藏", "最近", "本空间", "设置"],
+      dialog: {
+        title: "Atlas，让你的知识触手可及",
+        subtitle: "你可以这样问我",
+        prompts: [
+          "IBM i Modernization 的迁移边界是什么？",
+          "哪些页面还需要 SME Review？",
+          "Source Trace 在现代化流程里怎么用？",
+          "BRD 生成依赖哪些源文档？"
+        ],
+        knowledgeBases: [
+          { name: "English Learning Studio", count: 20 },
+          { name: "IBM i Modernization", count: 12 },
+          { name: "Agentic SDLC", count: 19 },
+          { name: "AI Engineering Practice", count: 21 },
+          { name: "AI Repo Radar", count: 21 },
+          { name: "51 talk 成人口语教材", count: 607 },
+          { name: "AI Guideline", count: 18, selected: true },
+          { name: "Hello-Agents-Wiki", count: 25 }
+        ],
+        selected: {
+          name: "AI Guideline",
+          type: "文档",
+          description: "AI Guideline",
+          countLabel: "共 18 个文档"
+        }
+      },
+      spaces: [
+        {
+          name: "IBM i Modernization",
+          description: "围绕 IBM i 现代化的应用盘点、RPG 程序理解、模块边界识别、BRD 生成和迁移证据管理。",
+          documents: 238,
+          wikiPages: 42,
+          reviews: 35,
+          owner: "Modernization CoE",
+          updated: "2026-06-28",
+          status: "Review Required"
+        },
+        {
+          name: "Agentic SDLC",
+          description: "沉淀 agent-first 软件交付流程、评审门禁、规范化提示词和可追溯工程实践。",
+          documents: 86,
+          wikiPages: 24,
+          reviews: 4,
+          owner: "Platform Team",
+          updated: "2026-06-25",
+          status: "Healthy"
+        },
+        {
+          name: "AI Engineering Practice",
+          description: "AI 工程的评测、RAG、提示词、模型网关、监控和安全实践知识库。",
+          documents: 132,
+          wikiPages: 37,
+          reviews: 8,
+          owner: "AI Engineering",
+          updated: "2026-06-22",
+          status: "Healthy"
+        },
+        {
+          name: "Deployment Knowledge Base",
+          description: "部署流程、环境差异、回滚手册、故障知识和运维责任边界。",
+          documents: 75,
+          wikiPages: 19,
+          reviews: 11,
+          owner: "SRE",
+          updated: "2026-06-20",
+          status: "Parsing"
+        },
+        {
+          name: "WWA Modernization",
+          description: "WWA 现代化项目的业务域、接口清单、迁移阶段和知识传承材料。",
+          documents: 149,
+          wikiPages: 31,
+          reviews: 16,
+          owner: "Delivery Team",
+          updated: "2026-06-18",
+          status: "Review Required"
+        },
+        {
+          name: "AI Guideline",
+          description: "内部 AI 使用准则、数据边界、安全审查、知识资产发布和合规提示。",
+          documents: 44,
+          wikiPages: 14,
+          reviews: 0,
+          owner: "Governance",
+          updated: "2026-06-15",
+          status: "Healthy"
+        }
+      ],
+      batch: {
+        name: "2026-06 IBM i Discovery Package",
+        totalFiles: 238,
+        pdfConverted: 211,
+        markdownGenerated: 176,
+        reviewRequired: 35,
+        failed: 12,
+        files: [
+          { path: "/Discovery/Architecture/Target_Architecture.pptx", status: "PDF_CONVERTED" },
+          { path: "/Discovery/BRD/BRD_Methodology.docx", status: "MARKDOWN_GENERATED" },
+          { path: "/Discovery/Interface/API_List.xlsx", status: "OCR_REQUIRED" },
+          { path: "/Discovery/Flow/Program_Flow.vsdx", status: "REVIEW_REQUIRED" },
+          { path: "/Discovery/Reports/RPG_Scan_Result.pdf", status: "FAILED" }
+        ],
+        progress: [
+          { label: "Office 转 PDF", value: 89 },
+          { label: "PDF 转 Markdown", value: 74 },
+          { label: "Source Trace 校验", value: 68 },
+          { label: "SME Review", value: 31 }
+        ]
+      },
+      wiki: {
+        pages: ["空间总览", "BRD 生成流程", "RPG 程序理解", "证据包与来源追溯", "SME Review 队列", "迁移边界"],
+        recent: ["BRD 生成流程更新了 6 个 source_trace 字段", "Program_Flow.pdf 第 4 页被标记为 OCR_REQUIRED", "Legacy Spec Factory 新增 Golden Master 对齐说明"],
+        metadata: {
+          sourceDocuments: "BRD_Methodology.pdf, RPG_Scan_Result.pdf, Legacy_Spec_Factory_Guide.pdf",
+          confidence: "0.78 / medium",
+          reviewStatus: "REVIEW_REQUIRED",
+          lastUpdated: "2026-06-28 18:40",
+          owner: "Modernization CoE",
+          relatedConcepts: ["Source Trace", "Evidence Bundle", "SME Review", "Golden Master", "Markdown Normalizer"]
+        },
+        sections: [
+          {
+            id: "overview",
+            title: "空间摘要",
+            body: "IBM i Modernization 空间将 discovery 文档、架构材料、RPG 扫描结果和迁移工作说明归一化为 LM Wiki。当前页面由 Markdown Normalizer 自动生成，所有结论必须保留 source_trace、confidence 和 review_status。"
+          },
+          {
+            id: "principles",
+            title: "可信知识原则",
+            body: "本空间采用 evidence-first 策略：来源追溯 用来连接 Wiki 段落与 PDF 页码；证据优先 要求所有图谱边和 Ask 答案指回源文档；SME Review 是发布前的人工确认门禁。低置信度或 LLM 生成内容不会直接进入 Published Wiki。"
+          },
+          {
+            id: "domain",
+            title: "核心对象与边界",
+            body: "模块边界 表示从 RPG 调用链、数据库对象和接口依赖中识别出的迁移单元。程序单元 通常对应一个 RPG Program、CL Program 或服务入口。迁移边界 由业务能力、数据依赖、批处理窗口和接口风险共同决定。"
+          },
+          {
+            id: "factory",
+            title: "Legacy Spec Factory",
+            body: "BRD 生成 会将 discovery notes、接口清单和代码扫描结果整理为可审核业务说明。Golden Master 用于比较迁移前后的关键输出，RAG Evidence Bundle 则为 Ask 和评审提供可引用证据片段。"
+          },
+          {
+            id: "tooling",
+            title: "转换与标准化工具",
+            body: "trinity-office 作为 Office-to-PDF 内部转换工具通过 adapter 暴露；document-normalize 作为 PDF-to-Markdown 和图片抽取工具通过 parser adapter 暴露；Markdown Normalizer 将工具输出整理为统一 front matter、source_trace 和 review_status。"
+          },
+          {
+            id: "graph",
+            title: "图谱派生",
+            body: "RPG Scan、PDF Parser 和 Markdown Wiki 共同产生轻量图谱候选。只有通过 SME Review 或确定性校验的节点与边，才会成为可信图谱关系。图谱关系应保留 Evidence Bundle 指针，而不是只保存抽象标签。"
+          }
+        ],
+        concepts: {
+          "来源追溯": "将 Wiki 段落、图谱边和问答引用连接到具体文档、页码或 chunk。",
+          "证据优先": "先保存可验证证据，再生成摘要、图谱或问答。",
+          "模块边界": "从程序、数据、接口和业务能力中划出的迁移单元。",
+          "程序单元": "RPG、CL、服务入口或批处理作业等可分析对象。",
+          "BRD 生成": "从 discovery 与代码证据生成可评审业务需求说明。",
+          "Golden Master": "迁移前后关键行为和输出比对基准。",
+          "SME Review": "主题专家对低置信度或 LLM 生成内容进行批准或退回。",
+          "迁移边界": "决定哪些系统、模块、接口和数据进入同一迁移范围。",
+          "RAG Evidence Bundle": "为 Ask 答案提供 source-grounded 证据包。",
+          "RPG Scan": "从 IBM i 源码中提取调用、文件、字段和作业关系。",
+          "Legacy Spec Factory": "将遗留系统材料转化为规范化说明和 Wiki 页面的一组流程。",
+          "Markdown Normalizer": "把 parser 输出转换成 Atlas 标准 Markdown。",
+          "document-normalize": "内部 PDF-to-Markdown 与图片抽取工具，通过 adapter 使用。",
+          "trinity-office": "内部 Office-to-PDF 工具，通过 converter adapter 使用。"
+        }
+      },
+      graph: {
+        nodes: [
+          { id: "hub", label: "IBM i Modernization", type: "Entity", x: 450, y: 285, r: 44, detail: "Knowledge Space core node; contains reviewed pages, documents, concepts, and source chunks." },
+          { id: "brd", label: "BRD Extraction", type: "Wiki Page", x: 240, y: 120, r: 31, detail: "Wiki page derived from BRD methodology and discovery notes." },
+          { id: "rpg", label: "RPG Program", type: "Entity", x: 645, y: 110, r: 31, detail: "Program entity extracted from RPG scan and dependency reports." },
+          { id: "module", label: "Module Boundary", type: "Concept", x: 745, y: 260, r: 30, detail: "Migration unit inferred from business capability and technical dependency evidence." },
+          { id: "trace", label: "Source Trace", type: "Concept", x: 205, y: 260, r: 30, detail: "Trace links between Markdown sections and source document pages." },
+          { id: "evidence", label: "Evidence Bundle", type: "Document", x: 300, y: 430, r: 29, detail: "Reviewed bundle of source snippets used by graph and Ask." },
+          { id: "review", label: "SME Review", type: "Review Required", x: 555, y: 455, r: 31, detail: "Human review gate for low confidence or generated content." },
+          { id: "golden", label: "Golden Master", type: "Concept", x: 760, y: 430, r: 28, detail: "Regression comparison baseline for migration behavior." },
+          { id: "parser", label: "PDF Parser", type: "Entity", x: 450, y: 95, r: 28, detail: "Parser adapter boundary for PDF-to-Markdown and image extraction." },
+          { id: "wiki", label: "Markdown Wiki", type: "Wiki Page", x: 445, y: 190, r: 30, detail: "Published normalized Markdown page with trace and review metadata." },
+          { id: "factory", label: "Legacy Spec Factory", type: "Entity", x: 110, y: 420, r: 28, detail: "Workflow for generating business and technical specs from legacy evidence." },
+          { id: "normalize", label: "document-normalize", type: "Entity", x: 595, y: 250, r: 26, detail: "Internal parser tool wrapped behind adapter interface." },
+          { id: "office", label: "trinity-office", type: "Entity", x: 335, y: 205, r: 26, detail: "Internal Office-to-PDF conversion tool wrapped behind adapter interface." },
+          { id: "rag", label: "RAG Evidence Bundle", type: "Document", x: 625, y: 365, r: 29, detail: "Source-grounded answer package used by the Ask interface." }
+        ],
+        edges: [
+          ["hub", "brd"], ["hub", "rpg"], ["hub", "module"], ["hub", "trace"], ["hub", "evidence"], ["hub", "review"], ["hub", "golden"],
+          ["office", "parser"], ["parser", "normalize"], ["normalize", "wiki"], ["wiki", "trace"], ["trace", "evidence"], ["evidence", "rag"],
+          ["factory", "brd"], ["brd", "review"], ["rpg", "module"], ["module", "golden"], ["rag", "review"], ["wiki", "hub"]
+        ]
+      },
+      review: {
+        source: "BRD_Methodology.pdf",
+        page: 12,
+        confidence: "0.62 / medium-low",
+        markdown: "### Migration Boundary\n\n当前迁移边界由账户服务、批处理窗口和接口依赖共同决定。该段落来自 BRD_Methodology.pdf 第 12 页，部分表格字段置信度较低，需要 SME 确认。",
+        queue: ["BRD_Methodology.pdf / page 12", "Program_Flow.pdf / page 4", "API_List.pdf / page 8"]
+      },
+      ask: {
+        question: "Explain what Source Trace means in the modernization workflow.",
+        answer: "Source Trace 指 Atlas 在现代化流程中保留的证据链。每个 Wiki 段落、图谱关系和 Ask 答案都应能回到源文件、页码或 chunk。这样 SME 可以在 Review 阶段核对出处，交付团队也能判断某个结论是否来自确定性解析、人工审核，还是需要进一步修复。",
+        references: ["Source: BRD_Methodology.pdf / page 12", "Source: Legacy_Spec_Factory_Guide.pdf / page 8"],
+        confidence: "medium"
+      }
     };
 
-    const navButtons = document.querySelectorAll(".nav button");
-    const tabs = document.querySelectorAll(".tab");
+    const statusClass = {
+      "Healthy": "healthy",
+      "Review Required": "review",
+      "Parsing": "parsing",
+      "PDF_CONVERTED": "approved",
+      "MARKDOWN_GENERATED": "healthy",
+      "OCR_REQUIRED": "ocr",
+      "REVIEW_REQUIRED": "review",
+      "FAILED": "failed"
+    };
 
-    function showView(name) {
-      Object.entries(views).forEach(([key, node]) => {
-        node.classList.toggle("hidden", key !== name);
-      });
-      navButtons.forEach((button) => {
-        button.classList.toggle("active", button.dataset.view === name);
+    const graphColor = {
+      "Wiki Page": "#2563eb",
+      "Entity": "#16834a",
+      "Concept": "#d97706",
+      "Document": "#64748b",
+      "Review Required": "#dc2626"
+    };
+
+    const homeView = document.querySelector("#homeView");
+    const spaceView = document.querySelector("#spaceView");
+    const sideNav = document.querySelector("#sideNav");
+
+    // Rendering
+    function renderNav() {
+      sideNav.innerHTML = appData.nav.map((item, index) => `
+        <button class="${index === 0 ? "active" : ""}" data-nav="${item}">
+          <span>${["□", "☆", "◴", "◇", "⚙"][index]}</span>${item}
+        </button>
+      `).join("");
+    }
+
+    function renderHome() {
+      const dialog = appData.dialog;
+      homeView.innerHTML = `
+        <div class="page-head">
+          <div class="title-block">
+            <h1>知识库</h1>
+            <p>管理和组织您的知识库，支持文档型和问答型知识库</p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">筛选</button>
+            <button class="btn">新建知识库</button>
+          </div>
+        </div>
+        <section class="dialog-hero" aria-label="知识库对话模式">
+          <div class="dialog-center">
+            <h2>${dialog.title}</h2>
+            <p>${dialog.subtitle}</p>
+            <div class="prompt-chips">
+              ${dialog.prompts.map((prompt) => `<button class="prompt-chip" data-prompt="${prompt}">${prompt}</button>`).join("")}
+            </div>
+            <div class="knowledge-popover">
+              <h3>知识库</h3>
+              <ul class="kb-list">
+                ${dialog.knowledgeBases.map((kb) => `
+                  <li class="kb-item ${kb.selected ? "selected" : ""}">
+                    <span class="folder-icon">□</span>
+                    <span>${kb.name} <span class="kb-count">(${kb.count})</span></span>
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+            <div class="selected-kb-card">
+              <strong>${dialog.selected.name}</strong><span class="badge healthy">${dialog.selected.type}</span>
+              <p>${dialog.selected.description}</p>
+              <p>${dialog.selected.countLabel}</p>
+            </div>
+            <div class="dialog-box">
+              <textarea class="dialog-input" id="homeDialogInput" placeholder="输入问题，将基于上方选中的知识库/文件回答"></textarea>
+              <div class="dialog-tools">
+                <div class="tool-left">
+                  <button class="mini-btn">快速问答⌄</button>
+                  <button class="icon-btn" title="联网范围">◎</button>
+                  <button class="icon-btn" title="上传图片">▧</button>
+                  <button class="icon-btn" title="添加附件">⌇</button>
+                  <button class="mini-btn" title="已选择知识库">@ <span class="badge healthy" style="margin-left:4px;">1</span></button>
+                </div>
+                <div class="tool-right">
+                  <button class="model-select">DeepSeek Flash⌄</button>
+                  <button class="icon-btn" title="发送"><span class="send-dot"></span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="section-title">
+          <div>
+            <h2>知识空间</h2>
+            <p>进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。</p>
+          </div>
+        </div>
+        <div class="cards">
+          ${appData.spaces.map((space) => `
+            <button class="card" data-space="${space.name}" aria-label="打开 ${space.name}">
+              <div>
+                <div class="card-foot" style="margin-top:0;">
+                  <h2>${space.name}</h2>
+                  <span class="badge ${statusClass[space.status]}">${space.status}</span>
+                </div>
+                <p>${space.description}</p>
+              </div>
+              <div class="stats">
+                <div class="stat"><strong>${space.documents}</strong><span>Documents</span></div>
+                <div class="stat"><strong>${space.wikiPages}</strong><span>Wiki Pages</span></div>
+                <div class="stat"><strong>${space.reviews}</strong><span>Reviews</span></div>
+              </div>
+              <div class="card-foot">
+                <span>Owner: ${space.owner}</span>
+                <span>${space.updated}</span>
+              </div>
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderSpace(activeTab = "wiki") {
+      spaceView.innerHTML = `
+        <div class="crumbs">知识库 <span>/</span> <strong>IBM i Modernization</strong></div>
+        <section class="space-panel">
+          <div class="space-head">
+            <div class="title-block">
+              <h1>IBM i Modernization</h1>
+              <p>从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。</p>
+              <div class="space-meta">
+                <span class="badge healthy">Mock Space</span>
+                <span class="badge review">35 Review Required</span>
+                <span class="badge parsing">Batch Parsing</span>
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="btn secondary" id="backHome">返回知识库</button>
+              <button class="btn">上传文件夹</button>
+              <button class="btn secondary">上传 ZIP</button>
+            </div>
+          </div>
+        </section>
+        <nav class="tabs" aria-label="空间标签页">
+          ${["文档", "Wiki", "图谱", "Review", "Ask"].map((tab) => {
+            const key = tab === "文档" ? "docs" : tab.toLowerCase();
+            return `<button class="tab ${key === activeTab ? "active" : ""}" data-tab="${key}">${tab}</button>`;
+          }).join("")}
+        </nav>
+        <section class="tab-view ${activeTab === "docs" ? "active" : ""}" id="tab-docs">${renderDocs()}</section>
+        <section class="tab-view ${activeTab === "wiki" ? "active" : ""}" id="tab-wiki">${renderWiki()}</section>
+        <section class="tab-view ${activeTab === "图谱" ? "active" : ""}" id="tab-图谱">${renderGraph()}</section>
+        <section class="tab-view ${activeTab === "review" ? "active" : ""}" id="tab-review">${renderReview()}</section>
+        <section class="tab-view ${activeTab === "ask" ? "active" : ""}" id="tab-ask">${renderAsk()}</section>
+      `;
+      renderGraphSvg();
+    }
+
+    function renderDocs() {
+      const batch = appData.batch;
+      const metrics = [
+        ["Total files", batch.totalFiles],
+        ["PDF converted", batch.pdfConverted],
+        ["Markdown generated", batch.markdownGenerated],
+        ["Review required", batch.reviewRequired],
+        ["Failed", batch.failed]
+      ];
+      return `
+        <div class="doc-grid">
+          <section class="panel">
+            <h2>${batch.name}</h2>
+            <p style="color:var(--muted);line-height:1.55;">文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。</p>
+            <div class="button-row" style="justify-content:flex-start;">
+              <button class="btn">上传文件夹</button>
+              <button class="btn secondary">上传 ZIP</button>
+            </div>
+            <div class="metric-grid">
+              ${metrics.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join("")}
+            </div>
+            <div class="progress-list">
+              ${batch.progress.map((item) => `
+                <div>
+                  <div class="progress-head"><span>${item.label}</span><span>${item.value}%</span></div>
+                  <div class="progress"><span style="width:${item.value}%"></span></div>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+          <section class="panel">
+            <h2>文件树与解析状态</h2>
+            <div class="file-tree">
+              ${batch.files.map((file) => `
+                <div class="file-row">
+                  <span class="file-path">${file.path}</span>
+                  <span class="badge ${statusClass[file.status]}">${file.status}</span>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderWiki() {
+      const wiki = appData.wiki;
+      return `
+        <div class="wiki-layout">
+          <aside class="wiki-rail">
+            <h3>Wiki Index</h3>
+            <input class="search" placeholder="搜索 Wiki 页面..." aria-label="搜索 Wiki 页面">
+            <ul class="index-list">
+              ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
+            </ul>
+            <h3 style="margin-top:22px;">Recent Updates</h3>
+            <ul class="recent-list">${wiki.recent.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </aside>
+          <article class="wiki-main">
+            <header>
+              <h2>IBM i Modernization / LM Wiki</h2>
+              <p style="color:var(--muted);line-height:1.55;">Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。</p>
+            </header>
+            ${wiki.sections.map((section) => `
+              <section class="wiki-section" id="${section.id}">
+                <h3>${section.title}</h3>
+                <p>${linkConcepts(section.body)}</p>
+                <div class="trace">source_trace: BRD_Methodology.pdf / page 12; RPG_Scan_Result.pdf / page 6; review_status: REVIEW_REQUIRED; confidence: medium</div>
+              </section>
+            `).join("")}
+          </article>
+          <aside class="wiki-rail">
+            <h3>Metadata</h3>
+            <div class="metadata-list">
+              <div><strong>Source Documents</strong>${wiki.metadata.sourceDocuments}</div>
+              <div><strong>Confidence</strong>${wiki.metadata.confidence}</div>
+              <div><strong>Review Status</strong><span class="badge review">${wiki.metadata.reviewStatus}</span></div>
+              <div><strong>Last Updated</strong>${wiki.metadata.lastUpdated}</div>
+              <div><strong>Owner</strong>${wiki.metadata.owner}</div>
+              <div><strong>Related Concepts</strong>
+                <ul class="related-list">${wiki.metadata.relatedConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderGraph() {
+      return `
+        <div class="graph-layout">
+          <section class="graph-canvas">
+            <div class="graph-tooltip" id="graphTooltip"></div>
+            <svg class="graph-svg" id="graphSvg" viewBox="0 0 900 600" role="img" aria-label="IBM i Modernization 知识图谱"></svg>
+          </section>
+          <aside class="panel">
+            <h2>图谱概览</h2>
+            <p style="color:var(--muted);line-height:1.55;">轻量图谱 mock。节点来自已发布 Wiki、源文档和待审核证据。</p>
+            <div class="legend-list">
+              ${legendItems().map((item) => `
+                <div class="legend-item"><span><span class="dot ${item.color}"></span>${item.label}</span><strong>${item.count}</strong></div>
+              `).join("")}
+            </div>
+            <div class="panel" style="margin-top:14px;box-shadow:none;" id="nodeDetail">
+              <h3>Node Detail</h3>
+              <p style="color:var(--muted);line-height:1.55;">点击图谱节点查看来源、类型和关系说明。</p>
+            </div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderReview() {
+      const review = appData.review;
+      return `
+        <div class="review-grid">
+          <section class="review-pane">
+            <h3>PDF Page Preview</h3>
+            <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
+            <div class="pdf-preview">
+              <div>
+                <strong>PDF PAGE ${review.page}</strong>
+                <p>表格、流程图和扫描文本预览占位</p>
+              </div>
+            </div>
+          </section>
+          <section class="review-pane">
+            <div class="card-foot" style="margin-top:0;">
+              <h3>Markdown Preview</h3>
+              <span class="badge medium">Confidence ${review.confidence}</span>
+            </div>
+            <div class="markdown-preview">${review.markdown.replace(/\n/g, "<br>")}</div>
+            <textarea placeholder="Review comments..."></textarea>
+            <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
+              <button class="btn">Approve</button>
+              <button class="btn secondary">Need Fix</button>
+              <button class="btn secondary">Mark OCR Required</button>
+            </div>
+          </section>
+        </div>
+        <section class="panel" style="margin-top:16px;">
+          <h2>Low confidence pages</h2>
+          <div class="queue">
+            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAsk() {
+      const ask = appData.ask;
+      return `
+        <div class="ask-grid">
+          <section class="chat-panel">
+            <h3>Ask IBM i Modernization</h3>
+            <div style="margin-top:16px;">
+              <div class="message user">${ask.question}</div>
+              <div class="message answer">
+                ${ask.answer}
+                <ul class="references">${ask.references.map((ref) => `<li>${ref}</li>`).join("")}</ul>
+                <p><span class="badge medium">Confidence: ${ask.confidence}</span></p>
+              </div>
+            </div>
+            <div class="ask-input-row">
+              <input class="ask-input" placeholder="Ask about IBM i Modernization..." aria-label="Ask about IBM i Modernization">
+              <button class="btn">发送</button>
+            </div>
+          </section>
+          <aside class="panel">
+            <h2>可信回答策略</h2>
+            <p style="color:var(--muted);line-height:1.62;">Ask 只展示来自已审核或带有清晰 source_trace 的 mock 证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。</p>
+            <div class="source-row"><span>Approved Wiki pages</span><strong>42</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>Evidence chunks</span><strong>318</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>Review required</span><strong>35</strong></div>
+          </aside>
+        </div>
+      `;
+    }
+
+    // Interactions
+    function linkConcepts(text) {
+      const concepts = Object.keys(appData.wiki.concepts).sort((a, b) => b.length - a.length);
+      return concepts.reduce((result, concept) => {
+        const escaped = concept.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return result.replace(new RegExp(escaped, "g"), `<span class="concept" title="${appData.wiki.concepts[concept]}">${concept}</span>`);
+      }, text);
+    }
+
+    function showHome() {
+      homeView.classList.add("active");
+      spaceView.classList.remove("active");
+      document.querySelectorAll("#sideNav button").forEach((button, index) => {
+        button.classList.toggle("active", index === 0);
       });
     }
 
-    function showTab(name) {
-      tabs.forEach((tab) => {
-        tab.classList.toggle("active", tab.dataset.tab === name);
-      });
-      ["docs", "wiki", "graph", "review", "ask"].forEach((tabName) => {
-        document.getElementById(`tab-${tabName}`).classList.toggle("hidden", tabName !== name);
+    function showSpace(tab = "wiki") {
+      renderSpace(tab);
+      homeView.classList.remove("active");
+      spaceView.classList.add("active");
+      document.querySelectorAll("#sideNav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.nav === "本空间");
       });
     }
 
-    navButtons.forEach((button) => {
-      button.addEventListener("click", () => showView(button.dataset.view));
-    });
+    function setTab(tab) {
+      document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
+      document.querySelectorAll(".tab-view").forEach((view) => view.classList.toggle("active", view.id === `tab-${tab}`));
+      if (tab === "图谱") {
+        renderGraphSvg();
+      }
+    }
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => showTab(tab.dataset.tab));
-    });
+    function legendItems() {
+      const counts = appData.graph.nodes.reduce((acc, node) => {
+        acc[node.type] = (acc[node.type] || 0) + 1;
+        return acc;
+      }, {});
+      return [
+        { label: "Wiki Page", color: "blue", count: counts["Wiki Page"] || 0 },
+        { label: "Entity", color: "green", count: counts.Entity || 0 },
+        { label: "Concept", color: "orange", count: counts.Concept || 0 },
+        { label: "Document", color: "gray", count: counts.Document || 0 },
+        { label: "Review Required", color: "red", count: counts["Review Required"] || 0 }
+      ];
+    }
 
-    document.querySelector("[data-open-space]").addEventListener("click", () => showView("space"));
+    function renderGraphSvg() {
+      const svg = document.querySelector("#graphSvg");
+      if (!svg) return;
+      const nodeById = Object.fromEntries(appData.graph.nodes.map((node) => [node.id, node]));
+      const edges = appData.graph.edges.map(([from, to]) => {
+        const a = nodeById[from];
+        const b = nodeById[to];
+        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#cbd8d0" stroke-width="1.5" />`;
+      }).join("");
+      const nodes = appData.graph.nodes.map((node) => `
+        <g class="graph-node" data-node="${node.id}">
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.92"></circle>
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.16" stroke-width="8"></circle>
+          <text class="graph-label" x="${node.x}" y="${node.y + node.r + 18}" text-anchor="middle">${node.label}</text>
+        </g>
+      `).join("");
+      svg.innerHTML = `<g>${edges}</g><g>${nodes}</g>`;
+    }
+
+    function showNodeDetail(nodeId) {
+      const node = appData.graph.nodes.find((item) => item.id === nodeId);
+      const detail = document.querySelector("#nodeDetail");
+      if (!node || !detail) return;
+      detail.innerHTML = `
+        <h3>${node.label}</h3>
+        <p><span class="badge" style="color:#fff;background:${graphColor[node.type]}">${node.type}</span></p>
+        <p style="color:var(--muted);line-height:1.55;">${node.detail}</p>
+      `;
+    }
+
+    function bindEvents() {
+      document.addEventListener("click", (event) => {
+        const spaceCard = event.target.closest("[data-space]");
+        if (spaceCard && spaceCard.dataset.space === "IBM i Modernization") {
+          showSpace("wiki");
+        }
+
+        const promptChip = event.target.closest("[data-prompt]");
+        if (promptChip) {
+          const input = document.querySelector("#homeDialogInput");
+          if (input) {
+            input.value = promptChip.dataset.prompt;
+            input.focus();
+          }
+        }
+
+        const kbItem = event.target.closest(".kb-item");
+        if (kbItem && kbItem.textContent.includes("IBM i Modernization")) {
+          showSpace("ask");
+        }
+
+        const navButton = event.target.closest("[data-nav]");
+        if (navButton) {
+          if (navButton.dataset.nav === "本空间") showSpace("wiki");
+          else showHome();
+        }
+
+        if (event.target.id === "backHome") {
+          showHome();
+        }
+
+        const tab = event.target.closest("[data-tab]");
+        if (tab) {
+          setTab(tab.dataset.tab);
+        }
+
+        const indexItem = event.target.closest("[data-section]");
+        if (indexItem) {
+          const target = document.getElementById(indexItem.dataset.section);
+          document.querySelectorAll(".index-list button").forEach((button) => button.classList.remove("active"));
+          document.querySelectorAll(".wiki-section").forEach((section) => section.classList.remove("highlight"));
+          indexItem.classList.add("active");
+          if (target) {
+            target.classList.add("highlight");
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+
+        const graphNode = event.target.closest(".graph-node");
+        if (graphNode) {
+          showNodeDetail(graphNode.dataset.node);
+        }
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        const graphNode = event.target.closest(".graph-node");
+        const tooltip = document.querySelector("#graphTooltip");
+        if (!tooltip) return;
+        if (!graphNode) {
+          tooltip.style.display = "none";
+          return;
+        }
+        const node = appData.graph.nodes.find((item) => item.id === graphNode.dataset.node);
+        tooltip.innerHTML = `<strong>${node.label}</strong><br>${node.type}<br>${node.detail}`;
+        tooltip.style.display = "block";
+        const canvasRect = document.querySelector(".graph-canvas").getBoundingClientRect();
+        tooltip.style.left = `${event.clientX - canvasRect.left + 14}px`;
+        tooltip.style.top = `${event.clientY - canvasRect.top + 14}px`;
+      });
+    }
+
+    renderNav();
+    renderHome();
+    bindEvents();
   </script>
 </body>
 </html>
