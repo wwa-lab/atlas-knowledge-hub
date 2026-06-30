@@ -17,6 +17,19 @@ Before making changes, always read:
 - Prefer a simple static prototype before introducing frameworks.
 - Do not create a production backend, production database, authentication, or complex permission logic until explicitly requested.
 
+## Reference Product Policy
+
+- WeKnora may be used only as a product experience and UX benchmark.
+- The project may learn from WeKnora's information architecture, interaction flow, knowledge space concept, wiki experience, graph experience, and general product patterns.
+- Do not copy WeKnora source code.
+- Do not copy WeKnora project structure.
+- Do not copy UI assets, icons, images, stylesheets, or proprietary-looking visual details.
+- Do not reproduce implementation details from WeKnora.
+- Implement Atlas Knowledge Hub independently according to this repository's own architecture, SDD documents, adapter-based converter design, Markdown standard, review workflow, and internal enterprise requirements.
+- If a feature is inspired by WeKnora, describe it as "inspired by modern AI-native knowledge products" rather than copying exact behavior.
+- Prefer internal product needs over external product parity.
+- When proposing or implementing any feature that resembles WeKnora, first map it to an Atlas-specific use case, such as folder/ZIP upload, batch parsing, source trace, SME review, LM Wiki, knowledge graph, or trusted Ask.
+
 ## Architecture Rules
 
 - Do not hardcode a single parser engine.
