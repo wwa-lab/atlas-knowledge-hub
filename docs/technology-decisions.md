@@ -12,6 +12,8 @@ Use lightweight SDD when implementation begins. Each meaningful feature phase sh
 
 Small documentation and prototype-only changes do not need heavyweight SDD.
 
+Development standards are staged by phase in `DEVELOPMENT_STANDARDS.md`. Phase 0 uses lightweight prototype checks; later phases add frontend tests, backend contract tests, database migration discipline, adapter tests, and CI gates as the implementation layers become real.
+
 ## Selected Stack
 
 - Frontend: Vue 3 + Vite + TypeScript after static prototype validation.

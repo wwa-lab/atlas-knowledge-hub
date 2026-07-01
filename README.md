@@ -52,6 +52,14 @@ Atlas will use a lightweight SDD workflow for feature planning once implementati
 
 Do not scaffold these frameworks until the relevant roadmap phase begins or the user explicitly requests implementation.
 
+## Development Standards
+
+Atlas uses staged development standards so Phase 0 can stay lightweight while later implementation phases gain stronger tests, CI, API contracts, database controls, and security gates.
+
+See `DEVELOPMENT_STANDARDS.md` for the full standard covering goal-driven SDD, coding, frontend, backend, API, database, adapter, security, testing, review, Git, and CI expectations.
+
+Reusable acceptance findings are captured in `docs/00-context/lessons-learned.md` and should update the rule, spec, checklist, or test that prevents recurrence.
+
 ## Repository Structure
 
 ```text
@@ -66,6 +74,7 @@ Do not scaffold these frameworks until the relevant roadmap phase begins or the 
 │   ├── input/               # Mock/sample inputs only
 │   └── output/              # Mock/sample generated outputs only
 ├── AGENTS.md                # Coding-agent instructions
+├── DEVELOPMENT_STANDARDS.md # Staged engineering standards and quality gates
 ├── PROJECT_RULES.md         # Project rules and constraints
 └── ROADMAP.md               # Phased product roadmap
 ```

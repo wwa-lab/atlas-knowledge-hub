@@ -3,24 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Atlas Knowledge Hub Prototype</title>
+  <title>Atlas Knowledge Hub</title>
   <style>
     :root {
-      --bg: #f4f6f7;
+      --bg: #f7f8f9;
       --panel: #ffffff;
-      --panel-soft: #f8faf9;
-      --ink: #17211b;
-      --muted: #68766f;
-      --line: #dde5df;
-      --primary: #16834a;
-      --primary-dark: #0f6b3a;
-      --primary-soft: #e8f6ee;
-      --blue: #2563eb;
-      --orange: #d97706;
-      --red: #dc2626;
-      --gray: #64748b;
-      --shadow: 0 12px 30px rgba(30, 50, 40, 0.08);
+      --panel-soft: #f4f6f7;
+      --panel-raised: #ffffff;
+      --ink: #18211f;
+      --muted: #66726f;
+      --line: #e1e5e4;
+      --primary: #3f6f8f;
+      --primary-dark: #2f536b;
+      --primary-soft: #edf3f6;
+      --blue: #4b6f9f;
+      --orange: #a66f28;
+      --red: #b94a48;
+      --gray: #68757c;
+      --green: #5f8272;
+      --shadow: 0 1px 2px rgba(24, 33, 31, 0.05), 0 10px 24px rgba(24, 33, 31, 0.04);
       --radius: 8px;
+    }
+
+    [data-theme="night"] {
+      --bg: #0f1115;
+      --panel: #171a20;
+      --panel-soft: #20242b;
+      --panel-raised: #1b1f26;
+      --ink: #e6e8ec;
+      --muted: #9aa3af;
+      --line: #2b3038;
+      --primary: #6f93a6;
+      --primary-dark: #a9c1cf;
+      --primary-soft: #1d2830;
+      --blue: #83a2c7;
+      --orange: #c49a68;
+      --red: #d0827c;
+      --gray: #9aa3af;
+      --green: #6fa586;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.24), 0 10px 24px rgba(0, 0, 0, 0.16);
     }
 
     * {
@@ -29,6 +50,7 @@
 
     body {
       margin: 0;
+      overflow-x: hidden;
       color: var(--ink);
       background: var(--bg);
       font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -47,41 +69,50 @@
 
     .shell {
       display: grid;
-      grid-template-columns: 236px minmax(0, 1fr);
+      grid-template-columns: 260px minmax(0, 1fr);
       min-height: 100vh;
+      min-width: 0;
     }
 
     .sidebar {
       position: sticky;
       top: 0;
+      min-width: 0;
       height: 100vh;
-      padding: 22px 18px;
-      color: #d9e5de;
-      background: #13201a;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 14px;
+      color: var(--ink);
+      background: var(--panel);
+      border-right: 1px solid var(--line);
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 28px;
+      margin-bottom: 18px;
       font-size: 17px;
       font-weight: 800;
+      min-width: 0;
     }
 
     .brand-mark {
+      flex: 0 0 auto;
       display: grid;
       width: 34px;
       height: 34px;
       place-items: center;
       border-radius: 8px;
       color: #fff;
-      background: linear-gradient(135deg, #20a35b, #0f6b3a);
+      background: #2f536b;
     }
 
     .side-nav {
       display: grid;
-      gap: 7px;
+      gap: 5px;
+      min-height: 0;
+      overflow: auto;
     }
 
     .side-nav button {
@@ -89,8 +120,9 @@
       align-items: center;
       gap: 10px;
       width: 100%;
-      padding: 10px 12px;
-      color: #bfd0c6;
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
       text-align: left;
       background: transparent;
       border: 0;
@@ -99,23 +131,97 @@
 
     .side-nav button.active,
     .side-nav button:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .side-label {
+      margin: 14px 8px 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .side-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .side-recent {
+      display: grid;
+      gap: 4px;
+      padding: 0 8px;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      list-style: none;
+    }
+
+    .side-divider {
+      height: 1px;
+      margin: 10px 0;
+      background: var(--line);
+    }
+
+    .side-workspace {
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .workspace-title {
+      margin: 0 0 4px;
+      font-weight: 800;
+    }
+
+    .workspace-role {
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .side-footer {
-      position: absolute;
-      right: 18px;
-      bottom: 20px;
-      left: 18px;
-      padding-top: 14px;
-      color: #93a99d;
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--muted);
       font-size: 12px;
       line-height: 1.5;
-      border-top: 1px solid rgba(255, 255, 255, 0.13);
+      border-top: 1px solid var(--line);
+    }
+
+    .utility-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .utility-btn {
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--ink);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .utility-btn:hover {
+      background: var(--primary-soft);
     }
 
     .main {
+      width: 100%;
       min-width: 0;
       padding: 26px 28px 34px;
     }
@@ -133,6 +239,7 @@
       margin: 0;
       font-size: 28px;
       line-height: 1.18;
+      overflow-wrap: anywhere;
     }
 
     .title-block p {
@@ -160,7 +267,7 @@
       background: var(--primary);
       border: 1px solid var(--primary);
       border-radius: var(--radius);
-      box-shadow: 0 7px 18px rgba(22, 131, 74, 0.17);
+      box-shadow: 0 1px 2px rgba(24, 33, 31, 0.08);
     }
 
     .btn:hover {
@@ -169,8 +276,8 @@
 
     .btn.secondary {
       color: var(--primary-dark);
-      background: #fff;
-      border-color: #bddccb;
+      background: var(--panel);
+      border-color: var(--line);
       box-shadow: none;
     }
 
@@ -182,12 +289,10 @@
       padding: 34px 28px 46px;
       margin-bottom: 22px;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 28% 18%, rgba(22, 131, 74, 0.08), transparent 34%),
-        linear-gradient(180deg, #fff, #f8fbf9);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      box-shadow: none;
     }
 
     .dialog-center {
@@ -216,11 +321,11 @@
 
     .prompt-chip {
       padding: 9px 14px;
-      color: #37453d;
-      background: #fff;
+      color: var(--ink);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(30, 50, 40, 0.06);
+      box-shadow: none;
     }
 
     .dialog-box {
@@ -230,17 +335,17 @@
       min-height: 158px;
       padding: 14px;
       text-align: left;
-      background: #fff;
-      border: 1.5px solid #17bf6b;
+      background: var(--panel);
+      border: 1px solid var(--line);
       border-radius: 12px;
-      box-shadow: 0 18px 38px rgba(22, 131, 74, 0.13);
+      box-shadow: 0 1px 2px rgba(24, 33, 31, 0.05);
     }
 
     .dialog-input {
       width: 100%;
       min-height: 70px;
       padding: 3px 2px;
-      color: #223027;
+      color: var(--ink);
       resize: none;
       background: transparent;
       border: 0;
@@ -248,7 +353,7 @@
     }
 
     .dialog-input::placeholder {
-      color: #8a968f;
+      color: #8c9896;
     }
 
     .dialog-tools {
@@ -275,8 +380,8 @@
       justify-content: center;
       min-height: 30px;
       padding: 6px 10px;
-      color: #526158;
-      background: #fff;
+      color: var(--muted);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
     }
@@ -285,7 +390,7 @@
       width: 30px;
       padding: 0;
       border-color: transparent;
-      color: #7a887f;
+      color: #778481;
       background: transparent;
       font-size: 17px;
     }
@@ -294,7 +399,7 @@
       display: inline-block;
       width: 12px;
       height: 12px;
-      background: #17bf6b;
+      background: var(--primary);
       border-radius: 50%;
     }
 
@@ -306,16 +411,16 @@
       width: 304px;
       padding: 12px;
       text-align: left;
-      background: #fff;
-      border: 1px solid #d4ddd7;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: 0 18px 36px rgba(30, 50, 40, 0.16);
+      box-shadow: 0 12px 28px rgba(24, 33, 31, 0.12);
       transform: translateX(-150%);
     }
 
     .knowledge-popover h3 {
       margin: 2px 2px 10px;
-      color: #4a584f;
+      color: var(--muted);
       font-size: 13px;
       font-weight: 700;
     }
@@ -333,13 +438,13 @@
       align-items: center;
       gap: 9px;
       padding: 9px 8px;
-      color: #26342d;
+      color: var(--ink);
       border-radius: var(--radius);
     }
 
     .kb-item.selected {
-      color: #08a85a;
-      background: #e8f7ee;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
     }
 
     .folder-icon {
@@ -348,7 +453,7 @@
     }
 
     .kb-count {
-      color: #7b887f;
+      color: var(--muted);
       font-size: 12px;
     }
 
@@ -360,10 +465,10 @@
       width: 260px;
       padding: 14px 15px;
       text-align: left;
-      background: #fff;
-      border: 1px solid #dde5df;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: 0 18px 36px rgba(30, 50, 40, 0.14);
+      box-shadow: 0 12px 28px rgba(24, 33, 31, 0.11);
       transform: translateX(6%);
     }
 
@@ -398,6 +503,384 @@
       font-size: 13px;
     }
 
+    .settings-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 16px;
+    }
+
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(14, 23, 18, 0.56);
+    }
+
+    .settings-modal.active {
+      display: grid;
+      place-items: center;
+    }
+
+    .settings-window {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      width: min(1080px, calc(100vw - 48px));
+      height: min(760px, calc(100vh - 48px));
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .settings-rail {
+      padding: 18px 10px;
+      background: var(--panel-soft);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    .settings-rail h2 {
+      margin: 0 8px 14px;
+      font-size: 18px;
+    }
+
+    .settings-content {
+      position: relative;
+      min-width: 0;
+      padding: 26px 32px 34px;
+      overflow: auto;
+    }
+
+    .settings-close {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      width: 34px;
+      height: 34px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .settings-close:hover {
+      color: var(--ink);
+      background: var(--panel-soft);
+    }
+
+    .settings-subnav {
+      display: grid;
+      gap: 5px;
+    }
+
+    .settings-group-label {
+      margin: 14px 8px 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .settings-subnav button {
+      width: 100%;
+      padding: 9px 10px;
+      color: var(--muted);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+    }
+
+    .settings-subnav button.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .settings-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .settings-tab {
+      padding: 8px 12px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .settings-tab.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .model-card {
+      display: grid;
+      gap: 10px;
+      min-height: 124px;
+      padding: 14px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .model-card.active,
+    .model-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .model-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .model-head strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .model-provider {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .model-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .config-panel {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .config-section {
+      padding-top: 16px;
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .config-section h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .config-section h3::before {
+      width: 3px;
+      height: 16px;
+      content: "";
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .field-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .secret-row,
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 36px;
+      padding: 8px 10px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .toggle-pill {
+      width: 34px;
+      height: 20px;
+      padding: 3px;
+      background: #d9dfdd;
+      border-radius: 999px;
+    }
+
+    .toggle-pill.on {
+      background: #c6d8e0;
+    }
+
+    .toggle-pill::after {
+      display: block;
+      width: 14px;
+      height: 14px;
+      content: "";
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .toggle-pill.on::after {
+      margin-left: 14px;
+      background: var(--primary);
+    }
+
+    .member-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .empty-invite {
+      padding: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 16px 0 10px;
+    }
+
+    .table-toolbar input {
+      width: min(300px, 100%);
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .member-table {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .member-row {
+      display: grid;
+      grid-template-columns: minmax(210px, 1.5fr) 150px 160px 120px;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .member-row:last-child {
+      border-bottom: 0;
+    }
+
+    .member-row.header {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--panel-soft);
+    }
+
+    .member-name strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .member-name span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .role-select {
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .registration-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+    }
+
+    .engine-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .engine-card {
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .engine-card.default {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .engine-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -428,9 +911,9 @@
     }
 
     .card:hover {
-      transform: translateY(-2px);
-      border-color: #9ecfac;
-      box-shadow: 0 18px 38px rgba(28, 69, 48, 0.13);
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+      box-shadow: 0 6px 18px rgba(24, 33, 31, 0.08);
     }
 
     .card h2,
@@ -465,7 +948,7 @@
     .stat {
       padding: 8px;
       background: var(--panel-soft);
-      border: 1px solid #e5ece7;
+      border: 1px solid var(--line);
       border-radius: var(--radius);
     }
 
@@ -502,26 +985,26 @@
 
     .badge.healthy,
     .badge.approved {
-      color: #11663a;
-      background: #e8f6ee;
+      color: #3b684c;
+      background: #eef5f1;
     }
 
     .badge.review,
     .badge.ocr {
-      color: #a05a00;
-      background: #fff4df;
+      color: #8b6429;
+      background: #f7f1e8;
     }
 
     .badge.parsing,
     .badge.medium {
-      color: #1f54b8;
-      background: #e9f0ff;
+      color: #3f5f84;
+      background: #edf2f7;
     }
 
     .badge.failed,
     .badge.needfix {
-      color: #b42318;
-      background: #fff0ed;
+      color: #944844;
+      background: #f7eeee;
     }
 
     .crumbs {
@@ -642,14 +1125,14 @@
     .progress {
       height: 9px;
       overflow: hidden;
-      background: #e8eee9;
+      background: #e8eceb;
       border-radius: 999px;
     }
 
     .progress span {
       display: block;
       height: 100%;
-      background: linear-gradient(90deg, #21a55d, #73c791);
+      background: #6f95aa;
     }
 
     .file-tree {
@@ -668,7 +1151,7 @@
       gap: 12px;
       padding: 10px 11px;
       background: var(--panel-soft);
-      border: 1px solid #e4ebe6;
+      border: 1px solid var(--line);
       border-radius: var(--radius);
     }
 
@@ -676,7 +1159,7 @@
     .queue-row span:first-child {
       min-width: 0;
       overflow-wrap: anywhere;
-      color: #26342d;
+      color: var(--ink);
       font-size: 13px;
     }
 
@@ -704,8 +1187,8 @@
     .search:focus,
     textarea:focus,
     .ask-input:focus {
-      border-color: #8ccaa4;
-      box-shadow: 0 0 0 3px rgba(22, 131, 74, 0.1);
+      border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
+      box-shadow: 0 0 0 3px rgba(63, 111, 143, 0.08);
     }
 
     .index-list,
@@ -721,9 +1204,9 @@
     .index-list button {
       width: 100%;
       padding: 9px 10px;
-      color: #304039;
+      color: var(--ink);
       text-align: left;
-      background: #fff;
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
     }
@@ -732,7 +1215,7 @@
     .index-list button.active {
       color: var(--primary-dark);
       background: var(--primary-soft);
-      border-color: #aad5ba;
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
     }
 
     .recent-list li,
@@ -768,7 +1251,7 @@
       padding-left: 12px;
       margin-right: -12px;
       margin-left: -12px;
-      background: #f0fbf4;
+      background: var(--primary-soft);
       border-radius: var(--radius);
     }
 
@@ -779,7 +1262,7 @@
 
     .wiki-section p,
     .wiki-section li {
-      color: #34443b;
+      color: var(--ink);
       line-height: 1.68;
     }
 
@@ -787,7 +1270,7 @@
       color: var(--primary-dark);
       font-weight: 800;
       text-decoration: underline;
-      text-decoration-color: rgba(22, 131, 74, 0.35);
+      text-decoration-color: rgba(63, 111, 143, 0.28);
       text-underline-offset: 3px;
       cursor: pointer;
     }
@@ -795,11 +1278,11 @@
     .trace {
       padding: 10px 12px;
       margin-top: 10px;
-      color: #526257;
+      color: var(--muted);
       font-size: 12px;
       line-height: 1.5;
-      background: #f3f7f4;
-      border-left: 3px solid #98cdaa;
+      background: var(--panel-soft);
+      border-left: 3px solid #b7c8d0;
       border-radius: 0 var(--radius) var(--radius) 0;
     }
 
@@ -832,7 +1315,7 @@
       position: relative;
       min-height: 600px;
       overflow: hidden;
-      background: #fbfdfc;
+      background: var(--panel-soft);
       box-shadow: none;
     }
 
@@ -863,7 +1346,7 @@
       color: #fff;
       font-size: 12px;
       line-height: 1.45;
-      background: rgba(17, 32, 25, 0.95);
+      background: rgba(18, 22, 27, 0.95);
       border-radius: var(--radius);
       pointer-events: none;
       box-shadow: var(--shadow);
@@ -882,7 +1365,7 @@
       gap: 12px;
       padding: 9px 10px;
       background: var(--panel-soft);
-      border: 1px solid #e5ece7;
+      border: 1px solid var(--line);
       border-radius: var(--radius);
     }
 
@@ -896,7 +1379,7 @@
     }
 
     .dot.blue { background: var(--blue); }
-    .dot.green { background: var(--primary); }
+    .dot.green { background: var(--green); }
     .dot.orange { background: var(--orange); }
     .dot.gray { background: var(--gray); }
     .dot.red { background: var(--red); }
@@ -916,14 +1399,14 @@
       place-items: center;
       min-height: 270px;
       margin-top: 14px;
-      color: #748278;
+      color: var(--muted);
       text-align: center;
       background:
-        linear-gradient(90deg, rgba(22, 131, 74, 0.08) 1px, transparent 1px),
-        linear-gradient(rgba(22, 131, 74, 0.08) 1px, transparent 1px),
-        #f9fbfa;
+        linear-gradient(90deg, rgba(63, 111, 143, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(63, 111, 143, 0.06) 1px, transparent 1px),
+        var(--panel-soft);
       background-size: 26px 26px;
-      border: 1px dashed #bad2c3;
+      border: 1px dashed #cfd8dc;
       border-radius: var(--radius);
     }
 
@@ -931,10 +1414,10 @@
       min-height: 250px;
       padding: 14px;
       margin-top: 12px;
-      color: #314139;
+      color: var(--ink);
       line-height: 1.62;
       background: var(--panel-soft);
-      border: 1px solid #e5ece7;
+      border: 1px solid var(--line);
       border-radius: var(--radius);
     }
 
@@ -980,7 +1463,7 @@
 
     .message.answer {
       background: var(--panel-soft);
-      border: 1px solid #e5ece7;
+      border: 1px solid var(--line);
     }
 
     .references {
@@ -993,10 +1476,90 @@
 
     .references li {
       padding: 9px 10px;
-      color: #405249;
-      background: #fff;
+      color: var(--ink);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
+    }
+
+    [data-theme="night"] .sidebar {
+      background: #12151b;
+    }
+
+    [data-theme="night"] .card:hover {
+      border-color: #3a4652;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="night"] .prompt-chip,
+    [data-theme="night"] .mini-btn,
+    [data-theme="night"] .model-select,
+    [data-theme="night"] .index-list button,
+    [data-theme="night"] .references li {
+      color: var(--ink);
+    }
+
+    [data-theme="night"] .kb-item,
+    [data-theme="night"] .file-path,
+    [data-theme="night"] .wiki-section p,
+    [data-theme="night"] .wiki-section li,
+    [data-theme="night"] .markdown-preview,
+    [data-theme="night"] .references li {
+      color: var(--ink);
+    }
+
+    [data-theme="night"] .trace {
+      color: #c8d0d8;
+      background: #20242b;
+    }
+
+    [data-theme="night"] .graph-label {
+      fill: #d9dee5;
+    }
+
+    [data-theme="night"] .badge.healthy,
+    [data-theme="night"] .badge.approved {
+      color: #a8d6ba;
+      background: rgba(111, 165, 134, 0.16);
+    }
+
+    [data-theme="night"] .badge.review,
+    [data-theme="night"] .badge.ocr {
+      color: #e1bd82;
+      background: rgba(196, 154, 104, 0.15);
+    }
+
+    [data-theme="night"] .badge.parsing,
+    [data-theme="night"] .badge.medium {
+      color: #b5c9e3;
+      background: rgba(131, 162, 199, 0.15);
+    }
+
+    [data-theme="night"] .badge.failed,
+    [data-theme="night"] .badge.needfix {
+      color: #e5aaa6;
+      background: rgba(208, 130, 124, 0.14);
+    }
+
+    [data-theme="night"] .progress {
+      background: #272c34;
+    }
+
+    [data-theme="night"] .progress span {
+      background: #7898aa;
+    }
+
+    [data-theme="night"] .wiki-section,
+    [data-theme="night"] .metadata-list div {
+      border-color: var(--line);
+    }
+
+    [data-theme="night"] .pdf-preview {
+      background:
+        linear-gradient(90deg, rgba(154, 163, 175, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(154, 163, 175, 0.08) 1px, transparent 1px),
+        var(--panel-soft);
+      border-color: #3a414c;
     }
 
     .ask-input-row {
@@ -1019,6 +1582,56 @@
       display: none !important;
     }
 
+    @media (min-width: 1600px) {
+      .main {
+        padding: 34px 44px 44px;
+      }
+
+      .dialog-center {
+        width: min(960px, 100%);
+      }
+
+      .wiki-layout {
+        grid-template-columns: 300px minmax(0, 1fr) 340px;
+      }
+
+      .graph-layout {
+        grid-template-columns: minmax(0, 1fr) 360px;
+      }
+    }
+
+    @media (max-width: 1366px) {
+      .shell {
+        grid-template-columns: 236px minmax(0, 1fr);
+      }
+
+      .main {
+        padding: 22px 22px 30px;
+      }
+
+      .cards,
+      .split,
+      .doc-grid,
+      .wiki-layout,
+      .graph-layout,
+      .review-grid,
+      .ask-grid {
+        gap: 14px;
+      }
+
+      .wiki-layout {
+        grid-template-columns: 230px minmax(0, 1fr) 260px;
+      }
+
+      .graph-layout {
+        grid-template-columns: minmax(0, 1fr) 280px;
+      }
+
+      .doc-grid {
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+    }
+
     @media (max-width: 1180px) {
       .cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1039,8 +1652,25 @@
       .graph-layout,
       .doc-grid,
       .split,
-      .ask-grid {
+      .ask-grid,
+      .settings-layout,
+      .settings-window,
+      .registration-grid {
         grid-template-columns: 1fr;
+      }
+
+      .settings-window {
+        height: min(820px, calc(100vh - 32px));
+      }
+
+      .settings-rail {
+        max-height: 220px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .config-panel {
+        position: static;
       }
 
       .metric-grid {
@@ -1048,7 +1678,7 @@
       }
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 900px) {
       .shell {
         grid-template-columns: 1fr;
       }
@@ -1056,19 +1686,74 @@
       .sidebar {
         position: static;
         height: auto;
+        padding: 14px 16px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .side-nav {
+        display: flex;
+        gap: 6px;
+        padding-bottom: 2px;
+        overflow-x: auto;
+      }
+
+      .side-nav button {
+        flex: 0 0 auto;
+        width: auto;
+        min-height: 34px;
+        white-space: nowrap;
+      }
+
+      .side-label,
+      .side-search,
+      .side-recent,
+      .side-divider,
+      .side-workspace {
+        display: none;
       }
 
       .side-footer {
-        position: static;
-        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 10px;
       }
 
       .main {
-        padding: 20px 16px;
+        padding: 22px 18px 30px;
       }
 
       .page-head,
-      .space-head,
+      .space-head {
+        flex-direction: column;
+      }
+
+      .button-row {
+        justify-content: flex-start;
+      }
+
+      .settings-window {
+        width: min(100vw - 28px, 780px);
+        height: min(840px, calc(100vh - 28px));
+      }
+
+      .settings-content {
+        padding: 22px 22px 30px;
+      }
+
+      .member-table {
+        overflow-x: auto;
+      }
+
+      .member-row {
+        min-width: 720px;
+      }
+    }
+
+    @media (max-width: 760px) {
       .review-grid,
       .ask-input-row {
         flex-direction: column;
@@ -1076,13 +1761,15 @@
       }
 
       .cards,
+      .model-grid,
+      .engine-grid,
       .metric-grid,
       .stats {
         grid-template-columns: 1fr;
       }
 
       .dialog-hero {
-        min-height: 560px;
+        min-height: 520px;
         padding: 26px 16px 34px;
       }
 
@@ -1107,6 +1794,99 @@
       .tool-right {
         flex-wrap: wrap;
       }
+
+      .member-summary,
+      .member-row {
+        min-width: 0;
+        grid-template-columns: 1fr;
+      }
+
+      .table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .wiki-main {
+        padding: 18px;
+      }
+
+      .graph-canvas {
+        min-height: 520px;
+        overflow: auto;
+      }
+
+      .graph-svg {
+        min-width: 760px;
+        height: 540px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .brand {
+        align-items: flex-start;
+      }
+
+      .side-footer {
+        display: grid;
+      }
+
+      .utility-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .main {
+        padding: 18px 12px 26px;
+      }
+
+      .title-block h1 {
+        font-size: 24px;
+      }
+
+      .button-row,
+      .prompt-chips,
+      .tabs,
+      .settings-tabs {
+        justify-content: flex-start;
+      }
+
+      .btn,
+      .prompt-chip,
+      .settings-tab,
+      .tab {
+        white-space: normal;
+      }
+
+      .dialog-hero {
+        min-height: auto;
+      }
+
+      .settings-window {
+        width: calc(100vw - 16px);
+        height: calc(100vh - 16px);
+      }
+
+      .settings-content {
+        padding: 20px 14px 24px;
+      }
+
+      .metric-grid,
+      .member-summary {
+        gap: 8px;
+      }
+
+      .file-row,
+      .queue-row,
+      .concept-row,
+      .source-row,
+      .legend-item,
+      .card-foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .message {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -1118,19 +1898,402 @@
         <div>Atlas Knowledge Hub</div>
       </div>
       <nav class="side-nav" id="sideNav" aria-label="主导航"></nav>
-      <div class="side-footer">内部产品原型。仅使用 mock 数据，可直接打开 HTML 文件演示。</div>
+      <div class="side-footer">
+        <div id="sideFooterText">内部知识工作台 · 已连接企业知识空间</div>
+        <div class="utility-controls">
+          <button class="utility-btn" id="languageToggle" type="button">中文</button>
+          <button class="utility-btn" id="themeToggle" type="button">日间</button>
+        </div>
+      </div>
     </aside>
 
     <main class="main">
       <section class="view active" id="homeView"></section>
       <section class="view" id="spaceView"></section>
     </main>
+    <section class="settings-modal" id="settingsView" aria-modal="true" role="dialog"></section>
   </div>
 
   <script>
-    // Mock data
+    // Local preview data
+    const uiState = {
+      lang: localStorage.getItem("atlas-lang") || "zh-CN",
+      theme: localStorage.getItem("atlas-theme") || "day",
+      view: "home",
+      activeTab: "wiki",
+      settingsOpen: false,
+      settingsPanel: "members",
+      selectedModelId: "deepseek-flash"
+    };
+
+    const i18n = {
+      "zh-CN": {
+        nav: ["知识库", "智能体", "共享空间", "对话"],
+        navKeys: ["all", "agents", "shared", "chat"],
+        sideSearch: "搜索",
+        recentLabel: "近7天",
+        recentItems: ["外企职场常用语言求助", "选择知识库内容的方法", "用户问候或打招呼"],
+        workspaceName: "leo's Workspace",
+        workspaceRole: "所有者",
+        quickSettingsLabel: "工作区设置",
+        allSettings: "全部设置",
+        connectedTools: "已接入的工具",
+        logout: "退出",
+        footer: "内部知识工作台 · 已连接企业知识空间",
+        languageButton: "中文",
+        themeButton: { day: "日间", night: "夜间" },
+        homeTitle: "知识库",
+        homeSubtitle: "管理和组织您的知识库，支持文档型和问答型知识库",
+        filter: "筛选",
+        newSpace: "新建知识库",
+        dialogTitle: "Atlas，让你的知识触手可及",
+        dialogSubtitle: "你可以这样问我",
+        dialogPlaceholder: "输入问题，将基于上方选中的知识库/文件回答",
+        quickAsk: "快速问答⌄",
+        selectedKbTitle: "已选择知识库",
+        send: "发送",
+        kbTitle: "知识库",
+        docType: "文档",
+        docCount: "共 18 个文档",
+        sectionTitle: "知识空间",
+        sectionSubtitle: "进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。",
+        openLabel: "打开",
+        owner: "Owner",
+        documents: "Documents",
+        wikiPages: "Wiki Pages",
+        reviews: "Reviews",
+        breadcrumbHome: "知识库",
+        spaceSubtitle: "从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。",
+        backHome: "返回知识库",
+        uploadFolder: "上传文件夹",
+        uploadZip: "上传 ZIP",
+        tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
+        batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
+        fileTree: "文件树与解析状态",
+        wikiSearch: "搜索 Wiki 页面...",
+        recentUpdates: "Recent Updates",
+        wikiIntro: "Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。",
+        graphOverview: "图谱概览",
+        graphHelp: "轻量知识图谱。节点来自已发布 Wiki、源文档和待审核证据。",
+        nodeDetail: "Node Detail",
+        nodeDetailHelp: "点击图谱节点查看来源、类型和关系说明。",
+        pdfPreview: "PDF Page Preview",
+        pdfPlaceholder: "表格、流程图和扫描文本预览占位",
+        markdownPreview: "Markdown Preview",
+        reviewComments: "Review comments...",
+        approve: "Approve",
+        needFix: "Need Fix",
+        markOcr: "Mark OCR Required",
+        lowConfidence: "Low confidence pages",
+        askTitle: "Ask IBM i Modernization",
+        askPlaceholder: "Ask about IBM i Modernization...",
+        confidence: "Confidence",
+        askPolicy: "可信回答策略",
+        askPolicyText: "Ask 只展示来自已审核或带有清晰 source_trace 的证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。",
+        approvedWikiPages: "Approved Wiki pages",
+        evidenceChunks: "Evidence chunks",
+        reviewRequired: "Review required",
+        modelSettingsTitle: "模型配置",
+        modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
+        builtinModel: "内置模型",
+        builtinModelHelp: "内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。",
+        allModels: "全部",
+        chatModels: "对话",
+        embeddingModels: "Embedding",
+        rerankModels: "ReRank",
+        visionModels: "视觉",
+        speechModels: "语音",
+        editModel: "编辑模型",
+        editModelSubtitle: "配置用于对话的大语言模型",
+        modelSource: "模型来源",
+        ollama: "Ollama",
+        api: "API",
+        accessConfig: "接入配置",
+        provider: "服务商",
+        modelName: "模型名称",
+        displayName: "显示名称（可选）",
+        baseUrl: "Base URL",
+        credentialLabel: "API Key（可选）",
+        configured: "已配置",
+        replace: "更换",
+        remove: "移除",
+        customHeaders: "自定义请求头（可选）",
+        addHeader: "添加请求头",
+        advancedOptions: "高级选项",
+        multimodal: "支持视觉/多模态",
+        thinkingFormat: "思考模式参数格式",
+        noThinking: "不写入思考参数",
+        providerDefault: "使用 provider 默认格式",
+        customThinking: "自定义参数格式",
+        testConnection: "测试连接",
+        cancel: "取消",
+        save: "保存",
+        modelSafetyNote: "当前界面仅展示配置状态，不显示完整 API Key。GitHub/Copilot 模型可用性取决于 GitHub Models 目录、Copilot 订阅和组织策略。",
+        settingsMembers: "成员管理",
+        settingsRegistration: "注册配置",
+        settingsModels: "模型管理",
+        settingsAccountGroup: "账户",
+        settingsSpaceGroup: "空间",
+        settingsModelGroup: "模型",
+        settingsDataGroup: "数据与扩展",
+        settingsGeneral: "常规设置",
+        settingsUserInfo: "用户信息",
+        settingsApiInfo: "API 信息",
+        settingsVectorEngine: "向量数据库引擎",
+        settingsParserEngine: "解析引擎",
+        settingsStorageEngine: "存储引擎",
+        settingsTitle: "设置",
+        memberTitle: "成员管理",
+        memberSubtitle: "邀请伙伴加入当前知识空间并分配角色。只有 Owner/Admin 可新增或移除成员。",
+        auditLog: "审计日志",
+        learnRbac: "了解 RBAC",
+        pendingInvites: "待接受的邀请",
+        noPendingInvites: "暂无待接受的邀请。",
+        spaceMembers: "空间成员",
+        searchMembers: "按姓名或邮箱搜索",
+        inviteMember: "邀请成员",
+        copyInviteLink: "复制邀请链接",
+        nameEmail: "姓名与邮箱",
+        role: "角色",
+        joinedAt: "加入时间",
+        actions: "操作",
+        ownerRole: "所有者",
+        adminRole: "管理员",
+        reviewerRole: "审核员",
+        viewerRole: "查看者",
+        removeMember: "移除",
+        registrationTitle: "注册配置",
+        registrationSubtitle: "配置新用户进入 Atlas 的方式，包括域名限制、审批和默认空间。",
+        registrationMode: "注册模式",
+        selfRegistration: "自助注册",
+        domainRestricted: "域名限制",
+        inviteOnly: "邀请制",
+        approvedDomain: "允许邮箱域名",
+        defaultSpace: "默认申请空间",
+        requiresApproval: "需要 Owner/Admin 审批",
+        signupPreview: "注册预览",
+        fullName: "姓名",
+        email: "邮箱",
+        password: "密码",
+        requestedSpace: "申请知识空间",
+        createAccount: "创建账号",
+        registrationNote: "密码字段仅为视觉占位，不保存任何凭据。生产实现必须在后端执行密码策略、邮箱验证和 RBAC。",
+        generalTitle: "常规设置",
+        generalSubtitle: "管理语言、主题、默认空间和通知偏好。",
+        userInfoTitle: "用户信息",
+        userInfoSubtitle: "查看当前用户的基础资料和最近活动。",
+        apiInfoTitle: "API 信息",
+        apiInfoSubtitle: "查看 API 访问状态、权限范围和密钥操作。界面不会显示完整密钥。",
+        language: "语言",
+        theme: "主题",
+        defaultKnowledgeSpace: "默认知识空间",
+        notifications: "通知提醒",
+        organization: "组织",
+        globalRole: "全局角色",
+        recentActivity: "最近活动",
+        apiKeyStatus: "API Key 状态",
+        scopes: "权限范围",
+        lastUsed: "最近使用",
+        rotateKey: "轮换密钥",
+        revokeKey: "撤销密钥",
+        vectorTitle: "向量数据库引擎",
+        vectorSubtitle: "注册和管理用于知识库搜索的向量数据库实例。",
+        parserTitle: "解析引擎",
+        parserSubtitle: "管理 PDF、Office、OCR 和多模态解析适配器。",
+        storageTitle: "存储引擎",
+        storageSubtitle: "管理原始文件、生成物、图片和报告的存储后端。",
+        addEngine: "添加引擎",
+        adapter: "适配器",
+        configSummary: "配置摘要",
+        defaultEngine: "DEFAULT",
+        available: "可用",
+        experimental: "实验性"
+      },
+      "en-US": {
+        nav: ["Knowledge", "Agents", "Shared Spaces", "Chat"],
+        navKeys: ["all", "agents", "shared", "chat"],
+        sideSearch: "Search",
+        recentLabel: "Last 7 days",
+        recentItems: ["Common workplace language help", "How to choose knowledge content", "Greeting and small talk"],
+        workspaceName: "leo's Workspace",
+        workspaceRole: "Owner",
+        quickSettingsLabel: "Workspace Settings",
+        allSettings: "All Settings",
+        connectedTools: "Connected Tools",
+        logout: "Sign out",
+        footer: "Internal knowledge workspace · Enterprise spaces connected",
+        languageButton: "EN",
+        themeButton: { day: "Day", night: "Night" },
+        homeTitle: "Knowledge Base",
+        homeSubtitle: "Manage and organize document-based and Q&A knowledge bases.",
+        filter: "Filter",
+        newSpace: "New Space",
+        dialogTitle: "Atlas, knowledge within reach",
+        dialogSubtitle: "Try asking",
+        dialogPlaceholder: "Ask a question based on the selected knowledge base or file",
+        quickAsk: "Quick Ask⌄",
+        selectedKbTitle: "Selected knowledge base",
+        send: "Send",
+        kbTitle: "Knowledge Base",
+        docType: "Docs",
+        docCount: "18 documents",
+        sectionTitle: "Knowledge Spaces",
+        sectionSubtitle: "Open a space to inspect batches, LM Wiki, graph, Review, and Ask.",
+        openLabel: "Open",
+        owner: "Owner",
+        documents: "Documents",
+        wikiPages: "Wiki Pages",
+        reviews: "Reviews",
+        breadcrumbHome: "Knowledge Base",
+        spaceSubtitle: "Target experience from project document packages to reviewable LM Wiki, graph, and trusted Ask.",
+        backHome: "Back",
+        uploadFolder: "Upload Folder",
+        uploadZip: "Upload ZIP",
+        tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
+        batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
+        fileTree: "File Tree And Parsing Status",
+        wikiSearch: "Search Wiki pages...",
+        recentUpdates: "Recent Updates",
+        wikiIntro: "Auto-generated normalized Markdown page. Dense, evidence-first content awaiting SME review for low-confidence sections.",
+        graphOverview: "Graph Overview",
+        graphHelp: "Lightweight knowledge graph. Nodes come from published Wiki pages, source documents, and review-required evidence.",
+        nodeDetail: "Node Detail",
+        nodeDetailHelp: "Click a graph node to inspect source, type, and relationship notes.",
+        pdfPreview: "PDF Page Preview",
+        pdfPlaceholder: "Table, diagram, and scanned text preview placeholder",
+        markdownPreview: "Markdown Preview",
+        reviewComments: "Review comments...",
+        approve: "Approve",
+        needFix: "Need Fix",
+        markOcr: "Mark OCR Required",
+        lowConfidence: "Low confidence pages",
+        askTitle: "Ask IBM i Modernization",
+        askPlaceholder: "Ask about IBM i Modernization...",
+        confidence: "Confidence",
+        askPolicy: "Trusted Answer Policy",
+        askPolicyText: "Ask only shows evidence that is reviewed or has clear source_trace. Medium confidence means the answer is useful for exploration, but sources should still be checked.",
+        approvedWikiPages: "Approved Wiki pages",
+        evidenceChunks: "Evidence chunks",
+        reviewRequired: "Review required",
+        modelSettingsTitle: "Model Configuration",
+        modelSettingsSubtitle: "Manage AI model types, including Ollama local models, remote APIs, GitHub Models / Copilot-available models, and custom providers.",
+        builtinModel: "Built-in Models",
+        builtinModelHelp: "Built-in models are visible to all tenants. Sensitive values are masked and full secrets are never displayed here.",
+        allModels: "All",
+        chatModels: "Chat",
+        embeddingModels: "Embedding",
+        rerankModels: "ReRank",
+        visionModels: "Vision",
+        speechModels: "Speech",
+        editModel: "Edit Model",
+        editModelSubtitle: "Configure the large language model used for dialogue",
+        modelSource: "Model Source",
+        ollama: "Ollama",
+        api: "API",
+        accessConfig: "Access Configuration",
+        provider: "Provider",
+        modelName: "Model Name",
+        displayName: "Display Name (optional)",
+        baseUrl: "Base URL",
+        credentialLabel: "API Key (optional)",
+        configured: "Configured",
+        replace: "Replace",
+        remove: "Remove",
+        customHeaders: "Custom Request Headers (optional)",
+        addHeader: "Add Header",
+        advancedOptions: "Advanced Options",
+        multimodal: "Vision / multimodal support",
+        thinkingFormat: "Thinking parameter format",
+        noThinking: "Do not send thinking parameters",
+        providerDefault: "Use provider default format",
+        customThinking: "Custom parameter format",
+        testConnection: "Test Connection",
+        cancel: "Cancel",
+        save: "Save",
+        modelSafetyNote: "This view shows configuration state and never displays full API keys. GitHub/Copilot model availability depends on GitHub Models catalog, Copilot subscription, and organization policy.",
+        settingsMembers: "Members",
+        settingsRegistration: "Registration",
+        settingsModels: "Models",
+        settingsAccountGroup: "Account",
+        settingsSpaceGroup: "Space",
+        settingsModelGroup: "Model",
+        settingsDataGroup: "Data & Extensions",
+        settingsGeneral: "General Settings",
+        settingsUserInfo: "User Info",
+        settingsApiInfo: "API Info",
+        settingsVectorEngine: "Vector Database Engine",
+        settingsParserEngine: "Parsing Engine",
+        settingsStorageEngine: "Storage Engine",
+        settingsTitle: "Settings",
+        memberTitle: "Member Management",
+        memberSubtitle: "Invite people into the current Knowledge Space and assign roles. Only Owner/Admin can add or remove members.",
+        auditLog: "Audit Log",
+        learnRbac: "Learn RBAC",
+        pendingInvites: "Pending Invitations",
+        noPendingInvites: "No pending invitations.",
+        spaceMembers: "Space Members",
+        searchMembers: "Search by name or email",
+        inviteMember: "Invite Member",
+        copyInviteLink: "Copy Invite Link",
+        nameEmail: "Name and Email",
+        role: "Role",
+        joinedAt: "Joined At",
+        actions: "Actions",
+        ownerRole: "Owner",
+        adminRole: "Admin",
+        reviewerRole: "Reviewer",
+        viewerRole: "Viewer",
+        removeMember: "Remove",
+        registrationTitle: "Registration Settings",
+        registrationSubtitle: "Configure how new users enter Atlas. Prototype only shows the registration experience and creates no real account.",
+        registrationMode: "Registration Mode",
+        selfRegistration: "Self-registration",
+        domainRestricted: "Domain restricted",
+        inviteOnly: "Invite-only",
+        approvedDomain: "Allowed email domain",
+        defaultSpace: "Default requested space",
+        requiresApproval: "Requires Owner/Admin approval",
+        signupPreview: "Sign-up Preview",
+        fullName: "Full Name",
+        email: "Email",
+        password: "Password",
+        requestedSpace: "Requested Knowledge Space",
+        createAccount: "Create Account",
+        registrationNote: "Password field is visual only and stores no credentials. Production must enforce password policy, email verification, and RBAC server-side.",
+        generalTitle: "General Settings",
+        generalSubtitle: "Manage language, theme, default space, and notification preferences.",
+        userInfoTitle: "User Information",
+        userInfoSubtitle: "Review the current user's basic profile and recent activity.",
+        apiInfoTitle: "API Information",
+        apiInfoSubtitle: "Review API access status, scopes, and key actions. Prototype never shows real secrets.",
+        language: "Language",
+        theme: "Theme",
+        defaultKnowledgeSpace: "Default Knowledge Space",
+        notifications: "Notifications",
+        organization: "Organization",
+        globalRole: "Global Role",
+        recentActivity: "Recent Activity",
+        apiKeyStatus: "API Key Status",
+        scopes: "Scopes",
+        lastUsed: "Last Used",
+        rotateKey: "Rotate Key",
+        revokeKey: "Revoke Key",
+        vectorTitle: "Vector Database Engine",
+        vectorSubtitle: "Register and manage vector database instances for knowledge search.",
+        parserTitle: "Parsing Engine",
+        parserSubtitle: "Manage PDF, Office, OCR, and multimodal parser adapters.",
+        storageTitle: "Storage Engine",
+        storageSubtitle: "Manage storage backends for raw files, generated artifacts, images, and reports.",
+        addEngine: "Add Engine",
+        adapter: "Adapter",
+        configSummary: "Config Summary",
+        defaultEngine: "DEFAULT",
+        available: "Available",
+        experimental: "Experimental"
+      }
+    };
+
     const appData = {
-      nav: ["全部", "收藏", "最近", "本空间", "设置"],
       dialog: {
         title: "Atlas，让你的知识触手可及",
         subtitle: "你可以这样问我",
@@ -1335,6 +2498,143 @@
         answer: "Source Trace 指 Atlas 在现代化流程中保留的证据链。每个 Wiki 段落、图谱关系和 Ask 答案都应能回到源文件、页码或 chunk。这样 SME 可以在 Review 阶段核对出处，交付团队也能判断某个结论是否来自确定性解析、人工审核，还是需要进一步修复。",
         references: ["Source: BRD_Methodology.pdf / page 12", "Source: Legacy_Spec_Factory_Guide.pdf / page 8"],
         confidence: "medium"
+      },
+      models: [
+        {
+          id: "deepseek-flash",
+          provider: "DeepSeek",
+          source: "API",
+          type: "chat",
+          name: "deepseek-v4-flash",
+          displayName: "DeepSeek Flash",
+          baseUrl: "https://api.deepseek.com/v1",
+          apiKeyStatus: "configured",
+          supportsMultimodal: true,
+          thinkingFormat: "none",
+          note: "OpenAI-compatible remote API connector."
+        },
+        {
+          id: "github-models-gpt",
+          provider: "GitHub Models",
+          source: "API",
+          type: "chat",
+          name: "openai/gpt-4.1",
+          displayName: "GitHub GPT-4.1",
+          baseUrl: "https://models.github.ai/inference",
+          apiKeyStatus: "configured",
+          supportsMultimodal: true,
+          thinkingFormat: "provider_default",
+          note: "GitHub Models catalog and inference connector; availability depends on GitHub account and policy."
+        },
+        {
+          id: "github-copilot-claude",
+          provider: "GitHub Copilot",
+          source: "Copilot Policy",
+          type: "chat",
+          name: "claude-sonnet-4",
+          displayName: "Copilot Claude Sonnet",
+          baseUrl: "Managed by GitHub Copilot client/policy",
+          apiKeyStatus: "not_configured",
+          supportsMultimodal: false,
+          thinkingFormat: "provider_default",
+          note: "Copilot-available model managed by organization policy; not a generic Base URL provider."
+        },
+        {
+          id: "ollama-qwen",
+          provider: "Ollama",
+          source: "Ollama",
+          type: "chat",
+          name: "qwen3:14b",
+          displayName: "Qwen3 Local",
+          baseUrl: "http://localhost:11434",
+          apiKeyStatus: "not_configured",
+          supportsMultimodal: false,
+          thinkingFormat: "none",
+          note: "Local model connector."
+        },
+        {
+          id: "dashscope-embedding",
+          provider: "Aliyun DashScope",
+          source: "API",
+          type: "embedding",
+          name: "text-embedding-v4",
+          displayName: "text-embedding-v4",
+          baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          apiKeyStatus: "configured",
+          supportsMultimodal: false,
+          thinkingFormat: "none",
+          note: "Embedding model connector, 1024 dimensions."
+        }
+      ],
+      registration: {
+        enabled: true,
+        mode: "domain_restricted",
+        allowedDomain: "atlas.example",
+        defaultSpace: "IBM i Modernization",
+        requiresApproval: true
+      },
+      invitations: [],
+      members: [
+        {
+          name: "leo",
+          email: "leo1024@example.local",
+          role: "owner",
+          joinedAt: "2026/06/23 13:19",
+          protected: true
+        },
+        {
+          name: "PKOS Admin",
+          email: "admin@pkos.local",
+          role: "admin",
+          joinedAt: "2026/06/26 15:44",
+          protected: false
+        },
+        {
+          name: "SME Reviewer",
+          email: "sme.reviewer@example.local",
+          role: "reviewer",
+          joinedAt: "2026/06/28 09:30",
+          protected: false
+        },
+        {
+          name: "Delivery Viewer",
+          email: "delivery.viewer@example.local",
+          role: "viewer",
+          joinedAt: "2026/06/29 10:18",
+          protected: false
+        }
+      ],
+      account: {
+        name: "leo",
+        email: "leo1024@example.local",
+        organization: "WWA Lab",
+        globalRole: "Workspace Owner",
+        defaultSpace: "IBM i Modernization",
+        notifications: true,
+        recentActivity: "Reviewed BRD_Methodology.pdf / page 12 on 2026/06/30",
+        apiKeyStatus: "configured",
+        scopes: ["spaces:read", "wiki:read", "ask:query"],
+        lastUsed: "2026/06/30 18:20"
+      },
+      engines: {
+        vector: [
+          { name: "PostgreSQL / pgvector", adapter: "postgres-vector-adapter", status: "default", summary: "Local metadata DB with vector extension; used for MVP search." },
+          { name: "Milvus", adapter: "milvus-adapter", status: "available", summary: "Distributed vector database option for larger corpora." },
+          { name: "Qdrant", adapter: "qdrant-adapter", status: "available", summary: "HTTP/gRPC vector search backend option." },
+          { name: "OpenSearch Vector", adapter: "opensearch-vector-adapter", status: "experimental", summary: "Hybrid lexical/vector search option." }
+        ],
+        parser: [
+          { name: "document-normalize", adapter: "document-normalize-adapter", status: "default", summary: "PDF-to-Markdown and image extraction internal adapter." },
+          { name: "MinerU", adapter: "mineru-adapter", status: "available", summary: "Research/document parser candidate." },
+          { name: "Docling", adapter: "docling-adapter", status: "available", summary: "Document AI parser candidate." },
+          { name: "PaddleOCR", adapter: "paddleocr-adapter", status: "experimental", summary: "OCR fallback for scanned pages." }
+        ],
+        storage: [
+          { name: "Local Artifact Storage", adapter: "local-storage-adapter", status: "default", summary: "Stores raw inputs, generated PDFs, Markdown, assets, and reports." },
+          { name: "S3-Compatible Object Storage", adapter: "s3-storage-adapter", status: "available", summary: "Future object storage backend for generated artifacts." },
+          { name: "Internal Artifact Registry", adapter: "artifact-registry-adapter", status: "available", summary: "Managed internal storage option." },
+          { name: "NAS / Shared Folder", adapter: "nas-storage-adapter", status: "experimental", summary: "Shared filesystem integration candidate." }
+        ]
       }
     };
 
@@ -1350,51 +2650,104 @@
     };
 
     const graphColor = {
-      "Wiki Page": "#2563eb",
-      "Entity": "#16834a",
-      "Concept": "#d97706",
-      "Document": "#64748b",
-      "Review Required": "#dc2626"
+      "Wiki Page": "var(--blue)",
+      "Entity": "var(--green)",
+      "Concept": "var(--orange)",
+      "Document": "var(--gray)",
+      "Review Required": "var(--red)"
     };
 
     const homeView = document.querySelector("#homeView");
     const spaceView = document.querySelector("#spaceView");
+    const settingsView = document.querySelector("#settingsView");
     const sideNav = document.querySelector("#sideNav");
+    const sideFooterText = document.querySelector("#sideFooterText");
+    const languageToggle = document.querySelector("#languageToggle");
+    const themeToggle = document.querySelector("#themeToggle");
+
+    function copy() {
+      return i18n[uiState.lang];
+    }
+
+    function applyPreferences() {
+      const text = copy();
+      document.documentElement.lang = uiState.lang;
+      document.documentElement.dataset.theme = uiState.theme;
+      sideFooterText.textContent = text.footer;
+      languageToggle.textContent = text.languageButton;
+      themeToggle.textContent = text.themeButton[uiState.theme];
+      languageToggle.setAttribute("aria-label", uiState.lang === "zh-CN" ? "Switch to English" : "切换到中文");
+      themeToggle.setAttribute("aria-label", uiState.theme === "day" ? "切换到夜间模式" : "Switch to day mode");
+    }
 
     // Rendering
     function renderNav() {
-      sideNav.innerHTML = appData.nav.map((item, index) => `
-        <button class="${index === 0 ? "active" : ""}" data-nav="${item}">
-          <span>${["□", "☆", "◴", "◇", "⚙"][index]}</span>${item}
-        </button>
-      `).join("");
+      const text = copy();
+      const settingsShortcuts = [
+        ["members", text.settingsMembers, "♙"],
+        ["models", text.settingsModels, "⬡"],
+        ["vectorEngine", text.settingsVectorEngine, "◎"],
+        ["parserEngine", text.settingsParserEngine, "▧"],
+        ["storageEngine", text.settingsStorageEngine, "▱"],
+        ["apiInfo", text.settingsApiInfo, "◇"]
+      ];
+      sideNav.innerHTML = `
+        <div class="side-search"><span>⌕</span><span>${text.sideSearch}</span></div>
+        ${text.nav.map((item, index) => `
+          <button class="${index === 0 && uiState.view === "home" ? "active" : ""}" data-nav="${item}" data-nav-key="${text.navKeys[index]}">
+            <span>${["□", "✦", "∞", "◱"][index]}</span>${item}
+          </button>
+        `).join("")}
+        <div class="side-label">${text.recentLabel}</div>
+        <ul class="side-recent">
+          ${text.recentItems.map((item) => `<li>${item}</li>`).join("")}
+        </ul>
+        <div class="side-workspace">
+          <p class="workspace-title">${text.workspaceName}</p>
+          <div class="workspace-role">◇ ${text.workspaceRole}</div>
+        </div>
+        <div class="side-label">${text.quickSettingsLabel}</div>
+        ${settingsShortcuts.map(([panel, label, icon]) => `
+          <button class="${uiState.settingsOpen && uiState.settingsPanel === panel ? "active" : ""}" data-settings-panel="${panel}">
+            <span>${icon}</span>${label}
+          </button>
+        `).join("")}
+        <div class="side-divider"></div>
+        <button class="${uiState.settingsOpen ? "active" : ""}" data-open-settings="true"><span>⚙</span>${text.allSettings}</button>
+        <div class="side-label">${text.connectedTools}</div>
+        <button><span>⛓</span>GitHub</button>
+        <button><span>▣</span>MCP</button>
+        <div class="side-divider"></div>
+        <button style="color:var(--red);"><span>↪</span>${text.logout}</button>
+      `;
     }
 
     function renderHome() {
       const dialog = appData.dialog;
+      const text = copy();
       homeView.innerHTML = `
         <div class="page-head">
           <div class="title-block">
-            <h1>知识库</h1>
-            <p>管理和组织您的知识库，支持文档型和问答型知识库</p>
+            <h1>${text.homeTitle}</h1>
+            <p>${text.homeSubtitle}</p>
           </div>
           <div class="button-row">
-            <button class="btn secondary">筛选</button>
-            <button class="btn">新建知识库</button>
+            <button class="btn secondary">${text.filter}</button>
+            <button class="btn">${text.newSpace}</button>
           </div>
         </div>
         <section class="dialog-hero" aria-label="知识库对话模式">
           <div class="dialog-center">
-            <h2>${dialog.title}</h2>
-            <p>${dialog.subtitle}</p>
+            <h2>${uiState.lang === "zh-CN" ? dialog.title : text.dialogTitle}</h2>
+            <p>${text.dialogSubtitle}</p>
             <div class="prompt-chips">
               ${dialog.prompts.map((prompt) => `<button class="prompt-chip" data-prompt="${prompt}">${prompt}</button>`).join("")}
             </div>
             <div class="knowledge-popover">
-              <h3>知识库</h3>
+              <h3>${text.kbTitle}</h3>
               <ul class="kb-list">
                 ${dialog.knowledgeBases.map((kb) => `
-                  <li class="kb-item ${kb.selected ? "selected" : ""}">
+                  <li class="kb-item ${kb.selected ? "selected" : ""}" data-kb="${kb.name}">
                     <span class="folder-icon">□</span>
                     <span>${kb.name} <span class="kb-count">(${kb.count})</span></span>
                   </li>
@@ -1402,23 +2755,23 @@
               </ul>
             </div>
             <div class="selected-kb-card">
-              <strong>${dialog.selected.name}</strong><span class="badge healthy">${dialog.selected.type}</span>
+              <strong>${dialog.selected.name}</strong><span class="badge healthy">${text.docType}</span>
               <p>${dialog.selected.description}</p>
-              <p>${dialog.selected.countLabel}</p>
+              <p>${text.docCount}</p>
             </div>
             <div class="dialog-box">
-              <textarea class="dialog-input" id="homeDialogInput" placeholder="输入问题，将基于上方选中的知识库/文件回答"></textarea>
+              <textarea class="dialog-input" id="homeDialogInput" placeholder="${text.dialogPlaceholder}"></textarea>
               <div class="dialog-tools">
                 <div class="tool-left">
-                  <button class="mini-btn">快速问答⌄</button>
+                  <button class="mini-btn">${text.quickAsk}</button>
                   <button class="icon-btn" title="联网范围">◎</button>
                   <button class="icon-btn" title="上传图片">▧</button>
                   <button class="icon-btn" title="添加附件">⌇</button>
-                  <button class="mini-btn" title="已选择知识库">@ <span class="badge healthy" style="margin-left:4px;">1</span></button>
+                  <button class="mini-btn" title="${text.selectedKbTitle}">@ <span class="badge healthy" style="margin-left:4px;">1</span></button>
                 </div>
                 <div class="tool-right">
                   <button class="model-select">DeepSeek Flash⌄</button>
-                  <button class="icon-btn" title="发送"><span class="send-dot"></span></button>
+                  <button class="icon-btn" title="${text.send}"><span class="send-dot"></span></button>
                 </div>
               </div>
             </div>
@@ -1426,13 +2779,13 @@
         </section>
         <div class="section-title">
           <div>
-            <h2>知识空间</h2>
-            <p>进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。</p>
+            <h2>${text.sectionTitle}</h2>
+            <p>${text.sectionSubtitle}</p>
           </div>
         </div>
         <div class="cards">
           ${appData.spaces.map((space) => `
-            <button class="card" data-space="${space.name}" aria-label="打开 ${space.name}">
+            <button class="card" data-space="${space.name}" aria-label="${text.openLabel} ${space.name}">
               <div>
                 <div class="card-foot" style="margin-top:0;">
                   <h2>${space.name}</h2>
@@ -1441,12 +2794,12 @@
                 <p>${space.description}</p>
               </div>
               <div class="stats">
-                <div class="stat"><strong>${space.documents}</strong><span>Documents</span></div>
-                <div class="stat"><strong>${space.wikiPages}</strong><span>Wiki Pages</span></div>
-                <div class="stat"><strong>${space.reviews}</strong><span>Reviews</span></div>
+                <div class="stat"><strong>${space.documents}</strong><span>${text.documents}</span></div>
+                <div class="stat"><strong>${space.wikiPages}</strong><span>${text.wikiPages}</span></div>
+                <div class="stat"><strong>${space.reviews}</strong><span>${text.reviews}</span></div>
               </div>
               <div class="card-foot">
-                <span>Owner: ${space.owner}</span>
+                <span>${text.owner}: ${space.owner}</span>
                 <span>${space.updated}</span>
               </div>
             </button>
@@ -1456,13 +2809,21 @@
     }
 
     function renderSpace(activeTab = "wiki") {
+      const text = copy();
+      const tabs = [
+        ["docs", text.tabs.docs],
+        ["wiki", text.tabs.wiki],
+        ["graph", text.tabs.graph],
+        ["review", text.tabs.review],
+        ["ask", text.tabs.ask]
+      ];
       spaceView.innerHTML = `
-        <div class="crumbs">知识库 <span>/</span> <strong>IBM i Modernization</strong></div>
+        <div class="crumbs">${text.breadcrumbHome} <span>/</span> <strong>IBM i Modernization</strong></div>
         <section class="space-panel">
           <div class="space-head">
             <div class="title-block">
               <h1>IBM i Modernization</h1>
-              <p>从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。</p>
+              <p>${text.spaceSubtitle}</p>
               <div class="space-meta">
                 <span class="badge healthy">Mock Space</span>
                 <span class="badge review">35 Review Required</span>
@@ -1470,29 +2831,418 @@
               </div>
             </div>
             <div class="button-row">
-              <button class="btn secondary" id="backHome">返回知识库</button>
-              <button class="btn">上传文件夹</button>
-              <button class="btn secondary">上传 ZIP</button>
+              <button class="btn secondary" id="backHome">${text.backHome}</button>
+              <button class="btn">${text.uploadFolder}</button>
+              <button class="btn secondary">${text.uploadZip}</button>
             </div>
           </div>
         </section>
         <nav class="tabs" aria-label="空间标签页">
-          ${["文档", "Wiki", "图谱", "Review", "Ask"].map((tab) => {
-            const key = tab === "文档" ? "docs" : tab.toLowerCase();
-            return `<button class="tab ${key === activeTab ? "active" : ""}" data-tab="${key}">${tab}</button>`;
-          }).join("")}
+          ${tabs.map(([key, label]) => `<button class="tab ${key === activeTab ? "active" : ""}" data-tab="${key}">${label}</button>`).join("")}
         </nav>
         <section class="tab-view ${activeTab === "docs" ? "active" : ""}" id="tab-docs">${renderDocs()}</section>
         <section class="tab-view ${activeTab === "wiki" ? "active" : ""}" id="tab-wiki">${renderWiki()}</section>
-        <section class="tab-view ${activeTab === "图谱" ? "active" : ""}" id="tab-图谱">${renderGraph()}</section>
+        <section class="tab-view ${activeTab === "graph" ? "active" : ""}" id="tab-graph">${renderGraph()}</section>
         <section class="tab-view ${activeTab === "review" ? "active" : ""}" id="tab-review">${renderReview()}</section>
         <section class="tab-view ${activeTab === "ask" ? "active" : ""}" id="tab-ask">${renderAsk()}</section>
       `;
       renderGraphSvg();
     }
 
+    function settingsSubnav() {
+      const text = copy();
+      return `
+        <div class="settings-subnav">
+          <div class="settings-group-label">${text.settingsAccountGroup}</div>
+          <button class="${uiState.settingsPanel === "general" ? "active" : ""}" data-settings-panel="general">${text.settingsGeneral}</button>
+          <button class="${uiState.settingsPanel === "userInfo" ? "active" : ""}" data-settings-panel="userInfo">${text.settingsUserInfo}</button>
+          <button class="${uiState.settingsPanel === "apiInfo" ? "active" : ""}" data-settings-panel="apiInfo">${text.settingsApiInfo}</button>
+          <div class="settings-group-label">${text.settingsSpaceGroup}</div>
+          <button class="${uiState.settingsPanel === "members" ? "active" : ""}" data-settings-panel="members">${text.settingsMembers}</button>
+          <button class="${uiState.settingsPanel === "registration" ? "active" : ""}" data-settings-panel="registration">${text.settingsRegistration}</button>
+          <div class="settings-group-label">${text.settingsModelGroup}</div>
+          <button class="${uiState.settingsPanel === "models" ? "active" : ""}" data-settings-panel="models">${text.settingsModels}</button>
+          <div class="settings-group-label">${text.settingsDataGroup}</div>
+          <button class="${uiState.settingsPanel === "vectorEngine" ? "active" : ""}" data-settings-panel="vectorEngine">${text.settingsVectorEngine}</button>
+          <button class="${uiState.settingsPanel === "parserEngine" ? "active" : ""}" data-settings-panel="parserEngine">${text.settingsParserEngine}</button>
+          <button class="${uiState.settingsPanel === "storageEngine" ? "active" : ""}" data-settings-panel="storageEngine">${text.settingsStorageEngine}</button>
+        </div>
+      `;
+    }
+
+    function roleLabel(role) {
+      const text = copy();
+      return {
+        owner: text.ownerRole,
+        admin: text.adminRole,
+        reviewer: text.reviewerRole,
+        viewer: text.viewerRole
+      }[role] || role;
+    }
+
+    function renderSettings() {
+      if (uiState.settingsPanel === "general") {
+        renderGeneralSettings();
+      } else if (uiState.settingsPanel === "userInfo") {
+        renderUserInfoSettings();
+      } else if (uiState.settingsPanel === "apiInfo") {
+        renderApiInfoSettings();
+      } else if (uiState.settingsPanel === "registration") {
+        renderRegistrationSettings();
+      } else if (uiState.settingsPanel === "models") {
+        renderModelSettings();
+      } else if (uiState.settingsPanel === "vectorEngine") {
+        renderEngineSettings("vector");
+      } else if (uiState.settingsPanel === "parserEngine") {
+        renderEngineSettings("parser");
+      } else if (uiState.settingsPanel === "storageEngine") {
+        renderEngineSettings("storage");
+      } else {
+        renderMemberSettings();
+      }
+    }
+
+    function renderSettingsFrame(content) {
+      const text = copy();
+      settingsView.innerHTML = `
+        <div class="settings-window">
+          <aside class="settings-rail">
+            <h2>${text.settingsTitle}</h2>
+            ${settingsSubnav()}
+          </aside>
+          <div class="settings-content">
+            <button class="settings-close" id="closeSettings" type="button" aria-label="Close settings">×</button>
+            ${content}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMemberSettings() {
+      const text = copy();
+      const pendingCount = appData.invitations.filter((invite) => invite.status === "pending").length;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.memberTitle}</h1>
+            <p>${text.memberSubtitle} <span class="concept">${text.learnRbac}</span></p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">${text.auditLog}</button>
+            <button class="btn">${text.inviteMember}</button>
+          </div>
+        </div>
+        <section class="panel">
+          <div class="member-summary">
+            <div class="metric"><strong>${pendingCount}</strong><span>${text.pendingInvites}</span></div>
+            <div class="metric"><strong>${appData.members.length}</strong><span>${text.spaceMembers}</span></div>
+            <div class="metric"><strong>4</strong><span>RBAC Roles</span></div>
+          </div>
+          <h2>${text.pendingInvites} <span class="badge medium">${pendingCount}</span></h2>
+          <div class="empty-invite">${text.noPendingInvites}</div>
+          <div class="table-toolbar">
+            <h2>${text.spaceMembers} <span class="badge medium">${appData.members.length}</span></h2>
+            <div class="button-row">
+              <input placeholder="${text.searchMembers}">
+              <button class="btn secondary">${text.copyInviteLink}</button>
+              <button class="btn">${text.inviteMember}</button>
+            </div>
+          </div>
+          <div class="member-table">
+            <div class="member-row header">
+              <span>${text.nameEmail}</span>
+              <span>${text.role}</span>
+              <span>${text.joinedAt}</span>
+              <span>${text.actions}</span>
+            </div>
+            ${appData.members.map((member) => `
+              <div class="member-row">
+                <div class="member-name"><strong>${member.name}</strong><span>${member.email}</span></div>
+                <div>
+                  ${member.protected ? `<span class="badge healthy">${roleLabel(member.role)}</span>` : `
+                    <select class="role-select">
+                      <option>${roleLabel(member.role)}</option>
+                      <option>${text.adminRole}</option>
+                      <option>${text.reviewerRole}</option>
+                      <option>${text.viewerRole}</option>
+                    </select>
+                  `}
+                </div>
+                <span>${member.joinedAt}</span>
+                <span>${member.protected ? "-" : `<button class="icon-btn" title="${text.removeMember}">⌫</button>`}</span>
+              </div>
+            `).join("")}
+          </div>
+        </section>
+      `);
+    }
+
+    function renderGeneralSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.generalTitle}</h1>
+            <p>${text.generalSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn">${text.save}</button></div>
+        </div>
+        <section class="panel">
+          <div class="field-grid">
+            <div class="field"><label>${text.language}</label><select><option>${uiState.lang}</option><option>zh-CN</option><option>en-US</option></select></div>
+            <div class="field"><label>${text.theme}</label><select><option>${uiState.theme}</option><option>day</option><option>night</option></select></div>
+            <div class="field"><label>${text.defaultKnowledgeSpace}</label><input value="${account.defaultSpace}"></div>
+            <div class="toggle-row"><span>${text.notifications}</span><span class="toggle-pill ${account.notifications ? "on" : ""}"></span></div>
+          </div>
+        </section>
+      `);
+    }
+
+    function renderUserInfoSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.userInfoTitle}</h1>
+            <p>${text.userInfoSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.cancel}</button><button class="btn">${text.save}</button></div>
+        </div>
+        <section class="panel">
+          <div class="field-grid">
+            <div class="field"><label>${text.fullName}</label><input value="${account.name}"></div>
+            <div class="field"><label>${text.email}</label><input value="${account.email}"></div>
+            <div class="field"><label>${text.organization}</label><input value="${account.organization}"></div>
+            <div class="field"><label>${text.globalRole}</label><input value="${account.globalRole}"></div>
+            <div class="source-row"><span>${text.recentActivity}</span><strong>${account.recentActivity}</strong></div>
+          </div>
+        </section>
+      `);
+    }
+
+    function renderApiInfoSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.apiInfoTitle}</h1>
+            <p>${text.apiInfoSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.revokeKey}</button><button class="btn">${text.rotateKey}</button></div>
+        </div>
+        <section class="panel">
+          <div class="member-summary">
+            <div class="metric"><strong>${text.configured}</strong><span>${text.apiKeyStatus}</span></div>
+            <div class="metric"><strong>${account.scopes.length}</strong><span>${text.scopes}</span></div>
+            <div class="metric"><strong>${account.lastUsed}</strong><span>${text.lastUsed}</span></div>
+          </div>
+          <div class="file-tree">
+            ${account.scopes.map((scope) => `<div class="file-row"><span>${scope}</span><span class="badge healthy">${text.available}</span></div>`).join("")}
+          </div>
+          <p class="field-note">${text.apiInfoSubtitle}</p>
+        </section>
+      `);
+    }
+
+    function renderRegistrationSettings() {
+      const text = copy();
+      const registration = appData.registration;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.registrationTitle}</h1>
+            <p>${text.registrationSubtitle}</p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">${text.cancel}</button>
+            <button class="btn">${text.save}</button>
+          </div>
+        </div>
+        <div class="registration-grid">
+          <section class="panel">
+            <h2>${text.registrationMode}</h2>
+            <div class="settings-tabs">
+              <button class="settings-tab ${registration.enabled ? "active" : ""}">${text.selfRegistration}</button>
+              <button class="settings-tab ${registration.mode === "domain_restricted" ? "active" : ""}">${text.domainRestricted}</button>
+              <button class="settings-tab ${registration.mode === "invite_only" ? "active" : ""}">${text.inviteOnly}</button>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label>${text.approvedDomain}</label>
+                <input value="${registration.allowedDomain}">
+              </div>
+              <div class="field">
+                <label>${text.defaultSpace}</label>
+                <input value="${registration.defaultSpace}">
+              </div>
+              <div class="toggle-row"><span>${text.requiresApproval}</span><span class="toggle-pill ${registration.requiresApproval ? "on" : ""}"></span></div>
+            </div>
+            <p class="field-note">${text.registrationNote}</p>
+          </section>
+          <aside class="config-panel" style="position:static;">
+            <h2>${text.signupPreview}</h2>
+            <div class="field-grid" style="margin-top:14px;">
+              <div class="field"><label>${text.fullName}</label><input value="Atlas User"></div>
+              <div class="field"><label>${text.email}</label><input value="user@atlas.example"></div>
+              <div class="field"><label>${text.password}</label><input value="********" type="password"></div>
+              <div class="field"><label>${text.requestedSpace}</label><input value="IBM i Modernization"></div>
+              <button class="btn">${text.createAccount}</button>
+            </div>
+          </aside>
+        </div>
+      `);
+    }
+
+    function renderEngineSettings(kind) {
+      const text = copy();
+      const titles = {
+        vector: [text.vectorTitle, text.vectorSubtitle],
+        parser: [text.parserTitle, text.parserSubtitle],
+        storage: [text.storageTitle, text.storageSubtitle]
+      };
+      const [title, subtitle] = titles[kind];
+      const engines = appData.engines[kind];
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${title}</h1>
+            <p>${subtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.testConnection}</button><button class="btn">${text.addEngine}</button></div>
+        </div>
+        <section class="panel">
+          <div class="engine-grid">
+            ${engines.map((engine) => `
+              <article class="engine-card ${engine.status === "default" ? "default" : ""}">
+                <div class="card-foot" style="margin-top:0;">
+                  <h3>${engine.name}</h3>
+                  <span class="badge ${engine.status === "default" ? "healthy" : engine.status === "experimental" ? "review" : "medium"}">${engine.status === "default" ? text.defaultEngine : engine.status === "experimental" ? text.experimental : text.available}</span>
+                </div>
+                <p style="color:var(--muted);line-height:1.5;">${engine.summary}</p>
+                <div class="source-row"><span>${text.adapter}</span><strong>${engine.adapter}</strong></div>
+                <div class="source-row" style="margin-top:8px;"><span>${text.configSummary}</span><strong>${engine.status}</strong></div>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+      `);
+    }
+
+    function renderModelSettings() {
+      const text = copy();
+      const selected = appData.models.find((model) => model.id === uiState.selectedModelId) || appData.models[0];
+      const categories = [
+        ["all", text.allModels, appData.models.length],
+        ["chat", text.chatModels, appData.models.filter((model) => model.type === "chat").length],
+        ["embedding", text.embeddingModels, appData.models.filter((model) => model.type === "embedding").length],
+        ["rerank", text.rerankModels, 0],
+        ["vision", text.visionModels, appData.models.filter((model) => model.type === "vision").length],
+        ["speech", text.speechModels, 0]
+      ];
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.modelSettingsTitle}</h1>
+            <p>${text.modelSettingsSubtitle}</p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">${text.testConnection}</button>
+            <button class="btn">${text.save}</button>
+          </div>
+        </div>
+        <div class="settings-layout">
+          <section class="panel">
+            <h2>${text.builtinModel}</h2>
+            <p style="color:var(--muted);line-height:1.55;">${text.builtinModelHelp}</p>
+            <div class="settings-tabs">
+              ${categories.map(([key, label, count], index) => `<button class="settings-tab ${index === 0 ? "active" : ""}" type="button">${label} (${count})</button>`).join("")}
+            </div>
+            <div class="model-grid">
+              ${appData.models.map((model) => `
+                <button class="model-card ${model.id === selected.id ? "active" : ""}" data-model-id="${model.id}" type="button">
+                  <div class="model-head">
+                    <div>
+                      <strong>${model.displayName}</strong>
+                      <span class="model-provider">${model.provider}</span>
+                    </div>
+                    <span class="badge ${model.type === "chat" ? "healthy" : "medium"}">${model.type}</span>
+                  </div>
+                  <div class="model-meta">
+                    <span class="badge ${model.apiKeyStatus === "configured" ? "approved" : "review"}">${model.apiKeyStatus === "configured" ? text.configured : "No Key"}</span>
+                    <span class="badge parsing">${model.source}</span>
+                  </div>
+                  <p style="color:var(--muted);line-height:1.45;margin:0;">${model.note}</p>
+                </button>
+              `).join("")}
+            </div>
+          </section>
+          <aside class="config-panel">
+            <div class="model-head">
+              <div>
+                <h2>${text.editModel}</h2>
+                <p style="color:var(--muted);margin:6px 0 0;">${text.editModelSubtitle}</p>
+              </div>
+              <span class="badge healthy">${selected.type}</span>
+            </div>
+            <div class="config-section">
+              <h3>${text.modelSource}</h3>
+              <div class="button-row" style="justify-content:flex-start;">
+                <button class="btn secondary">${text.ollama}</button>
+                <button class="btn">${text.api}</button>
+              </div>
+            </div>
+            <div class="config-section">
+              <h3>${text.accessConfig}</h3>
+              <div class="field-grid">
+                <div class="field"><label>${text.provider}</label><select><option>${selected.provider}</option><option>GitHub Models</option><option>GitHub Copilot</option><option>OpenAI Compatible</option><option>Ollama</option></select></div>
+                <div class="field"><label>${text.modelName}</label><input value="${selected.name}"></div>
+                <div class="field"><label>${text.displayName}</label><input value="${selected.displayName}"></div>
+                <div class="field"><label>${text.baseUrl}</label><input value="${selected.baseUrl}"></div>
+                <div class="field">
+                  <label>${text.credentialLabel}</label>
+                  <div class="secret-row">
+                    <span>● ${selected.apiKeyStatus === "configured" ? text.configured : "Not configured"}</span>
+                    <span><button class="icon-btn" type="button">${text.replace}</button><button class="icon-btn" type="button">${text.remove}</button></span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>${text.customHeaders}</label>
+                  <div class="secret-row"><span>Authorization, Content-Type</span><button class="icon-btn" type="button">＋ ${text.addHeader}</button></div>
+                  <p class="field-note">${text.modelSafetyNote}</p>
+                </div>
+              </div>
+            </div>
+            <div class="config-section">
+              <h3>${text.advancedOptions}</h3>
+              <div class="field-grid">
+                <div class="toggle-row"><span>${text.multimodal}</span><span class="toggle-pill ${selected.supportsMultimodal ? "on" : ""}"></span></div>
+                <div class="field">
+                  <label>${text.thinkingFormat}</label>
+                  <select>
+                    <option>${selected.thinkingFormat === "none" ? text.noThinking : selected.thinkingFormat === "provider_default" ? text.providerDefault : text.customThinking}</option>
+                    <option>${text.noThinking}</option>
+                    <option>${text.providerDefault}</option>
+                    <option>${text.customThinking}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="button-row" style="margin-top:18px;">
+              <button class="btn secondary">${text.testConnection}</button>
+              <button class="btn secondary">${text.cancel}</button>
+              <button class="btn">${text.save}</button>
+            </div>
+          </aside>
+        </div>
+      `);
+    }
+
     function renderDocs() {
       const batch = appData.batch;
+      const text = copy();
       const metrics = [
         ["Total files", batch.totalFiles],
         ["PDF converted", batch.pdfConverted],
@@ -1504,10 +3254,10 @@
         <div class="doc-grid">
           <section class="panel">
             <h2>${batch.name}</h2>
-            <p style="color:var(--muted);line-height:1.55;">文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。</p>
+            <p style="color:var(--muted);line-height:1.55;">${text.batchHelp}</p>
             <div class="button-row" style="justify-content:flex-start;">
-              <button class="btn">上传文件夹</button>
-              <button class="btn secondary">上传 ZIP</button>
+              <button class="btn">${text.uploadFolder}</button>
+              <button class="btn secondary">${text.uploadZip}</button>
             </div>
             <div class="metric-grid">
               ${metrics.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join("")}
@@ -1522,7 +3272,7 @@
             </div>
           </section>
           <section class="panel">
-            <h2>文件树与解析状态</h2>
+            <h2>${text.fileTree}</h2>
             <div class="file-tree">
               ${batch.files.map((file) => `
                 <div class="file-row">
@@ -1538,21 +3288,22 @@
 
     function renderWiki() {
       const wiki = appData.wiki;
+      const text = copy();
       return `
         <div class="wiki-layout">
           <aside class="wiki-rail">
             <h3>Wiki Index</h3>
-            <input class="search" placeholder="搜索 Wiki 页面..." aria-label="搜索 Wiki 页面">
+            <input class="search" placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
             <ul class="index-list">
               ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
             </ul>
-            <h3 style="margin-top:22px;">Recent Updates</h3>
+            <h3 style="margin-top:22px;">${text.recentUpdates}</h3>
             <ul class="recent-list">${wiki.recent.map((item) => `<li>${item}</li>`).join("")}</ul>
           </aside>
           <article class="wiki-main">
             <header>
               <h2>IBM i Modernization / LM Wiki</h2>
-              <p style="color:var(--muted);line-height:1.55;">Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。</p>
+              <p style="color:var(--muted);line-height:1.55;">${text.wikiIntro}</p>
             </header>
             ${wiki.sections.map((section) => `
               <section class="wiki-section" id="${section.id}">
@@ -1580,6 +3331,7 @@
     }
 
     function renderGraph() {
+      const text = copy();
       return `
         <div class="graph-layout">
           <section class="graph-canvas">
@@ -1587,16 +3339,16 @@
             <svg class="graph-svg" id="graphSvg" viewBox="0 0 900 600" role="img" aria-label="IBM i Modernization 知识图谱"></svg>
           </section>
           <aside class="panel">
-            <h2>图谱概览</h2>
-            <p style="color:var(--muted);line-height:1.55;">轻量图谱 mock。节点来自已发布 Wiki、源文档和待审核证据。</p>
+            <h2>${text.graphOverview}</h2>
+            <p style="color:var(--muted);line-height:1.55;">${text.graphHelp}</p>
             <div class="legend-list">
               ${legendItems().map((item) => `
                 <div class="legend-item"><span><span class="dot ${item.color}"></span>${item.label}</span><strong>${item.count}</strong></div>
               `).join("")}
             </div>
             <div class="panel" style="margin-top:14px;box-shadow:none;" id="nodeDetail">
-              <h3>Node Detail</h3>
-              <p style="color:var(--muted);line-height:1.55;">点击图谱节点查看来源、类型和关系说明。</p>
+              <h3>${text.nodeDetail}</h3>
+              <p style="color:var(--muted);line-height:1.55;">${text.nodeDetailHelp}</p>
             </div>
           </aside>
         </div>
@@ -1605,34 +3357,35 @@
 
     function renderReview() {
       const review = appData.review;
+      const text = copy();
       return `
         <div class="review-grid">
           <section class="review-pane">
-            <h3>PDF Page Preview</h3>
+            <h3>${text.pdfPreview}</h3>
             <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
             <div class="pdf-preview">
               <div>
                 <strong>PDF PAGE ${review.page}</strong>
-                <p>表格、流程图和扫描文本预览占位</p>
+                <p>${text.pdfPlaceholder}</p>
               </div>
             </div>
           </section>
           <section class="review-pane">
             <div class="card-foot" style="margin-top:0;">
-              <h3>Markdown Preview</h3>
-              <span class="badge medium">Confidence ${review.confidence}</span>
+              <h3>${text.markdownPreview}</h3>
+              <span class="badge medium">${text.confidence} ${review.confidence}</span>
             </div>
             <div class="markdown-preview">${review.markdown.replace(/\n/g, "<br>")}</div>
-            <textarea placeholder="Review comments..."></textarea>
+            <textarea placeholder="${text.reviewComments}"></textarea>
             <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
-              <button class="btn">Approve</button>
-              <button class="btn secondary">Need Fix</button>
-              <button class="btn secondary">Mark OCR Required</button>
+              <button class="btn">${text.approve}</button>
+              <button class="btn secondary">${text.needFix}</button>
+              <button class="btn secondary">${text.markOcr}</button>
             </div>
           </section>
         </div>
         <section class="panel" style="margin-top:16px;">
-          <h2>Low confidence pages</h2>
+          <h2>${text.lowConfidence}</h2>
           <div class="queue">
             ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
           </div>
@@ -1642,29 +3395,30 @@
 
     function renderAsk() {
       const ask = appData.ask;
+      const text = copy();
       return `
         <div class="ask-grid">
           <section class="chat-panel">
-            <h3>Ask IBM i Modernization</h3>
+            <h3>${text.askTitle}</h3>
             <div style="margin-top:16px;">
               <div class="message user">${ask.question}</div>
               <div class="message answer">
                 ${ask.answer}
                 <ul class="references">${ask.references.map((ref) => `<li>${ref}</li>`).join("")}</ul>
-                <p><span class="badge medium">Confidence: ${ask.confidence}</span></p>
+                <p><span class="badge medium">${text.confidence}: ${ask.confidence}</span></p>
               </div>
             </div>
             <div class="ask-input-row">
-              <input class="ask-input" placeholder="Ask about IBM i Modernization..." aria-label="Ask about IBM i Modernization">
-              <button class="btn">发送</button>
+              <input class="ask-input" placeholder="${text.askPlaceholder}" aria-label="${text.askPlaceholder}">
+              <button class="btn">${text.send}</button>
             </div>
           </section>
           <aside class="panel">
-            <h2>可信回答策略</h2>
-            <p style="color:var(--muted);line-height:1.62;">Ask 只展示来自已审核或带有清晰 source_trace 的 mock 证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。</p>
-            <div class="source-row"><span>Approved Wiki pages</span><strong>42</strong></div>
-            <div class="source-row" style="margin-top:10px;"><span>Evidence chunks</span><strong>318</strong></div>
-            <div class="source-row" style="margin-top:10px;"><span>Review required</span><strong>35</strong></div>
+            <h2>${text.askPolicy}</h2>
+            <p style="color:var(--muted);line-height:1.62;">${text.askPolicyText}</p>
+            <div class="source-row"><span>${text.approvedWikiPages}</span><strong>42</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>${text.evidenceChunks}</span><strong>318</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>${text.reviewRequired}</span><strong>35</strong></div>
           </aside>
         </div>
       `;
@@ -1680,27 +3434,66 @@
     }
 
     function showHome() {
+      uiState.view = "home";
+      uiState.settingsOpen = false;
       homeView.classList.add("active");
       spaceView.classList.remove("active");
+      settingsView.classList.remove("active");
       document.querySelectorAll("#sideNav button").forEach((button, index) => {
         button.classList.toggle("active", index === 0);
       });
     }
 
     function showSpace(tab = "wiki") {
+      uiState.view = "space";
+      uiState.activeTab = tab;
+      uiState.settingsOpen = false;
       renderSpace(tab);
       homeView.classList.remove("active");
       spaceView.classList.add("active");
+      settingsView.classList.remove("active");
       document.querySelectorAll("#sideNav button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.nav === "本空间");
+        button.classList.toggle("active", button.dataset.navKey === "all");
       });
     }
 
+    function showSettings(panel = uiState.settingsPanel) {
+      uiState.settingsOpen = true;
+      uiState.settingsPanel = panel;
+      renderSettings();
+      settingsView.classList.add("active");
+      renderNav();
+    }
+
+    function closeSettings() {
+      uiState.settingsOpen = false;
+      settingsView.classList.remove("active");
+      renderNav();
+    }
+
     function setTab(tab) {
+      uiState.activeTab = tab;
       document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
       document.querySelectorAll(".tab-view").forEach((view) => view.classList.toggle("active", view.id === `tab-${tab}`));
-      if (tab === "图谱") {
+      if (tab === "graph") {
         renderGraphSvg();
+      }
+    }
+
+    function renderApp() {
+      const shouldKeepSettingsOpen = uiState.settingsOpen;
+      const activeSettingsPanel = uiState.settingsPanel;
+      applyPreferences();
+      renderNav();
+      renderHome();
+      if (uiState.view === "space") {
+        showSpace(uiState.activeTab);
+      } else {
+        showHome();
+      }
+      if (shouldKeepSettingsOpen) {
+        uiState.settingsOpen = true;
+        showSettings(activeSettingsPanel);
       }
     }
 
@@ -1725,12 +3518,12 @@
       const edges = appData.graph.edges.map(([from, to]) => {
         const a = nodeById[from];
         const b = nodeById[to];
-        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#cbd8d0" stroke-width="1.5" />`;
+        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--line)" stroke-width="1.5" />`;
       }).join("");
       const nodes = appData.graph.nodes.map((node) => `
         <g class="graph-node" data-node="${node.id}">
-          <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.92"></circle>
-          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.16" stroke-width="8"></circle>
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.88"></circle>
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.1" stroke-width="8"></circle>
           <text class="graph-label" x="${node.x}" y="${node.y + node.r + 18}" text-anchor="middle">${node.label}</text>
         </g>
       `).join("");
@@ -1750,6 +3543,20 @@
 
     function bindEvents() {
       document.addEventListener("click", (event) => {
+        if (event.target.id === "languageToggle") {
+          uiState.lang = uiState.lang === "zh-CN" ? "en-US" : "zh-CN";
+          localStorage.setItem("atlas-lang", uiState.lang);
+          renderApp();
+          return;
+        }
+
+        if (event.target.id === "themeToggle") {
+          uiState.theme = uiState.theme === "day" ? "night" : "day";
+          localStorage.setItem("atlas-theme", uiState.theme);
+          renderApp();
+          return;
+        }
+
         const spaceCard = event.target.closest("[data-space]");
         if (spaceCard && spaceCard.dataset.space === "IBM i Modernization") {
           showSpace("wiki");
@@ -1765,14 +3572,34 @@
         }
 
         const kbItem = event.target.closest(".kb-item");
-        if (kbItem && kbItem.textContent.includes("IBM i Modernization")) {
+        if (kbItem && kbItem.dataset.kb === "IBM i Modernization") {
           showSpace("ask");
         }
 
         const navButton = event.target.closest("[data-nav]");
         if (navButton) {
-          if (navButton.dataset.nav === "本空间") showSpace("wiki");
+          if (navButton.dataset.navKey === "space") showSpace("wiki");
           else showHome();
+        }
+
+        const openSettingsButton = event.target.closest("[data-open-settings]");
+        if (openSettingsButton) {
+          showSettings("general");
+        }
+
+        if (event.target.id === "closeSettings" || event.target.id === "settingsView") {
+          closeSettings();
+        }
+
+        const settingsPanel = event.target.closest("[data-settings-panel]");
+        if (settingsPanel) {
+          showSettings(settingsPanel.dataset.settingsPanel);
+        }
+
+        const modelCard = event.target.closest("[data-model-id]");
+        if (modelCard) {
+          uiState.selectedModelId = modelCard.dataset.modelId;
+          showSettings("models");
         }
 
         if (event.target.id === "backHome") {
@@ -1817,10 +3644,15 @@
         tooltip.style.left = `${event.clientX - canvasRect.left + 14}px`;
         tooltip.style.top = `${event.clientY - canvasRect.top + 14}px`;
       });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && uiState.settingsOpen) {
+          closeSettings();
+        }
+      });
     }
 
-    renderNav();
-    renderHome();
+    renderApp();
     bindEvents();
   </script>
 </body>

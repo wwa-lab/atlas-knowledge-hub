@@ -4,11 +4,135 @@
 
 Atlas Knowledge Hub is an internal knowledge product, not a one-off converter script. Features should support repeatable user workflows: upload, convert, normalize, review, publish, browse, and ask.
 
+## SDD First
+
+Use Spec Driven Development before implementation work begins.
+
+- Use `docs/00-context/sdd-profile.md` as the Atlas SDD profile.
+- Use `docs/03-spec/` as the behavior source of truth.
+- Use `docs/06-tasks/` as the implementation checklist.
+- Do not implement behavior that is not represented in the current slice spec.
+- Keep slice traceability in `docs/00-context/{slice}-traceability.md`.
+- Prototype-only refinements may remain lightweight only when they do not introduce new durable behavior contracts.
+
+## Goal-Driven SDD
+
+Atlas uses a goal-driven SDD mode for implementation slices.
+
+A slice goal is a short execution contract that tells the agent what outcome to deliver end to end. When the user sets a slice goal, the agent should move through document creation or update, implementation, verification, and final evidence in one continuous workflow unless blocked.
+
+Each slice goal should include:
+
+- Goal: the user-facing outcome to achieve.
+- Slice: the feature slice name and stable slug.
+- Scope: what is included and excluded.
+- Source of truth: relevant SDD files, prototype surfaces, and product docs.
+- Acceptance: observable behavior or documents that prove the goal is complete.
+- Verification: commands, checks, or manual review steps required before completion.
+- Constraints: mock-only, adapter boundaries, security, phase, and data-safety limits.
+
+For goal-driven SDD work:
+
+- Do not start implementation until the required SDD docs for the slice exist or have been updated.
+- Use `docs/06-tasks/{slice}-tasks.md` as the executable checklist.
+- Keep goal scope surgical. Split broad goals into multiple slices when one goal would cross unrelated domains.
+- Treat verification evidence as part of the deliverable, not an optional summary.
+- If the goal conflicts with Atlas phase discipline or product rules, stop and surface the conflict before coding.
+
+## Quality Gates
+
+A slice goal is not complete until quality gates are checked and reported.
+
+Use `DEVELOPMENT_STANDARDS.md` as the detailed engineering standard for coding, frontend, backend, API, database, adapter, security, testing, review, Git, and CI expectations.
+
+Required gates:
+
+1. Goal gate: scope, exclusions, acceptance criteria, verification, and constraints are clear enough to execute without hidden assumptions.
+2. SDD gate: required slice docs exist or are updated, requirement IDs are traceable, and tasks map back to the spec.
+3. Implementation gate: changed behavior is represented in `docs/03-spec/`, and code changes are limited to the active goal and slice.
+4. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
+5. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
+6. Verification gate: the checks listed in the task plan are run, or any skipped check is named with a reason.
+7. Evidence gate: the final response includes documents changed, code changed, verification evidence, and residual risks.
+
+Prototype-phase verification should include, when relevant:
+
+- Static syntax checks for edited HTML/CSS/JavaScript.
+- `git diff --check`.
+- Scans for external network calls or dependencies.
+- Scans for raw secrets, private paths, or real data.
+- Manual UI checklist against the active spec.
+
+Implementation-phase verification should add unit, integration, and end-to-end tests as the Vue frontend, Spring Boot backend, database, and adapter layers become real.
+
+## Lessons Learned
+
+Acceptance mismatches must be turned into durable learning.
+
+- Record reusable lessons in `docs/00-context/lessons-learned.md`.
+- Do not treat a chat explanation as sufficient prevention.
+- For each lesson, identify the root cause and update the artifact that would have prevented it: requirement, story, spec, architecture, design, task, standard, rule, checklist, or test.
+- Add or update verification so the same issue is checked in the next similar slice goal.
+- If a lesson changes cross-slice behavior, update `DEVELOPMENT_STANDARDS.md`, `PROJECT_RULES.md`, or `AGENTS.md` as appropriate.
+
+## SDD Skill Source
+
+When generating or updating SDD documents, prefer the skills and workflow patterns from:
+
+- `https://github.com/wwa-lab/Agentic-SDLC-Control-Tower/tree/main/.claude/skills`
+
+The expected document flow is:
+
+1. Requirements.
+2. User stories.
+3. Specification.
+4. Architecture.
+5. Data flow.
+6. Data model.
+7. Design.
+8. API implementation guide when backend/API work is involved.
+9. Tasks.
+
+Use these skills as the SDD operating model, but adapt outputs to Atlas' lightweight product-first profile.
+
+## Control Tower Reference Rules
+
+Use `wwa-lab/Agentic-SDLC-Control-Tower` as a reference source for mature project rules, SDD discipline, traceability, review gates, and implementation best practices.
+
+- Borrow rules that improve clarity, safety, traceability, or implementation discipline.
+- Do not blindly copy rules that are specific to Control Tower's domain, stack, or runtime.
+- If a borrowed rule changes Atlas workflow materially, document the reason in the relevant SDD artifact or an ADR.
+- Atlas project-local rules take precedence when they are more specific.
+
+## Prototype To Product
+
+The static prototype is a product behavior blueprint, not throwaway artwork.
+
+- Preserve accepted prototype behavior unless the spec explicitly changes it.
+- Phase 1 frontend implementation should first reproduce the prototype with mock data.
+- Do not introduce backend, database, authentication, external model calls, or production storage only to support prototype behavior.
+- Split the prototype into components only after the relevant SDD slice is accepted.
+
 ## Parser Neutral
 
 The parser architecture must remain adapter-based. Do not bind the product to one parser engine. Current and future engines may include `document-normalize`, MinerU, Docling, PaddleOCR, internal OCR, or Copilot Vision.
 
 The internal tools `trinity-office` and `document-normalize` are wrapped as converter adapters.
+
+## Adapter Boundaries
+
+Do not call infrastructure tools directly from product workflows.
+
+Use adapter boundaries for:
+
+- Converter tools.
+- Parser/OCR tools.
+- Vector database engines.
+- Storage engines.
+- Model providers.
+- Search providers.
+
+Product logic should depend on product-facing interfaces, not concrete engines such as `document-normalize`, MinerU, Docling, PaddleOCR, PostgreSQL/pgvector, Milvus, Qdrant, Ollama, DeepSeek, GitHub Models, or S3-compatible storage.
 
 ## Trace And Review
 
@@ -22,10 +146,38 @@ The internal tools `trinity-office` and `document-normalize` are wrapped as conv
 - Do not commit real company documents.
 - Do not commit confidential screenshots, credentials, logs, exports, or raw customer content.
 - Use mock/sample files only.
+- Do not embed API keys, passwords, tokens, private endpoints, internal hostnames, or private absolute paths.
+- API keys and passwords must never appear in frontend source.
+- Mock configuration may show masked or status-only secret fields such as `configured`, but never raw secret values.
+
+## Auth And RBAC
+
+Registration, account settings, API information, and member management may be represented in the prototype with mock data.
+
+For real implementation:
+
+- Authentication must be enforced by the backend.
+- RBAC must be enforced by the backend, not only by frontend UI state.
+- Member management operations must be auditable.
+- Passwords must never be logged or stored in plaintext.
+- API keys must be write-only on creation/rotation and masked in responses.
+- Do not implement production authentication, SSO, or complex permission logic until the relevant SDD slice is accepted.
 
 ## Lightweight MVP
 
 Keep the MVP small and understandable. Prefer static HTML/CSS/JS and documentation before introducing a framework, service mesh, database, or queue.
+
+## Phase Discipline
+
+Use staged implementation:
+
+1. Phase 0: static prototype and SDD artifacts.
+2. Phase 1: Vue frontend shell with mock data.
+3. Phase 2: backend metadata API and persistence.
+4. Phase 3: converter/parser/storage/vector/model adapters.
+5. Phase 4: review, publish, graph, and Ask integration hardening.
+
+Do not skip phases unless the spec and tasks explicitly approve the change.
 
 ## Technology Decisions
 
