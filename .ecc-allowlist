@@ -1,0 +1,6 @@
+# ECC secret-scan allowlist (PCRE per line; '#' comments ignored).
+# Known false positives only. These are bilingual UI copy LABELS in the
+# mock prototype, not credential values. Real API-key state uses status-only
+# fields ("configured" / "not_configured") per PROJECT_RULES data-safety rules.
+"API Key \(optional\)"
+"API Key（可选）"
