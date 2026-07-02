@@ -19,6 +19,9 @@ build/
 .next/
 .turbo/
 coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
 
 # Python local state
 __pycache__/
@@ -31,6 +34,9 @@ samples/input/*
 samples/output/*
 !samples/input/.gitkeep
 !samples/output/.gitkeep
+
+# Local agent/editor settings
+.claude/settings.local.json
 
 # Local environment and credentials
 .env
