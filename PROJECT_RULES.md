@@ -14,6 +14,10 @@ Use Spec Driven Development before implementation work begins.
 - Do not implement behavior that is not represented in the current slice spec.
 - Keep slice traceability in `docs/00-context/{slice}-traceability.md`.
 - Prototype-only refinements may remain lightweight only when they do not introduce new durable behavior contracts.
+- From this point forward, every new or materially updated SDD document must be maintained in two language copies: English and Simplified Chinese.
+- Use the default SDD filename for the English copy, such as `docs/01-requirements/{slice}-requirements.md`, and add a `.zh-CN.md` companion for the Chinese copy, such as `docs/01-requirements/{slice}-requirements.zh-CN.md`.
+- The two language copies must describe the same scope, decisions, requirement IDs, acceptance criteria, and task IDs. If one copy is updated, update the other copy in the same change.
+- Existing single-language historical SDD documents may be migrated gradually, but any future slice work that touches them must either add the missing language copy or explicitly record why the translation is deferred.
 
 ## Goal-Driven SDD
 
@@ -39,6 +43,56 @@ For goal-driven SDD work:
 - Treat verification evidence as part of the deliverable, not an optional summary.
 - If the goal conflicts with Atlas phase discipline or product rules, stop and surface the conflict before coding.
 
+## Claude Code And Codex Collaboration
+
+Use Claude Code and Codex as complementary roles instead of asking both tools to own the same work.
+
+Claude Code is the primary SDD document owner. Use Claude Code for:
+
+- Product-level requirements.
+- Slice requirements.
+- User stories.
+- Specifications.
+- Architecture.
+- Data flow.
+- Data model.
+- Design.
+- API implementation guides.
+- Task plans.
+- English and Simplified Chinese SDD document synchronization.
+- Traceability and acceptance criteria.
+- SDD document quality review.
+
+Claude Code outputs should stop at complete, reviewable SDD artifacts, implementation guidance, and task checklists. Claude Code should not directly own broad implementation changes unless the user explicitly changes the division of responsibility.
+
+Codex is the primary implementation owner. Use Codex for:
+
+- Reading the accepted SDD documents and task checklist.
+- Checking scope, assumptions, and acceptance criteria before editing code.
+- Implementing Vue, TypeScript, HTML, CSS, tests, and other code changes.
+- Running typecheck, build, unit/component tests, E2E tests, diff hygiene, dependency/network scans, and secret scans.
+- Updating implementation-adjacent docs when behavior or verification evidence changes.
+- Reporting completed tasks, verification evidence, residual risks, and blocked checks.
+
+Codex must not silently expand product scope beyond the accepted SDD. If the SDD is missing, stale, ambiguous, or conflicts with the current FE baseline or implementation reality, Codex should surface the mismatch and either request an SDD update or make the smallest documented implementation-safe adjustment.
+
+Default handoff:
+
+1. Claude Code produces or updates the bilingual SDD documents for a slice.
+2. The user accepts the SDD scope and tasks.
+3. Codex implements strictly against `docs/03-spec/` and `docs/06-tasks/`.
+4. Codex reports verification evidence and any SDD/implementation mismatches.
+5. Material SDD changes go back through Claude Code unless the user explicitly asks Codex to update the documents directly.
+
+Source-of-truth hierarchy for implementation:
+
+1. Current user instruction.
+2. `PROJECT_RULES.md`, `AGENTS.md`, and `DEVELOPMENT_STANDARDS.md`.
+3. Current FE baseline for visual and interaction parity.
+4. `docs/03-spec/` for behavior.
+5. `docs/06-tasks/` for implementation checklist.
+6. Other SDD and product context documents.
+
 ## Quality Gates
 
 A slice goal is not complete until quality gates are checked and reported.
@@ -48,7 +102,7 @@ Use `DEVELOPMENT_STANDARDS.md` as the detailed engineering standard for coding, 
 Required gates:
 
 1. Goal gate: scope, exclusions, acceptance criteria, verification, and constraints are clear enough to execute without hidden assumptions.
-2. SDD gate: required slice docs exist or are updated, requirement IDs are traceable, and tasks map back to the spec.
+2. SDD gate: required slice docs exist or are updated, English and Simplified Chinese copies are synchronized for touched SDD documents, requirement IDs are traceable, and tasks map back to the spec.
 3. Implementation gate: changed behavior is represented in `docs/03-spec/`, and code changes are limited to the active goal and slice.
 4. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
 5. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
