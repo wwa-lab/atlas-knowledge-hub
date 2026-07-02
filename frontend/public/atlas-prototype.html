@@ -1,0 +1,4181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas Knowledge Hub</title>
+  <style>
+    :root {
+      --bg: #f7f8f9;
+      --panel: #ffffff;
+      --panel-soft: #f4f6f7;
+      --panel-raised: #ffffff;
+      --ink: #18211f;
+      --muted: #66726f;
+      --line: #e1e5e4;
+      --primary: #3f6f8f;
+      --primary-dark: #2f536b;
+      --primary-soft: #edf3f6;
+      --blue: #4b6f9f;
+      --orange: #a66f28;
+      --red: #b94a48;
+      --gray: #68757c;
+      --green: #5f8272;
+      --shadow: 0 1px 2px rgba(24, 33, 31, 0.05), 0 10px 24px rgba(24, 33, 31, 0.04);
+      --radius: 8px;
+    }
+
+    [data-theme="night"] {
+      --bg: #0f1115;
+      --panel: #171a20;
+      --panel-soft: #20242b;
+      --panel-raised: #1b1f26;
+      --ink: #e6e8ec;
+      --muted: #9aa3af;
+      --line: #2b3038;
+      --primary: #6f93a6;
+      --primary-dark: #a9c1cf;
+      --primary-soft: #1d2830;
+      --blue: #83a2c7;
+      --orange: #c49a68;
+      --red: #d0827c;
+      --gray: #9aa3af;
+      --green: #6fa586;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.24), 0 10px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+      min-width: 0;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      min-width: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 14px;
+      color: var(--ink);
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      font-size: 17px;
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      flex: 0 0 auto;
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 8px;
+      color: #fff;
+      background: #2f536b;
+    }
+
+    .side-nav {
+      display: grid;
+      gap: 5px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .side-nav button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+    }
+
+    .side-nav button.active,
+    .side-nav button:hover {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .side-label {
+      margin: 14px 8px 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .side-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .side-recent {
+      display: grid;
+      gap: 4px;
+      padding: 0 8px;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      list-style: none;
+    }
+
+    .side-divider {
+      height: 1px;
+      margin: 10px 0;
+      background: var(--line);
+    }
+
+    .side-workspace {
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .workspace-title {
+      margin: 0 0 4px;
+      font-weight: 800;
+    }
+
+    .workspace-role {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .side-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      border-top: 1px solid var(--line);
+    }
+
+    .utility-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .utility-btn {
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--ink);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .utility-btn:hover {
+      background: var(--primary-soft);
+    }
+
+    .main {
+      width: 100%;
+      min-width: 0;
+      padding: 26px 28px 34px;
+    }
+
+    .page-head,
+    .space-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.18;
+      overflow-wrap: anywhere;
+    }
+
+    .title-block p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 38px;
+      padding: 8px 13px;
+      color: #fff;
+      white-space: nowrap;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(24, 33, 31, 0.08);
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn.secondary {
+      color: var(--primary-dark);
+      background: var(--panel);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .dialog-hero {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      padding: 34px 28px 46px;
+      margin-bottom: 22px;
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: none;
+    }
+
+    .dialog-center {
+      width: min(820px, 100%);
+      text-align: center;
+    }
+
+    .dialog-center h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+
+    .dialog-center p {
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .prompt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 22px auto 24px;
+    }
+
+    .prompt-chip {
+      padding: 9px 14px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: none;
+    }
+
+    .dialog-box {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      min-height: 158px;
+      padding: 14px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(24, 33, 31, 0.05);
+    }
+
+    .dialog-input {
+      width: 100%;
+      min-height: 70px;
+      padding: 3px 2px;
+      color: var(--ink);
+      resize: none;
+      background: transparent;
+      border: 0;
+      outline: none;
+    }
+
+    .dialog-input::placeholder {
+      color: #8c9896;
+    }
+
+    .dialog-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .tool-left,
+    .tool-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mini-btn,
+    .icon-btn,
+    .model-select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .icon-btn {
+      width: 30px;
+      padding: 0;
+      border-color: transparent;
+      color: #778481;
+      background: transparent;
+      font-size: 17px;
+    }
+
+    .send-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    .knowledge-popover {
+      position: absolute;
+      z-index: 3;
+      bottom: 96px;
+      left: 50%;
+      width: 304px;
+      padding: 12px;
+      text-align: left;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 28px rgba(24, 33, 31, 0.12);
+      transform: translateX(-150%);
+    }
+
+    .knowledge-popover h3 {
+      margin: 2px 2px 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .kb-list {
+      display: grid;
+      gap: 4px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .kb-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 8px;
+      color: var(--ink);
+      border-radius: var(--radius);
+    }
+
+    .kb-item.selected {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+    }
+
+    .folder-icon {
+      color: currentColor;
+      font-size: 15px;
+    }
+
+    .kb-count {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .selected-kb-card {
+      position: absolute;
+      z-index: 4;
+      bottom: 116px;
+      left: 50%;
+      width: 260px;
+      padding: 14px 15px;
+      text-align: left;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 28px rgba(24, 33, 31, 0.11);
+      transform: translateX(6%);
+    }
+
+    .selected-kb-card strong {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 15px;
+    }
+
+    .selected-kb-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 8px 0 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .section-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .settings-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 16px;
+    }
+
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(14, 23, 18, 0.56);
+    }
+
+    .settings-modal.active {
+      display: grid;
+      place-items: center;
+    }
+
+    .settings-window {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      width: min(1080px, calc(100vw - 48px));
+      height: min(760px, calc(100vh - 48px));
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .settings-rail {
+      padding: 18px 10px;
+      background: var(--panel-soft);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    .settings-rail h2 {
+      margin: 0 8px 14px;
+      font-size: 18px;
+    }
+
+    .settings-content {
+      position: relative;
+      min-width: 0;
+      padding: 26px 32px 34px;
+      overflow: auto;
+    }
+
+    .settings-close {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      width: 34px;
+      height: 34px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .settings-close:hover {
+      color: var(--ink);
+      background: var(--panel-soft);
+    }
+
+    .create-space-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      background: var(--panel);
+    }
+
+    .create-space-modal.active {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .create-rail {
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-soft);
+      border-right: 1px solid var(--line);
+    }
+
+    .create-rail h1 {
+      margin: 0;
+      padding: 26px 22px 32px;
+      font-size: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .create-steps {
+      display: grid;
+      gap: 8px;
+      padding: 18px 12px;
+    }
+
+    .create-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 12px;
+      color: var(--muted);
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .create-step:hover {
+      color: var(--primary-dark);
+      background: var(--panel);
+    }
+
+    .create-step.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+    }
+
+    .create-step-icon {
+      display: inline-grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .create-main {
+      position: relative;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-width: 0;
+      max-height: 100vh;
+      background: var(--panel);
+    }
+
+    .create-content {
+      min-width: 0;
+      padding: 30px 36px 34px;
+      overflow: auto;
+    }
+
+    .create-close {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      width: 38px;
+      height: 38px;
+      color: #666;
+      background: #f0f0f0;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .create-content h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .create-subtitle {
+      margin: 10px 0 30px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .create-form {
+      display: grid;
+      gap: 24px;
+      max-width: 1120px;
+    }
+
+    .create-label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .required {
+      color: #ef4f5f;
+    }
+
+    .type-toggle {
+      display: inline-flex;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .type-toggle button {
+      min-width: 92px;
+      min-height: 42px;
+      color: var(--ink);
+      border: 0;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .type-toggle button.active {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .create-help {
+      display: block;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .index-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .index-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 118px;
+      padding: 18px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .index-option.active {
+      background: var(--primary-soft);
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+    }
+
+    .fake-checkbox {
+      display: inline-grid;
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .index-option:not(.active) .fake-checkbox {
+      color: transparent;
+      background: var(--panel);
+      border-color: var(--line);
+    }
+
+    .option-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .new-pill {
+      padding: 2px 8px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 5px;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .create-input,
+    .create-textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--panel);
+      font-size: 15px;
+      outline: none;
+    }
+
+    .create-input {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .create-textarea {
+      min-height: 128px;
+      padding: 12px;
+    }
+
+    .create-count {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .create-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 18px 36px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .create-actions button {
+      min-width: 96px;
+      min-height: 38px;
+      padding: 0 18px;
+      border-radius: var(--radius);
+      font-size: 15px;
+    }
+
+    .create-actions .primary {
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .settings-subnav {
+      display: grid;
+      gap: 5px;
+    }
+
+    .settings-group-label {
+      margin: 14px 8px 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .settings-subnav button {
+      width: 100%;
+      padding: 9px 10px;
+      color: var(--muted);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+    }
+
+    .settings-subnav button.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .settings-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .settings-tab {
+      padding: 8px 12px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .settings-tab.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .model-info-panel {
+      padding: 18px 20px;
+      margin: 18px 0 36px;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .model-info-panel strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .model-info-panel a {
+      display: inline-flex;
+      gap: 6px;
+      margin-top: 12px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .model-list-tabs {
+      display: flex;
+      gap: 34px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .model-list-tab {
+      min-height: 46px;
+      padding: 0 0 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+      font-size: 15px;
+    }
+
+    .model-list-tab.active {
+      color: var(--primary-dark);
+      border-color: var(--primary);
+      font-weight: 800;
+    }
+
+    .model-list-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .model-list-card {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 118px;
+      padding: 24px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: none;
+    }
+
+    .model-list-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .model-icon {
+      display: grid;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: var(--radius);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .model-list-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .model-list-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .add-model-btn {
+      color: var(--primary-dark);
+      background: var(--panel);
+      border-color: var(--primary);
+    }
+
+    .model-card {
+      display: grid;
+      gap: 10px;
+      min-height: 124px;
+      padding: 14px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .model-card.active,
+    .model-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .model-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .model-head strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .model-provider {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .model-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .config-panel {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .config-section {
+      padding-top: 16px;
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .config-section h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .config-section h3::before {
+      width: 3px;
+      height: 16px;
+      content: "";
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .field-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .secret-row,
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 36px;
+      padding: 8px 10px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .toggle-pill {
+      width: 34px;
+      height: 20px;
+      padding: 3px;
+      background: #d9dfdd;
+      border-radius: 999px;
+    }
+
+    .toggle-pill.on {
+      background: #c6d8e0;
+    }
+
+    .toggle-pill::after {
+      display: block;
+      width: 14px;
+      height: 14px;
+      content: "";
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .toggle-pill.on::after {
+      margin-left: 14px;
+      background: var(--primary);
+    }
+
+    .member-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .empty-invite {
+      padding: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 16px 0 10px;
+    }
+
+    .table-toolbar input {
+      width: min(300px, 100%);
+      min-height: 36px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .member-table {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .member-row {
+      display: grid;
+      grid-template-columns: minmax(210px, 1.5fr) 150px 160px 120px;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .member-row:last-child {
+      border-bottom: 0;
+    }
+
+    .member-row.header {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--panel-soft);
+    }
+
+    .member-name strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .member-name span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .role-select {
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .registration-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+    }
+
+    .engine-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .engine-card {
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .engine-card.default {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .engine-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .library-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 20px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .library-toolbar .owner-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .library-toolbar .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border-radius: 999px;
+    }
+
+    .library-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .library-card {
+      position: relative;
+      display: grid;
+      min-height: 200px;
+      padding: 22px;
+      overflow: hidden;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .library-card::after {
+      position: absolute;
+      top: -68px;
+      right: -58px;
+      width: 150px;
+      height: 150px;
+      content: "";
+      background: var(--primary-soft);
+      opacity: 0.55;
+      border-radius: 50%;
+    }
+
+    .library-card:hover {
+      border-color: rgba(63, 111, 143, 0.32);
+      transform: translateY(-1px);
+    }
+
+    .library-card h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+      line-height: 1.3;
+    }
+
+    .library-card p {
+      display: -webkit-box;
+      min-height: 52px;
+      margin: 0;
+      overflow: hidden;
+      color: var(--muted);
+      line-height: 1.48;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .library-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 13px;
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+    }
+
+    .library-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .library-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 30px;
+      padding: 5px 9px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .owner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 28px;
+      padding: 4px 9px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .card,
+    .panel,
+    .metric,
+    .wiki-main,
+    .wiki-rail,
+    .graph-canvas,
+    .review-pane,
+    .chat-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      display: grid;
+      min-height: 218px;
+      padding: 18px;
+      text-align: left;
+      border-color: var(--line);
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+      box-shadow: 0 6px 18px rgba(24, 33, 31, 0.08);
+    }
+
+    .card h2,
+    .panel h2,
+    .panel h3,
+    .wiki-main h2,
+    .wiki-rail h3,
+    .review-pane h3,
+    .chat-panel h3 {
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    .card h2 {
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 10px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .stat {
+      padding: 8px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .card-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border-radius: 999px;
+    }
+
+    .badge.healthy,
+    .badge.approved {
+      color: #3b684c;
+      background: #eef5f1;
+    }
+
+    .badge.review,
+    .badge.ocr {
+      color: #8b6429;
+      background: #f7f1e8;
+    }
+
+    .badge.parsing,
+    .badge.medium {
+      color: #3f5f84;
+      background: #edf2f7;
+    }
+
+    .badge.failed,
+    .badge.needfix {
+      color: #944844;
+      background: #f7eeee;
+    }
+
+    .crumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .space-panel {
+      padding: 18px;
+      margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .space-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 2px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      padding: 12px 14px;
+      color: var(--muted);
+      white-space: nowrap;
+      background: transparent;
+      border: 0;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab.active {
+      color: var(--primary-dark);
+      font-weight: 800;
+      border-color: var(--primary);
+    }
+
+    .tab-view {
+      display: none;
+    }
+
+    .tab-view.active,
+    .view.active {
+      display: block;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .split,
+    .review-grid,
+    .ask-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 16px;
+    }
+
+    .doc-grid {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 12px;
+      box-shadow: none;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .progress-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .progress {
+      height: 9px;
+      overflow: hidden;
+      background: #e8eceb;
+      border-radius: 999px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: #6f95aa;
+    }
+
+    .file-tree {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .file-row,
+    .queue-row,
+    .concept-row,
+    .source-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 11px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .file-path,
+    .queue-row span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .wiki-layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr) 300px;
+      gap: 16px;
+    }
+
+    .wiki-rail {
+      padding: 15px;
+      box-shadow: none;
+    }
+
+    .search {
+      width: 100%;
+      height: 38px;
+      padding: 0 11px;
+      margin: 12px 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .search:focus,
+    textarea:focus,
+    .ask-input:focus {
+      border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
+      box-shadow: 0 0 0 3px rgba(63, 111, 143, 0.08);
+    }
+
+    .index-list,
+    .recent-list,
+    .related-list {
+      display: grid;
+      gap: 8px;
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .index-list button {
+      width: 100%;
+      padding: 9px 10px;
+      color: var(--ink);
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .index-list button:hover,
+    .index-list button.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .recent-list li,
+    .related-list li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .wiki-main {
+      padding: 20px 24px;
+      box-shadow: none;
+    }
+
+    .wiki-main header {
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wiki-main h2 {
+      font-size: 24px;
+    }
+
+    .wiki-section {
+      padding: 12px 0;
+      border-bottom: 1px solid #edf2ee;
+      scroll-margin-top: 24px;
+    }
+
+    .wiki-section.highlight {
+      padding-right: 12px;
+      padding-left: 12px;
+      margin-right: -12px;
+      margin-left: -12px;
+      background: var(--primary-soft);
+      border-radius: var(--radius);
+    }
+
+    .wiki-section h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .wiki-section p,
+    .wiki-section li {
+      color: var(--ink);
+      line-height: 1.68;
+    }
+
+    .concept {
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-decoration: underline;
+      text-decoration-color: rgba(63, 111, 143, 0.28);
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .trace {
+      padding: 10px 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      background: var(--panel-soft);
+      border-left: 3px solid #b7c8d0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .metadata-list {
+      display: grid;
+      gap: 11px;
+      margin-top: 14px;
+    }
+
+    .metadata-list div {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf2ee;
+    }
+
+    .metadata-list strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .graph-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 16px;
+    }
+
+    .graph-canvas {
+      position: relative;
+      min-height: 600px;
+      overflow: hidden;
+      background: var(--panel-soft);
+      box-shadow: none;
+    }
+
+    .graph-svg {
+      display: block;
+      width: 100%;
+      min-width: 880px;
+      height: 600px;
+    }
+
+    .graph-node {
+      cursor: pointer;
+    }
+
+    .graph-label {
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 700;
+      fill: #1f2d25;
+    }
+
+    .graph-tooltip {
+      position: absolute;
+      z-index: 3;
+      display: none;
+      max-width: 260px;
+      padding: 9px 11px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.45;
+      background: rgba(18, 22, 27, 0.95);
+      border-radius: var(--radius);
+      pointer-events: none;
+      box-shadow: var(--shadow);
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 7px;
+      border-radius: 50%;
+      vertical-align: -1px;
+    }
+
+    .dot.blue { background: var(--blue); }
+    .dot.green { background: var(--green); }
+    .dot.orange { background: var(--orange); }
+    .dot.gray { background: var(--gray); }
+    .dot.red { background: var(--red); }
+
+    .review-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .review-pane {
+      min-height: 390px;
+      padding: 16px;
+      box-shadow: none;
+    }
+
+    .pdf-preview {
+      display: grid;
+      place-items: center;
+      min-height: 270px;
+      margin-top: 14px;
+      color: var(--muted);
+      text-align: center;
+      background:
+        linear-gradient(90deg, rgba(63, 111, 143, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(63, 111, 143, 0.06) 1px, transparent 1px),
+        var(--panel-soft);
+      background-size: 26px 26px;
+      border: 1px dashed #cfd8dc;
+      border-radius: var(--radius);
+    }
+
+    .markdown-preview {
+      min-height: 250px;
+      padding: 14px;
+      margin-top: 12px;
+      color: var(--ink);
+      line-height: 1.62;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 82px;
+      padding: 10px;
+      margin-top: 12px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .queue {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .ask-grid {
+      grid-template-columns: minmax(0, 1fr) 320px;
+    }
+
+    .chat-panel {
+      padding: 16px;
+      box-shadow: none;
+    }
+
+    .message {
+      max-width: 86%;
+      padding: 12px 13px;
+      margin-bottom: 12px;
+      line-height: 1.55;
+      border-radius: var(--radius);
+    }
+
+    .message.user {
+      margin-left: auto;
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .message.answer {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+    }
+
+    .references {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      margin: 12px 0 0;
+      list-style: none;
+    }
+
+    .references li {
+      padding: 9px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    [data-theme="night"] .sidebar {
+      background: #12151b;
+    }
+
+    [data-theme="night"] .card:hover {
+      border-color: #3a4652;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="night"] .prompt-chip,
+    [data-theme="night"] .mini-btn,
+    [data-theme="night"] .model-select,
+    [data-theme="night"] .index-list button,
+    [data-theme="night"] .references li {
+      color: var(--ink);
+    }
+
+    [data-theme="night"] .kb-item,
+    [data-theme="night"] .file-path,
+    [data-theme="night"] .wiki-section p,
+    [data-theme="night"] .wiki-section li,
+    [data-theme="night"] .markdown-preview,
+    [data-theme="night"] .references li {
+      color: var(--ink);
+    }
+
+    [data-theme="night"] .trace {
+      color: #c8d0d8;
+      background: #20242b;
+    }
+
+    [data-theme="night"] .graph-label {
+      fill: #d9dee5;
+    }
+
+    [data-theme="night"] .badge.healthy,
+    [data-theme="night"] .badge.approved {
+      color: #a8d6ba;
+      background: rgba(111, 165, 134, 0.16);
+    }
+
+    [data-theme="night"] .badge.review,
+    [data-theme="night"] .badge.ocr {
+      color: #e1bd82;
+      background: rgba(196, 154, 104, 0.15);
+    }
+
+    [data-theme="night"] .badge.parsing,
+    [data-theme="night"] .badge.medium {
+      color: #b5c9e3;
+      background: rgba(131, 162, 199, 0.15);
+    }
+
+    [data-theme="night"] .badge.failed,
+    [data-theme="night"] .badge.needfix {
+      color: #e5aaa6;
+      background: rgba(208, 130, 124, 0.14);
+    }
+
+    [data-theme="night"] .progress {
+      background: #272c34;
+    }
+
+    [data-theme="night"] .progress span {
+      background: #7898aa;
+    }
+
+    [data-theme="night"] .wiki-section,
+    [data-theme="night"] .metadata-list div {
+      border-color: var(--line);
+    }
+
+    [data-theme="night"] .pdf-preview {
+      background:
+        linear-gradient(90deg, rgba(154, 163, 175, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(154, 163, 175, 0.08) 1px, transparent 1px),
+        var(--panel-soft);
+      border-color: #3a414c;
+    }
+
+    .ask-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .ask-input {
+      flex: 1;
+      min-width: 0;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 1600px) {
+      .main {
+        padding: 34px 44px 44px;
+      }
+
+      .dialog-center {
+        width: min(960px, 100%);
+      }
+
+      .wiki-layout {
+        grid-template-columns: 300px minmax(0, 1fr) 340px;
+      }
+
+      .graph-layout {
+        grid-template-columns: minmax(0, 1fr) 360px;
+      }
+    }
+
+    @media (max-width: 1366px) {
+      .shell {
+        grid-template-columns: 236px minmax(0, 1fr);
+      }
+
+      .main {
+        padding: 22px 22px 30px;
+      }
+
+      .cards,
+      .split,
+      .doc-grid,
+      .wiki-layout,
+      .graph-layout,
+      .review-grid,
+      .ask-grid {
+        gap: 14px;
+      }
+
+      .wiki-layout {
+        grid-template-columns: 230px minmax(0, 1fr) 260px;
+      }
+
+      .graph-layout {
+        grid-template-columns: minmax(0, 1fr) 280px;
+      }
+
+      .doc-grid {
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .library-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .knowledge-popover {
+        left: 26px;
+        transform: none;
+      }
+
+      .selected-kb-card {
+        right: 26px;
+        left: auto;
+        transform: none;
+      }
+
+      .wiki-layout,
+      .graph-layout,
+      .doc-grid,
+      .split,
+      .ask-grid,
+      .settings-layout,
+      .settings-window,
+      .registration-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-window {
+        height: min(820px, calc(100vh - 32px));
+      }
+
+      .settings-rail {
+        max-height: 220px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .config-panel {
+        position: static;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 14px 16px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .side-nav {
+        display: flex;
+        gap: 6px;
+        padding-bottom: 2px;
+        overflow-x: auto;
+      }
+
+      .side-nav button {
+        flex: 0 0 auto;
+        width: auto;
+        min-height: 34px;
+        white-space: nowrap;
+      }
+
+      .side-label,
+      .side-search,
+      .side-recent,
+      .side-divider,
+      .side-workspace {
+        display: none;
+      }
+
+      .side-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 10px;
+      }
+
+      .main {
+        padding: 22px 18px 30px;
+      }
+
+      .page-head,
+      .space-head {
+        flex-direction: column;
+      }
+
+      .button-row {
+        justify-content: flex-start;
+      }
+
+      .settings-window {
+        width: min(100vw - 28px, 780px);
+        height: min(840px, calc(100vh - 28px));
+      }
+
+      .settings-content {
+        padding: 22px 22px 30px;
+      }
+
+      .member-table {
+        overflow-x: auto;
+      }
+
+      .member-row {
+        min-width: 720px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .review-grid,
+      .ask-input-row {
+        flex-direction: column;
+        grid-template-columns: 1fr;
+      }
+
+      .cards,
+      .library-cards,
+      .model-grid,
+      .engine-grid,
+      .metric-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog-hero {
+        min-height: 520px;
+        padding: 26px 16px 34px;
+      }
+
+      .dialog-center h2 {
+        font-size: 24px;
+      }
+
+      .knowledge-popover,
+      .selected-kb-card {
+        position: static;
+        width: 100%;
+        margin: 12px 0;
+        transform: none;
+      }
+
+      .dialog-tools {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .tool-left,
+      .tool-right {
+        flex-wrap: wrap;
+      }
+
+      .member-summary,
+      .member-row {
+        min-width: 0;
+        grid-template-columns: 1fr;
+      }
+
+      .table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .wiki-main {
+        padding: 18px;
+      }
+
+      .graph-canvas {
+        min-height: 520px;
+        overflow: auto;
+      }
+
+      .graph-svg {
+        min-width: 760px;
+        height: 540px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .brand {
+        align-items: flex-start;
+      }
+
+      .side-footer {
+        display: grid;
+      }
+
+      .utility-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .main {
+        padding: 18px 12px 26px;
+      }
+
+      .title-block h1 {
+        font-size: 24px;
+      }
+
+      .button-row,
+      .prompt-chips,
+      .tabs,
+      .settings-tabs {
+        justify-content: flex-start;
+      }
+
+      .btn,
+      .prompt-chip,
+      .settings-tab,
+      .tab {
+        white-space: normal;
+      }
+
+      .dialog-hero {
+        min-height: auto;
+      }
+
+      .settings-window {
+        width: calc(100vw - 16px);
+        height: calc(100vh - 16px);
+      }
+
+      .settings-content {
+        padding: 20px 14px 24px;
+      }
+
+      .metric-grid,
+      .member-summary {
+        gap: 8px;
+      }
+
+      .file-row,
+      .queue-row,
+      .concept-row,
+      .source-row,
+      .legend-item,
+      .card-foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>Atlas Knowledge Hub</div>
+      </div>
+      <nav class="side-nav" id="sideNav" aria-label="主导航"></nav>
+      <div class="side-footer">
+        <div id="sideFooterText">内部知识工作台 · 已连接企业知识空间</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="view active" id="homeView"></section>
+      <section class="view" id="spaceView"></section>
+    </main>
+    <section class="settings-modal" id="settingsView" aria-modal="true" role="dialog"></section>
+    <section class="create-space-modal" id="createSpaceView" aria-modal="true" role="dialog"></section>
+  </div>
+
+  <script>
+    // Local preview data
+    const uiState = {
+      lang: localStorage.getItem("atlas-lang") || "zh-CN",
+      theme: localStorage.getItem("atlas-theme") || "day",
+      view: "home",
+      activeTab: "wiki",
+      settingsOpen: false,
+      createSpaceOpen: false,
+      createStep: "basic",
+      selectedKnowledgeType: "document",
+      selectedIndexStrategy: "rag",
+      settingsPanel: "members",
+      selectedModelId: "deepseek-flash"
+    };
+
+    const i18n = {
+      "zh-CN": {
+        nav: ["知识库", "智能体", "共享空间", "对话"],
+        navKeys: ["all", "agents", "shared", "chat"],
+        sideSearch: "搜索",
+        recentLabel: "近7天",
+        recentItems: ["外企职场常用语言求助", "选择知识库内容的方法", "用户问候或打招呼"],
+        workspaceName: "leo's Workspace",
+        workspaceRole: "所有者",
+        quickSettingsLabel: "工作区设置",
+        allSettings: "全部设置",
+        connectedTools: "已接入的工具",
+        logout: "退出",
+        footer: "内部知识工作台 · 已连接企业知识空间",
+        languageButton: "中文",
+        themeButton: { day: "日间", night: "夜间" },
+        homeTitle: "知识库",
+        homeSubtitle: "管理和组织您的知识库，支持文档型和问答型知识库",
+        filter: "筛选",
+        newSpace: "新建知识库",
+        dialogTitle: "Atlas，让你的知识触手可及",
+        dialogSubtitle: "你可以这样问我",
+        dialogPlaceholder: "输入问题，将基于上方选中的知识库/文件回答",
+        quickAsk: "快速问答⌄",
+        selectedKbTitle: "已选择知识库",
+        send: "发送",
+        kbTitle: "知识库",
+        docType: "文档",
+        docCount: "共 18 个文档",
+        sectionTitle: "知识空间",
+        sectionSubtitle: "进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。",
+        openLabel: "打开",
+        owner: "Owner",
+        documents: "Documents",
+        wikiPages: "Wiki Pages",
+        reviews: "Reviews",
+        breadcrumbHome: "知识库",
+        spaceSubtitle: "从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。",
+        backHome: "返回知识库",
+        uploadFolder: "上传文件夹",
+        uploadZip: "上传 ZIP",
+        tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
+        batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
+        fileTree: "文件树与解析状态",
+        wikiSearch: "搜索 Wiki 页面...",
+        recentUpdates: "Recent Updates",
+        wikiIntro: "Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。",
+        graphOverview: "图谱概览",
+        graphHelp: "轻量知识图谱。节点来自已发布 Wiki、源文档和待审核证据。",
+        nodeDetail: "Node Detail",
+        nodeDetailHelp: "点击图谱节点查看来源、类型和关系说明。",
+        pdfPreview: "PDF Page Preview",
+        pdfPlaceholder: "表格、流程图和扫描文本预览占位",
+        markdownPreview: "Markdown Preview",
+        reviewComments: "Review comments...",
+        approve: "Approve",
+        needFix: "Need Fix",
+        markOcr: "Mark OCR Required",
+        lowConfidence: "Low confidence pages",
+        askTitle: "Ask IBM i Modernization",
+        askPlaceholder: "Ask about IBM i Modernization...",
+        confidence: "Confidence",
+        askPolicy: "可信回答策略",
+        askPolicyText: "Ask 只展示来自已审核或带有清晰 source_trace 的证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。",
+        approvedWikiPages: "Approved Wiki pages",
+        evidenceChunks: "Evidence chunks",
+        reviewRequired: "Review required",
+        modelSettingsTitle: "模型配置",
+        modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
+        builtinModel: "内置模型",
+        builtinModelHelp: "内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。",
+        allModels: "全部",
+        chatModels: "对话",
+        embeddingModels: "Embedding",
+        rerankModels: "ReRank",
+        visionModels: "视觉",
+        speechModels: "语音",
+        editModel: "编辑模型",
+        editModelSubtitle: "配置用于对话的大语言模型",
+        modelSource: "模型来源",
+        ollama: "Ollama",
+        api: "API",
+        accessConfig: "接入配置",
+        provider: "服务商",
+        modelName: "模型名称",
+        displayName: "显示名称（可选）",
+        baseUrl: "Base URL",
+        apiKey: "API Key（可选）",
+        configured: "已配置",
+        replace: "更换",
+        remove: "移除",
+        customHeaders: "自定义请求头（可选）",
+        addHeader: "添加请求头",
+        advancedOptions: "高级选项",
+        multimodal: "支持视觉/多模态",
+        thinkingFormat: "思考模式参数格式",
+        noThinking: "不写入思考参数",
+        providerDefault: "使用 provider 默认格式",
+        customThinking: "自定义参数格式",
+        testConnection: "测试连接",
+        cancel: "取消",
+        save: "保存",
+        modelSafetyNote: "当前界面仅展示配置状态，不显示完整 API Key。GitHub/Copilot 模型可用性取决于 GitHub Models 目录、Copilot 订阅和组织策略。",
+        settingsMembers: "成员管理",
+        settingsRegistration: "注册配置",
+        settingsModels: "模型管理",
+        settingsAccountGroup: "账户",
+        settingsSpaceGroup: "空间",
+        settingsModelGroup: "模型",
+        settingsDataGroup: "数据与扩展",
+        settingsGeneral: "常规设置",
+        settingsUserInfo: "用户信息",
+        settingsApiInfo: "API 信息",
+        settingsVectorEngine: "向量数据库引擎",
+        settingsParserEngine: "解析引擎",
+        settingsStorageEngine: "存储引擎",
+        settingsTitle: "设置",
+        memberTitle: "成员管理",
+        memberSubtitle: "邀请伙伴加入当前知识空间并分配角色。只有 Owner/Admin 可新增或移除成员。",
+        auditLog: "审计日志",
+        learnRbac: "了解 RBAC",
+        pendingInvites: "待接受的邀请",
+        noPendingInvites: "暂无待接受的邀请。",
+        spaceMembers: "空间成员",
+        searchMembers: "按姓名或邮箱搜索",
+        inviteMember: "邀请成员",
+        copyInviteLink: "复制邀请链接",
+        nameEmail: "姓名与邮箱",
+        role: "角色",
+        joinedAt: "加入时间",
+        actions: "操作",
+        ownerRole: "所有者",
+        adminRole: "管理员",
+        reviewerRole: "审核员",
+        viewerRole: "查看者",
+        removeMember: "移除",
+        registrationTitle: "注册配置",
+        registrationSubtitle: "配置新用户进入 Atlas 的方式，包括域名限制、审批和默认空间。",
+        registrationMode: "注册模式",
+        selfRegistration: "自助注册",
+        domainRestricted: "域名限制",
+        inviteOnly: "邀请制",
+        approvedDomain: "允许邮箱域名",
+        defaultSpace: "默认申请空间",
+        requiresApproval: "需要 Owner/Admin 审批",
+        signupPreview: "注册预览",
+        fullName: "姓名",
+        email: "邮箱",
+        password: "密码",
+        requestedSpace: "申请知识空间",
+        createAccount: "创建账号",
+        registrationNote: "密码字段仅为视觉占位，不保存任何凭据。生产实现必须在后端执行密码策略、邮箱验证和 RBAC。",
+        generalTitle: "常规设置",
+        generalSubtitle: "管理语言、主题、默认空间和通知偏好。",
+        userInfoTitle: "用户信息",
+        userInfoSubtitle: "查看当前用户的基础资料和最近活动。",
+        apiInfoTitle: "API 信息",
+        apiInfoSubtitle: "查看 API 访问状态、权限范围和密钥操作。界面不会显示完整密钥。",
+        language: "语言",
+        theme: "主题",
+        defaultKnowledgeSpace: "默认知识空间",
+        notifications: "通知提醒",
+        organization: "组织",
+        globalRole: "全局角色",
+        recentActivity: "最近活动",
+        apiKeyStatus: "API Key 状态",
+        scopes: "权限范围",
+        lastUsed: "最近使用",
+        rotateKey: "轮换密钥",
+        revokeKey: "撤销密钥",
+        vectorTitle: "向量数据库引擎",
+        vectorSubtitle: "注册和管理用于知识库搜索的向量数据库实例。",
+        parserTitle: "解析引擎",
+        parserSubtitle: "管理 PDF、Office、OCR 和多模态解析适配器。",
+        storageTitle: "存储引擎",
+        storageSubtitle: "管理原始文件、生成物、图片和报告的存储后端。",
+        addEngine: "添加引擎",
+        adapter: "适配器",
+        configSummary: "配置摘要",
+        defaultEngine: "DEFAULT",
+        available: "可用",
+        experimental: "实验性"
+      },
+      "en-US": {
+        nav: ["Knowledge", "Agents", "Shared Spaces", "Chat"],
+        navKeys: ["all", "agents", "shared", "chat"],
+        sideSearch: "Search",
+        recentLabel: "Last 7 days",
+        recentItems: ["Common workplace language help", "How to choose knowledge content", "Greeting and small talk"],
+        workspaceName: "leo's Workspace",
+        workspaceRole: "Owner",
+        quickSettingsLabel: "Workspace Settings",
+        allSettings: "All Settings",
+        connectedTools: "Connected Tools",
+        logout: "Sign out",
+        footer: "Internal knowledge workspace · Enterprise spaces connected",
+        languageButton: "EN",
+        themeButton: { day: "Day", night: "Night" },
+        homeTitle: "Knowledge Base",
+        homeSubtitle: "Manage and organize document-based and Q&A knowledge bases.",
+        filter: "Filter",
+        newSpace: "New Space",
+        dialogTitle: "Atlas, knowledge within reach",
+        dialogSubtitle: "Try asking",
+        dialogPlaceholder: "Ask a question based on the selected knowledge base or file",
+        quickAsk: "Quick Ask⌄",
+        selectedKbTitle: "Selected knowledge base",
+        send: "Send",
+        kbTitle: "Knowledge Base",
+        docType: "Docs",
+        docCount: "18 documents",
+        sectionTitle: "Knowledge Spaces",
+        sectionSubtitle: "Open a space to inspect batches, LM Wiki, graph, Review, and Ask.",
+        openLabel: "Open",
+        owner: "Owner",
+        documents: "Documents",
+        wikiPages: "Wiki Pages",
+        reviews: "Reviews",
+        breadcrumbHome: "Knowledge Base",
+        spaceSubtitle: "Target experience from project document packages to reviewable LM Wiki, graph, and trusted Ask.",
+        backHome: "Back",
+        uploadFolder: "Upload Folder",
+        uploadZip: "Upload ZIP",
+        tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
+        batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
+        fileTree: "File Tree And Parsing Status",
+        wikiSearch: "Search Wiki pages...",
+        recentUpdates: "Recent Updates",
+        wikiIntro: "Auto-generated normalized Markdown page. Dense, evidence-first content awaiting SME review for low-confidence sections.",
+        graphOverview: "Graph Overview",
+        graphHelp: "Lightweight knowledge graph. Nodes come from published Wiki pages, source documents, and review-required evidence.",
+        nodeDetail: "Node Detail",
+        nodeDetailHelp: "Click a graph node to inspect source, type, and relationship notes.",
+        pdfPreview: "PDF Page Preview",
+        pdfPlaceholder: "Table, diagram, and scanned text preview placeholder",
+        markdownPreview: "Markdown Preview",
+        reviewComments: "Review comments...",
+        approve: "Approve",
+        needFix: "Need Fix",
+        markOcr: "Mark OCR Required",
+        lowConfidence: "Low confidence pages",
+        askTitle: "Ask IBM i Modernization",
+        askPlaceholder: "Ask about IBM i Modernization...",
+        confidence: "Confidence",
+        askPolicy: "Trusted Answer Policy",
+        askPolicyText: "Ask only shows evidence that is reviewed or has clear source_trace. Medium confidence means the answer is useful for exploration, but sources should still be checked.",
+        approvedWikiPages: "Approved Wiki pages",
+        evidenceChunks: "Evidence chunks",
+        reviewRequired: "Review required",
+        modelSettingsTitle: "Model Configuration",
+        modelSettingsSubtitle: "Manage AI model types, including Ollama local models, remote APIs, GitHub Models / Copilot-available models, and custom providers.",
+        builtinModel: "Built-in Models",
+        builtinModelHelp: "Built-in models are visible to all tenants. Sensitive values are masked and full secrets are never displayed here.",
+        allModels: "All",
+        chatModels: "Chat",
+        embeddingModels: "Embedding",
+        rerankModels: "ReRank",
+        visionModels: "Vision",
+        speechModels: "Speech",
+        editModel: "Edit Model",
+        editModelSubtitle: "Configure the large language model used for dialogue",
+        modelSource: "Model Source",
+        ollama: "Ollama",
+        api: "API",
+        accessConfig: "Access Configuration",
+        provider: "Provider",
+        modelName: "Model Name",
+        displayName: "Display Name (optional)",
+        baseUrl: "Base URL",
+        apiKey: "API Key (optional)",
+        configured: "Configured",
+        replace: "Replace",
+        remove: "Remove",
+        customHeaders: "Custom Request Headers (optional)",
+        addHeader: "Add Header",
+        advancedOptions: "Advanced Options",
+        multimodal: "Vision / multimodal support",
+        thinkingFormat: "Thinking parameter format",
+        noThinking: "Do not send thinking parameters",
+        providerDefault: "Use provider default format",
+        customThinking: "Custom parameter format",
+        testConnection: "Test Connection",
+        cancel: "Cancel",
+        save: "Save",
+        modelSafetyNote: "This view shows configuration state and never displays full API keys. GitHub/Copilot model availability depends on GitHub Models catalog, Copilot subscription, and organization policy.",
+        settingsMembers: "Members",
+        settingsRegistration: "Registration",
+        settingsModels: "Models",
+        settingsAccountGroup: "Account",
+        settingsSpaceGroup: "Space",
+        settingsModelGroup: "Model",
+        settingsDataGroup: "Data & Extensions",
+        settingsGeneral: "General Settings",
+        settingsUserInfo: "User Info",
+        settingsApiInfo: "API Info",
+        settingsVectorEngine: "Vector Database Engine",
+        settingsParserEngine: "Parsing Engine",
+        settingsStorageEngine: "Storage Engine",
+        settingsTitle: "Settings",
+        memberTitle: "Member Management",
+        memberSubtitle: "Invite people into the current Knowledge Space and assign roles. Only Owner/Admin can add or remove members.",
+        auditLog: "Audit Log",
+        learnRbac: "Learn RBAC",
+        pendingInvites: "Pending Invitations",
+        noPendingInvites: "No pending invitations.",
+        spaceMembers: "Space Members",
+        searchMembers: "Search by name or email",
+        inviteMember: "Invite Member",
+        copyInviteLink: "Copy Invite Link",
+        nameEmail: "Name and Email",
+        role: "Role",
+        joinedAt: "Joined At",
+        actions: "Actions",
+        ownerRole: "Owner",
+        adminRole: "Admin",
+        reviewerRole: "Reviewer",
+        viewerRole: "Viewer",
+        removeMember: "Remove",
+        registrationTitle: "Registration Settings",
+        registrationSubtitle: "Configure how new users enter Atlas. Prototype only shows the registration experience and creates no real account.",
+        registrationMode: "Registration Mode",
+        selfRegistration: "Self-registration",
+        domainRestricted: "Domain restricted",
+        inviteOnly: "Invite-only",
+        approvedDomain: "Allowed email domain",
+        defaultSpace: "Default requested space",
+        requiresApproval: "Requires Owner/Admin approval",
+        signupPreview: "Sign-up Preview",
+        fullName: "Full Name",
+        email: "Email",
+        password: "Password",
+        requestedSpace: "Requested Knowledge Space",
+        createAccount: "Create Account",
+        registrationNote: "Password field is visual only and stores no credentials. Production must enforce password policy, email verification, and RBAC server-side.",
+        generalTitle: "General Settings",
+        generalSubtitle: "Manage language, theme, default space, and notification preferences.",
+        userInfoTitle: "User Information",
+        userInfoSubtitle: "Review the current user's basic profile and recent activity.",
+        apiInfoTitle: "API Information",
+        apiInfoSubtitle: "Review API access status, scopes, and key actions. Prototype never shows real secrets.",
+        language: "Language",
+        theme: "Theme",
+        defaultKnowledgeSpace: "Default Knowledge Space",
+        notifications: "Notifications",
+        organization: "Organization",
+        globalRole: "Global Role",
+        recentActivity: "Recent Activity",
+        apiKeyStatus: "API Key Status",
+        scopes: "Scopes",
+        lastUsed: "Last Used",
+        rotateKey: "Rotate Key",
+        revokeKey: "Revoke Key",
+        vectorTitle: "Vector Database Engine",
+        vectorSubtitle: "Register and manage vector database instances for knowledge search.",
+        parserTitle: "Parsing Engine",
+        parserSubtitle: "Manage PDF, Office, OCR, and multimodal parser adapters.",
+        storageTitle: "Storage Engine",
+        storageSubtitle: "Manage storage backends for raw files, generated artifacts, images, and reports.",
+        addEngine: "Add Engine",
+        adapter: "Adapter",
+        configSummary: "Config Summary",
+        defaultEngine: "DEFAULT",
+        available: "Available",
+        experimental: "Experimental"
+      }
+    };
+
+    const appData = {
+      dialog: {
+        title: "Atlas，让你的知识触手可及",
+        subtitle: "你可以这样问我",
+        prompts: [
+          "IBM i Modernization 的迁移边界是什么？",
+          "哪些页面还需要 SME Review？",
+          "Source Trace 在现代化流程里怎么用？",
+          "BRD 生成依赖哪些源文档？"
+        ],
+        knowledgeBases: [
+          { name: "English Learning Studio", count: 20 },
+          { name: "IBM i Modernization", count: 12 },
+          { name: "Agentic SDLC", count: 19 },
+          { name: "AI Engineering Practice", count: 21 },
+          { name: "AI Repo Radar", count: 21 },
+          { name: "51 talk 成人口语教材", count: 607 },
+          { name: "AI Guideline", count: 18, selected: true },
+          { name: "Hello-Agents-Wiki", count: 25 }
+        ],
+        selected: {
+          name: "AI Guideline",
+          type: "文档",
+          description: "AI Guideline",
+          countLabel: "共 18 个文档"
+        }
+      },
+      spaces: [
+        {
+          name: "IBM i Modernization",
+          description: "围绕 IBM i 现代化的应用盘点、RPG 程序理解、模块边界识别、BRD 生成和迁移证据管理。",
+          documents: 238,
+          wikiPages: 42,
+          reviews: 35,
+          owner: "Modernization CoE",
+          updated: "2026-06-28",
+          status: "Review Required"
+        },
+        {
+          name: "Agentic SDLC",
+          description: "沉淀 agent-first 软件交付流程、评审门禁、规范化提示词和可追溯工程实践。",
+          documents: 86,
+          wikiPages: 24,
+          reviews: 4,
+          owner: "Platform Team",
+          updated: "2026-06-25",
+          status: "Healthy"
+        },
+        {
+          name: "AI Engineering Practice",
+          description: "AI 工程的评测、RAG、提示词、模型网关、监控和安全实践知识库。",
+          documents: 132,
+          wikiPages: 37,
+          reviews: 8,
+          owner: "AI Engineering",
+          updated: "2026-06-22",
+          status: "Healthy"
+        },
+        {
+          name: "Deployment Knowledge Base",
+          description: "部署流程、环境差异、回滚手册、故障知识和运维责任边界。",
+          documents: 75,
+          wikiPages: 19,
+          reviews: 11,
+          owner: "SRE",
+          updated: "2026-06-20",
+          status: "Parsing"
+        },
+        {
+          name: "WWA Modernization",
+          description: "WWA 现代化项目的业务域、接口清单、迁移阶段和知识传承材料。",
+          documents: 149,
+          wikiPages: 31,
+          reviews: 16,
+          owner: "Delivery Team",
+          updated: "2026-06-18",
+          status: "Review Required"
+        },
+        {
+          name: "AI Guideline",
+          description: "内部 AI 使用准则、数据边界、安全审查、知识资产发布和合规提示。",
+          documents: 44,
+          wikiPages: 14,
+          reviews: 0,
+          owner: "Governance",
+          updated: "2026-06-15",
+          status: "Healthy"
+        }
+      ],
+      batch: {
+        name: "2026-06 IBM i Discovery Package",
+        totalFiles: 238,
+        pdfConverted: 211,
+        markdownGenerated: 176,
+        reviewRequired: 35,
+        failed: 12,
+        files: [
+          { path: "/Discovery/Architecture/Target_Architecture.pptx", status: "PDF_CONVERTED" },
+          { path: "/Discovery/BRD/BRD_Methodology.docx", status: "MARKDOWN_GENERATED" },
+          { path: "/Discovery/Interface/API_List.xlsx", status: "OCR_REQUIRED" },
+          { path: "/Discovery/Flow/Program_Flow.vsdx", status: "REVIEW_REQUIRED" },
+          { path: "/Discovery/Reports/RPG_Scan_Result.pdf", status: "FAILED" }
+        ],
+        progress: [
+          { label: "Office 转 PDF", value: 89 },
+          { label: "PDF 转 Markdown", value: 74 },
+          { label: "Source Trace 校验", value: 68 },
+          { label: "SME Review", value: 31 }
+        ]
+      },
+      wiki: {
+        pages: ["空间总览", "BRD 生成流程", "RPG 程序理解", "证据包与来源追溯", "SME Review 队列", "迁移边界"],
+        recent: ["BRD 生成流程更新了 6 个 source_trace 字段", "Program_Flow.pdf 第 4 页被标记为 OCR_REQUIRED", "Legacy Spec Factory 新增 Golden Master 对齐说明"],
+        metadata: {
+          sourceDocuments: "BRD_Methodology.pdf, RPG_Scan_Result.pdf, Legacy_Spec_Factory_Guide.pdf",
+          confidence: "0.78 / medium",
+          reviewStatus: "REVIEW_REQUIRED",
+          lastUpdated: "2026-06-28 18:40",
+          owner: "Modernization CoE",
+          relatedConcepts: ["Source Trace", "Evidence Bundle", "SME Review", "Golden Master", "Markdown Normalizer"]
+        },
+        sections: [
+          {
+            id: "overview",
+            title: "空间摘要",
+            body: "IBM i Modernization 空间将 discovery 文档、架构材料、RPG 扫描结果和迁移工作说明归一化为 LM Wiki。当前页面由 Markdown Normalizer 自动生成，所有结论必须保留 source_trace、confidence 和 review_status。"
+          },
+          {
+            id: "principles",
+            title: "可信知识原则",
+            body: "本空间采用 evidence-first 策略：来源追溯 用来连接 Wiki 段落与 PDF 页码；证据优先 要求所有图谱边和 Ask 答案指回源文档；SME Review 是发布前的人工确认门禁。低置信度或 LLM 生成内容不会直接进入 Published Wiki。"
+          },
+          {
+            id: "domain",
+            title: "核心对象与边界",
+            body: "模块边界 表示从 RPG 调用链、数据库对象和接口依赖中识别出的迁移单元。程序单元 通常对应一个 RPG Program、CL Program 或服务入口。迁移边界 由业务能力、数据依赖、批处理窗口和接口风险共同决定。"
+          },
+          {
+            id: "factory",
+            title: "Legacy Spec Factory",
+            body: "BRD 生成 会将 discovery notes、接口清单和代码扫描结果整理为可审核业务说明。Golden Master 用于比较迁移前后的关键输出，RAG Evidence Bundle 则为 Ask 和评审提供可引用证据片段。"
+          },
+          {
+            id: "tooling",
+            title: "转换与标准化工具",
+            body: "trinity-office 作为 Office-to-PDF 内部转换工具通过 adapter 暴露；document-normalize 作为 PDF-to-Markdown 和图片抽取工具通过 parser adapter 暴露；Markdown Normalizer 将工具输出整理为统一 front matter、source_trace 和 review_status。"
+          },
+          {
+            id: "graph",
+            title: "图谱派生",
+            body: "RPG Scan、PDF Parser 和 Markdown Wiki 共同产生轻量图谱候选。只有通过 SME Review 或确定性校验的节点与边，才会成为可信图谱关系。图谱关系应保留 Evidence Bundle 指针，而不是只保存抽象标签。"
+          }
+        ],
+        concepts: {
+          "来源追溯": "将 Wiki 段落、图谱边和问答引用连接到具体文档、页码或 chunk。",
+          "证据优先": "先保存可验证证据，再生成摘要、图谱或问答。",
+          "模块边界": "从程序、数据、接口和业务能力中划出的迁移单元。",
+          "程序单元": "RPG、CL、服务入口或批处理作业等可分析对象。",
+          "BRD 生成": "从 discovery 与代码证据生成可评审业务需求说明。",
+          "Golden Master": "迁移前后关键行为和输出比对基准。",
+          "SME Review": "主题专家对低置信度或 LLM 生成内容进行批准或退回。",
+          "迁移边界": "决定哪些系统、模块、接口和数据进入同一迁移范围。",
+          "RAG Evidence Bundle": "为 Ask 答案提供 source-grounded 证据包。",
+          "RPG Scan": "从 IBM i 源码中提取调用、文件、字段和作业关系。",
+          "Legacy Spec Factory": "将遗留系统材料转化为规范化说明和 Wiki 页面的一组流程。",
+          "Markdown Normalizer": "把 parser 输出转换成 Atlas 标准 Markdown。",
+          "document-normalize": "内部 PDF-to-Markdown 与图片抽取工具，通过 adapter 使用。",
+          "trinity-office": "内部 Office-to-PDF 工具，通过 converter adapter 使用。"
+        }
+      },
+      graph: {
+        nodes: [
+          { id: "hub", label: "IBM i Modernization", type: "Entity", x: 450, y: 285, r: 44, detail: "Knowledge Space core node; contains reviewed pages, documents, concepts, and source chunks." },
+          { id: "brd", label: "BRD Extraction", type: "Wiki Page", x: 240, y: 120, r: 31, detail: "Wiki page derived from BRD methodology and discovery notes." },
+          { id: "rpg", label: "RPG Program", type: "Entity", x: 645, y: 110, r: 31, detail: "Program entity extracted from RPG scan and dependency reports." },
+          { id: "module", label: "Module Boundary", type: "Concept", x: 745, y: 260, r: 30, detail: "Migration unit inferred from business capability and technical dependency evidence." },
+          { id: "trace", label: "Source Trace", type: "Concept", x: 205, y: 260, r: 30, detail: "Trace links between Markdown sections and source document pages." },
+          { id: "evidence", label: "Evidence Bundle", type: "Document", x: 300, y: 430, r: 29, detail: "Reviewed bundle of source snippets used by graph and Ask." },
+          { id: "review", label: "SME Review", type: "Review Required", x: 555, y: 455, r: 31, detail: "Human review gate for low confidence or generated content." },
+          { id: "golden", label: "Golden Master", type: "Concept", x: 760, y: 430, r: 28, detail: "Regression comparison baseline for migration behavior." },
+          { id: "parser", label: "PDF Parser", type: "Entity", x: 450, y: 95, r: 28, detail: "Parser adapter boundary for PDF-to-Markdown and image extraction." },
+          { id: "wiki", label: "Markdown Wiki", type: "Wiki Page", x: 445, y: 190, r: 30, detail: "Published normalized Markdown page with trace and review metadata." },
+          { id: "factory", label: "Legacy Spec Factory", type: "Entity", x: 110, y: 420, r: 28, detail: "Workflow for generating business and technical specs from legacy evidence." },
+          { id: "normalize", label: "document-normalize", type: "Entity", x: 595, y: 250, r: 26, detail: "Internal parser tool wrapped behind adapter interface." },
+          { id: "office", label: "trinity-office", type: "Entity", x: 335, y: 205, r: 26, detail: "Internal Office-to-PDF conversion tool wrapped behind adapter interface." },
+          { id: "rag", label: "RAG Evidence Bundle", type: "Document", x: 625, y: 365, r: 29, detail: "Source-grounded answer package used by the Ask interface." }
+        ],
+        edges: [
+          ["hub", "brd"], ["hub", "rpg"], ["hub", "module"], ["hub", "trace"], ["hub", "evidence"], ["hub", "review"], ["hub", "golden"],
+          ["office", "parser"], ["parser", "normalize"], ["normalize", "wiki"], ["wiki", "trace"], ["trace", "evidence"], ["evidence", "rag"],
+          ["factory", "brd"], ["brd", "review"], ["rpg", "module"], ["module", "golden"], ["rag", "review"], ["wiki", "hub"]
+        ]
+      },
+      review: {
+        source: "BRD_Methodology.pdf",
+        page: 12,
+        confidence: "0.62 / medium-low",
+        markdown: "### Migration Boundary\n\n当前迁移边界由账户服务、批处理窗口和接口依赖共同决定。该段落来自 BRD_Methodology.pdf 第 12 页，部分表格字段置信度较低，需要 SME 确认。",
+        queue: ["BRD_Methodology.pdf / page 12", "Program_Flow.pdf / page 4", "API_List.pdf / page 8"]
+      },
+      ask: {
+        question: "Explain what Source Trace means in the modernization workflow.",
+        answer: "Source Trace 指 Atlas 在现代化流程中保留的证据链。每个 Wiki 段落、图谱关系和 Ask 答案都应能回到源文件、页码或 chunk。这样 SME 可以在 Review 阶段核对出处，交付团队也能判断某个结论是否来自确定性解析、人工审核，还是需要进一步修复。",
+        references: ["Source: BRD_Methodology.pdf / page 12", "Source: Legacy_Spec_Factory_Guide.pdf / page 8"],
+        confidence: "medium"
+      },
+      models: [
+        {
+          id: "deepseek-flash",
+          provider: "DeepSeek",
+          source: "API",
+          type: "chat",
+          name: "deepseek-v4-flash",
+          displayName: "DeepSeek Flash",
+          baseUrl: "https://api.deepseek.com/v1",
+          apiKeyStatus: "configured",
+          supportsMultimodal: true,
+          thinkingFormat: "none",
+          note: "OpenAI-compatible remote API connector."
+        },
+        {
+          id: "github-models-gpt",
+          provider: "GitHub Models",
+          source: "API",
+          type: "chat",
+          name: "openai/gpt-4.1",
+          displayName: "GitHub GPT-4.1",
+          baseUrl: "https://models.github.ai/inference",
+          apiKeyStatus: "configured",
+          supportsMultimodal: true,
+          thinkingFormat: "provider_default",
+          note: "GitHub Models catalog and inference connector; availability depends on GitHub account and policy."
+        },
+        {
+          id: "github-copilot-claude",
+          provider: "GitHub Copilot",
+          source: "Copilot Policy",
+          type: "chat",
+          name: "claude-sonnet-4",
+          displayName: "Copilot Claude Sonnet",
+          baseUrl: "Managed by GitHub Copilot client/policy",
+          apiKeyStatus: "not_configured",
+          supportsMultimodal: false,
+          thinkingFormat: "provider_default",
+          note: "Copilot-available model managed by organization policy; not a generic Base URL provider."
+        },
+        {
+          id: "ollama-qwen",
+          provider: "Ollama",
+          source: "Ollama",
+          type: "chat",
+          name: "qwen3:14b",
+          displayName: "Qwen3 Local",
+          baseUrl: "http://localhost:11434",
+          apiKeyStatus: "not_configured",
+          supportsMultimodal: false,
+          thinkingFormat: "none",
+          note: "Local model connector."
+        },
+        {
+          id: "dashscope-embedding",
+          provider: "Aliyun DashScope",
+          source: "API",
+          type: "embedding",
+          name: "text-embedding-v4",
+          displayName: "text-embedding-v4",
+          baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          apiKeyStatus: "configured",
+          supportsMultimodal: false,
+          thinkingFormat: "none",
+          note: "Embedding model connector, 1024 dimensions."
+        }
+      ],
+      registration: {
+        enabled: true,
+        mode: "domain_restricted",
+        allowedDomain: "atlas.example",
+        defaultSpace: "IBM i Modernization",
+        requiresApproval: true
+      },
+      invitations: [],
+      members: [
+        {
+          name: "leo",
+          email: "leo1024@example.local",
+          role: "owner",
+          joinedAt: "2026/06/23 13:19",
+          protected: true
+        },
+        {
+          name: "PKOS Admin",
+          email: "admin@pkos.local",
+          role: "admin",
+          joinedAt: "2026/06/26 15:44",
+          protected: false
+        },
+        {
+          name: "SME Reviewer",
+          email: "sme.reviewer@example.local",
+          role: "reviewer",
+          joinedAt: "2026/06/28 09:30",
+          protected: false
+        },
+        {
+          name: "Delivery Viewer",
+          email: "delivery.viewer@example.local",
+          role: "viewer",
+          joinedAt: "2026/06/29 10:18",
+          protected: false
+        }
+      ],
+      account: {
+        name: "leo",
+        email: "leo1024@example.local",
+        organization: "WWA Lab",
+        globalRole: "Workspace Owner",
+        defaultSpace: "IBM i Modernization",
+        notifications: true,
+        recentActivity: "Reviewed BRD_Methodology.pdf / page 12 on 2026/06/30",
+        apiKeyStatus: "configured",
+        scopes: ["spaces:read", "wiki:read", "ask:query"],
+        lastUsed: "2026/06/30 18:20"
+      },
+      engines: {
+        vector: [
+          { name: "PostgreSQL / pgvector", adapter: "postgres-vector-adapter", status: "default", summary: "Local metadata DB with vector extension; used for MVP search." },
+          { name: "Milvus", adapter: "milvus-adapter", status: "available", summary: "Distributed vector database option for larger corpora." },
+          { name: "Qdrant", adapter: "qdrant-adapter", status: "available", summary: "HTTP/gRPC vector search backend option." },
+          { name: "OpenSearch Vector", adapter: "opensearch-vector-adapter", status: "experimental", summary: "Hybrid lexical/vector search option." }
+        ],
+        parser: [
+          { name: "document-normalize", adapter: "document-normalize-adapter", status: "default", summary: "PDF-to-Markdown and image extraction internal adapter." },
+          { name: "MinerU", adapter: "mineru-adapter", status: "available", summary: "Research/document parser candidate." },
+          { name: "Docling", adapter: "docling-adapter", status: "available", summary: "Document AI parser candidate." },
+          { name: "PaddleOCR", adapter: "paddleocr-adapter", status: "experimental", summary: "OCR fallback for scanned pages." }
+        ],
+        storage: [
+          { name: "Local Artifact Storage", adapter: "local-storage-adapter", status: "default", summary: "Stores raw inputs, generated PDFs, Markdown, assets, and reports." },
+          { name: "S3-Compatible Object Storage", adapter: "s3-storage-adapter", status: "available", summary: "Future object storage backend for generated artifacts." },
+          { name: "Internal Artifact Registry", adapter: "artifact-registry-adapter", status: "available", summary: "Managed internal storage option." },
+          { name: "NAS / Shared Folder", adapter: "nas-storage-adapter", status: "experimental", summary: "Shared filesystem integration candidate." }
+        ]
+      }
+    };
+
+    const statusClass = {
+      "Healthy": "healthy",
+      "Review Required": "review",
+      "Parsing": "parsing",
+      "PDF_CONVERTED": "approved",
+      "MARKDOWN_GENERATED": "healthy",
+      "OCR_REQUIRED": "ocr",
+      "REVIEW_REQUIRED": "review",
+      "FAILED": "failed"
+    };
+
+    const graphColor = {
+      "Wiki Page": "var(--blue)",
+      "Entity": "var(--green)",
+      "Concept": "var(--orange)",
+      "Document": "var(--gray)",
+      "Review Required": "var(--red)"
+    };
+
+    const homeView = document.querySelector("#homeView");
+    const spaceView = document.querySelector("#spaceView");
+    const settingsView = document.querySelector("#settingsView");
+    const createSpaceView = document.querySelector("#createSpaceView");
+    const sideNav = document.querySelector("#sideNav");
+    const sideFooterText = document.querySelector("#sideFooterText");
+
+    function copy() {
+      return i18n[uiState.lang];
+    }
+
+    function applyPreferences() {
+      const text = copy();
+      document.documentElement.lang = uiState.lang;
+      document.documentElement.dataset.theme = uiState.theme;
+      sideFooterText.textContent = text.footer;
+    }
+
+    // Rendering
+    function renderNav() {
+      const text = copy();
+      const settingsShortcuts = [
+        ["members", text.settingsMembers, "♙"],
+        ["models", text.settingsModels, "⬡"],
+        ["vectorEngine", text.settingsVectorEngine, "◎"],
+        ["parserEngine", text.settingsParserEngine, "▧"],
+        ["storageEngine", text.settingsStorageEngine, "▱"],
+        ["apiInfo", text.settingsApiInfo, "◇"]
+      ];
+      sideNav.innerHTML = `
+        <div class="side-search"><span>⌕</span><span>${text.sideSearch}</span></div>
+        ${text.nav.map((item, index) => `
+          <button class="${index === 0 && uiState.view === "home" ? "active" : ""}" data-nav="${item}" data-nav-key="${text.navKeys[index]}">
+            <span>${["□", "✦", "∞", "◱"][index]}</span>${item}
+          </button>
+        `).join("")}
+        <div class="side-label">${text.recentLabel}</div>
+        <ul class="side-recent">
+          ${text.recentItems.map((item) => `<li>${item}</li>`).join("")}
+        </ul>
+        <div class="side-workspace">
+          <p class="workspace-title">${text.workspaceName}</p>
+          <div class="workspace-role">◇ ${text.workspaceRole}</div>
+        </div>
+        <div class="side-label">${text.quickSettingsLabel}</div>
+        ${settingsShortcuts.map(([panel, label, icon]) => `
+          <button class="${uiState.settingsOpen && uiState.settingsPanel === panel ? "active" : ""}" data-settings-panel="${panel}">
+            <span>${icon}</span>${label}
+          </button>
+        `).join("")}
+        <div class="side-divider"></div>
+        <button class="${uiState.settingsOpen ? "active" : ""}" data-open-settings="true"><span>⚙</span>${text.allSettings}</button>
+        <div class="side-label">${text.connectedTools}</div>
+        <button><span>⛓</span>GitHub</button>
+        <button><span>▣</span>MCP</button>
+        <div class="side-divider"></div>
+        <button style="color:var(--red);"><span>↪</span>${text.logout}</button>
+      `;
+    }
+
+    function renderHome() {
+      const text = copy();
+      const createdLabel = uiState.lang === "zh-CN" ? "我创建的" : "Created by me";
+      const ownerLabel = uiState.lang === "zh-CN" ? "我创建" : "Created";
+      const libraryDescriptions = new Map(appData.spaces.map((space) => [space.name, space.description]));
+      homeView.innerHTML = `
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.homeTitle}</h1>
+            <p>${text.homeSubtitle}</p>
+          </div>
+          <div class="button-row">
+            <button class="btn" aria-label="${text.newSpace}" data-create-space="true">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3.75 6.75a2 2 0 0 1 2-2h4.1l2 2.25h6.4a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H5.75a2 2 0 0 1-2-2V6.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 13.25h5.5M14.75 10.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="library-toolbar" aria-label="${createdLabel}">
+          <button class="owner-chip">♙ ${createdLabel}</button>
+          <span class="count-pill">${appData.dialog.knowledgeBases.length}</span>
+          <span>⌄</span>
+        </div>
+        <div class="library-cards">
+          ${appData.dialog.knowledgeBases.map((kb) => `
+            <button class="library-card" data-space="${kb.name}" aria-label="${text.openLabel} ${kb.name}">
+              <div>
+                <h2>${kb.name}</h2>
+                <p>${libraryDescriptions.get(kb.name) || kb.name}</p>
+              </div>
+              <div class="library-meta">
+                <div class="library-badges">
+                  <span class="library-badge">□ ${kb.count}</span>
+                  <span class="library-badge">⚗</span>
+                  <span class="library-badge">?</span>
+                </div>
+                <span class="owner-badge">♙ ${ownerLabel}</span>
+              </div>
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderSpace(activeTab = "wiki") {
+      const text = copy();
+      const tabs = [
+        ["docs", text.tabs.docs],
+        ["wiki", text.tabs.wiki],
+        ["graph", text.tabs.graph],
+        ["review", text.tabs.review],
+        ["ask", text.tabs.ask]
+      ];
+      spaceView.innerHTML = `
+        <div class="crumbs">${text.breadcrumbHome} <span>/</span> <strong>IBM i Modernization</strong></div>
+        <section class="space-panel">
+          <div class="space-head">
+            <div class="title-block">
+              <h1>IBM i Modernization</h1>
+              <p>${text.spaceSubtitle}</p>
+              <div class="space-meta">
+                <span class="badge healthy">Mock Space</span>
+                <span class="badge review">35 Review Required</span>
+                <span class="badge parsing">Batch Parsing</span>
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="btn secondary" id="backHome">${text.backHome}</button>
+              <button class="btn">${text.uploadFolder}</button>
+              <button class="btn secondary">${text.uploadZip}</button>
+            </div>
+          </div>
+        </section>
+        <nav class="tabs" aria-label="空间标签页">
+          ${tabs.map(([key, label]) => `<button class="tab ${key === activeTab ? "active" : ""}" data-tab="${key}">${label}</button>`).join("")}
+        </nav>
+        <section class="tab-view ${activeTab === "docs" ? "active" : ""}" id="tab-docs">${renderDocs()}</section>
+        <section class="tab-view ${activeTab === "wiki" ? "active" : ""}" id="tab-wiki">${renderWiki()}</section>
+        <section class="tab-view ${activeTab === "graph" ? "active" : ""}" id="tab-graph">${renderGraph()}</section>
+        <section class="tab-view ${activeTab === "review" ? "active" : ""}" id="tab-review">${renderReview()}</section>
+        <section class="tab-view ${activeTab === "ask" ? "active" : ""}" id="tab-ask">${renderAsk()}</section>
+      `;
+      renderGraphSvg();
+    }
+
+    function settingsSubnav() {
+      const text = copy();
+      return `
+        <div class="settings-subnav">
+          <div class="settings-group-label">${text.settingsAccountGroup}</div>
+          <button class="${uiState.settingsPanel === "general" ? "active" : ""}" data-settings-panel="general">${text.settingsGeneral}</button>
+          <button class="${uiState.settingsPanel === "userInfo" ? "active" : ""}" data-settings-panel="userInfo">${text.settingsUserInfo}</button>
+          <button class="${uiState.settingsPanel === "apiInfo" ? "active" : ""}" data-settings-panel="apiInfo">${text.settingsApiInfo}</button>
+          <div class="settings-group-label">${text.settingsSpaceGroup}</div>
+          <button class="${uiState.settingsPanel === "members" ? "active" : ""}" data-settings-panel="members">${text.settingsMembers}</button>
+          <button class="${uiState.settingsPanel === "registration" ? "active" : ""}" data-settings-panel="registration">${text.settingsRegistration}</button>
+          <div class="settings-group-label">${text.settingsModelGroup}</div>
+          <button class="${uiState.settingsPanel === "models" ? "active" : ""}" data-settings-panel="models">${text.settingsModels}</button>
+          <div class="settings-group-label">${text.settingsDataGroup}</div>
+          <button class="${uiState.settingsPanel === "vectorEngine" ? "active" : ""}" data-settings-panel="vectorEngine">${text.settingsVectorEngine}</button>
+          <button class="${uiState.settingsPanel === "parserEngine" ? "active" : ""}" data-settings-panel="parserEngine">${text.settingsParserEngine}</button>
+          <button class="${uiState.settingsPanel === "storageEngine" ? "active" : ""}" data-settings-panel="storageEngine">${text.settingsStorageEngine}</button>
+        </div>
+      `;
+    }
+
+    function roleLabel(role) {
+      const text = copy();
+      return {
+        owner: text.ownerRole,
+        admin: text.adminRole,
+        reviewer: text.reviewerRole,
+        viewer: text.viewerRole
+      }[role] || role;
+    }
+
+    function renderSettings() {
+      if (uiState.settingsPanel === "general") {
+        renderGeneralSettings();
+      } else if (uiState.settingsPanel === "userInfo") {
+        renderUserInfoSettings();
+      } else if (uiState.settingsPanel === "apiInfo") {
+        renderApiInfoSettings();
+      } else if (uiState.settingsPanel === "registration") {
+        renderRegistrationSettings();
+      } else if (uiState.settingsPanel === "models") {
+        renderModelSettings();
+      } else if (uiState.settingsPanel === "vectorEngine") {
+        renderEngineSettings("vector");
+      } else if (uiState.settingsPanel === "parserEngine") {
+        renderEngineSettings("parser");
+      } else if (uiState.settingsPanel === "storageEngine") {
+        renderEngineSettings("storage");
+      } else {
+        renderMemberSettings();
+      }
+    }
+
+    function renderSettingsFrame(content) {
+      const text = copy();
+      settingsView.innerHTML = `
+        <div class="settings-window">
+          <aside class="settings-rail">
+            <h2>${text.settingsTitle}</h2>
+            ${settingsSubnav()}
+          </aside>
+          <div class="settings-content">
+            <button class="settings-close" id="closeSettings" type="button" aria-label="Close settings">×</button>
+            ${content}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCreateSpace() {
+      const isZh = uiState.lang === "zh-CN";
+      createSpaceView.innerHTML = `
+        <aside class="create-rail">
+          <h1>${isZh ? "新建知识库" : "Create Knowledge Space"}</h1>
+          <nav class="create-steps" aria-label="${isZh ? "新建步骤" : "Creation steps"}">
+            <button class="create-step ${uiState.createStep === "basic" ? "active" : ""}" data-create-step="basic"><span class="create-step-icon">i</span>${isZh ? "基本信息" : "Basic Info"}</button>
+            <button class="create-step ${uiState.createStep === "model" ? "active" : ""}" data-create-step="model"><span class="create-step-icon">□</span>${isZh ? "模型配置" : "Model Config"}</button>
+            <button class="create-step ${uiState.createStep === "vector" ? "active" : ""}" data-create-step="vector"><span class="create-step-icon">▤</span>${isZh ? "向量存储" : "Vector Storage"}</button>
+            <button class="create-step ${uiState.createStep === "parser" ? "active" : ""}" data-create-step="parser"><span class="create-step-icon">▧</span>${isZh ? "解析引擎" : "Parser Engine"}</button>
+            <button class="create-step ${uiState.createStep === "image" ? "active" : ""}" data-create-step="image"><span class="create-step-icon">▣</span>${isZh ? "图像处理" : "Image Processing"}</button>
+            <button class="create-step ${uiState.createStep === "audio" ? "active" : ""}" data-create-step="audio"><span class="create-step-icon">◉</span>${isZh ? "音频处理" : "Audio Processing"}</button>
+            <button class="create-step ${uiState.createStep === "storage" ? "active" : ""}" data-create-step="storage"><span class="create-step-icon">☁</span>${isZh ? "存储引擎" : "Storage Engine"}</button>
+            <button class="create-step ${uiState.createStep === "chunk" ? "active" : ""}" data-create-step="chunk"><span class="create-step-icon">◌</span>${isZh ? "分块设置" : "Chunk Settings"}</button>
+            <button class="create-step ${uiState.createStep === "graph" ? "active" : ""}" data-create-step="graph"><span class="create-step-icon">◎</span>${isZh ? "知识图谱" : "Knowledge Graph"}</button>
+            <button class="create-step ${uiState.createStep === "advanced" ? "active" : ""}" data-create-step="advanced"><span class="create-step-icon">⚙</span>${isZh ? "高级设置" : "Advanced Settings"}</button>
+          </nav>
+        </aside>
+        <main class="create-main">
+          <button class="create-close" id="closeCreateSpace" aria-label="${isZh ? "关闭" : "Close"}">×</button>
+          <div class="create-content">
+            <h2>${isZh ? "基本信息" : "Basic Info"}</h2>
+            <p class="create-subtitle">${isZh ? "设置知识库的名称和描述信息" : "Set the knowledge space name and description."}</p>
+            <form class="create-form">
+              <div>
+                <span class="create-label">${isZh ? "知识库类型" : "Knowledge Space Type"} <span class="required">*</span></span>
+                <div class="type-toggle" role="group" aria-label="${isZh ? "知识库类型" : "Knowledge Space Type"}">
+                  <button class="${uiState.selectedKnowledgeType === "document" ? "active" : ""}" data-knowledge-type="document" type="button">${isZh ? "文档" : "Document"}</button>
+                  <button class="${uiState.selectedKnowledgeType === "faq" ? "active" : ""}" data-knowledge-type="faq" type="button">${isZh ? "问答" : "FAQ"}</button>
+                </div>
+                <p class="create-help">${isZh ? "FAQ 类型适合结构化问答数据；文档型支持文件解析与分块；Wiki 类型由 LLM 自动构建互链知识页面。" : "FAQ is suitable for structured Q&A. Document spaces support parsing and chunking. Wiki spaces can be generated by LLMs."}</p>
+              </div>
+              <div>
+                <span class="create-label">${isZh ? "索引策略" : "Index Strategy"} <span class="required">*</span></span>
+                <p class="create-help">${isZh ? "配置文档上传后的处理管道，可以独立开启或关闭每种索引方式" : "Configure indexing after upload. Each index type can be toggled independently."}</p>
+                <div class="index-options">
+                  <button class="index-option ${uiState.selectedIndexStrategy === "rag" ? "active" : ""}" data-index-strategy="rag" type="button">
+                    <span class="fake-checkbox">✓</span>
+                    <span><span class="option-title">RAG ${isZh ? "检索" : "Search"}</span><span class="create-help">${isZh ? "对文档进行分块、向量化和关键词索引，支持混合检索" : "Chunk, vectorize, and keyword-index documents for hybrid retrieval."}</span></span>
+                  </button>
+                  <button class="index-option ${uiState.selectedIndexStrategy === "wiki" ? "active" : ""}" data-index-strategy="wiki" type="button">
+                    <span class="fake-checkbox">✓</span>
+                    <span><span class="option-title">Wiki ${isZh ? "知识库" : "Knowledge"} <span class="new-pill">NEW</span></span><span class="create-help">${isZh ? "自动生成互相关联的 Wiki 知识页面，构建结构化知识体系" : "Automatically generate linked Wiki knowledge pages."}</span></span>
+                  </button>
+                </div>
+              </div>
+              <label>
+                <span class="create-label">${isZh ? "知识库名称" : "Knowledge Space Name"} <span class="required">*</span></span>
+                <input class="create-input" placeholder="${isZh ? "请输入知识库名称" : "Enter knowledge space name"}">
+              </label>
+              <label>
+                <span class="create-label">${isZh ? "知识库描述" : "Knowledge Space Description"}</span>
+                <textarea class="create-textarea" maxlength="200" placeholder="${isZh ? "请输入知识库描述（可选）" : "Enter description (optional)"}"></textarea>
+                <div class="create-count">0/200</div>
+              </label>
+            </form>
+          </div>
+          <div class="create-actions">
+            <button id="cancelCreateSpace" type="button">${isZh ? "取消" : "Cancel"}</button>
+            <button class="primary" type="button">${isZh ? "创建知识库" : "Create Space"}</button>
+          </div>
+        </main>
+      `;
+    }
+
+    function renderMemberSettings() {
+      const text = copy();
+      const pendingCount = appData.invitations.filter((invite) => invite.status === "pending").length;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.memberTitle}</h1>
+            <p>${text.memberSubtitle} <span class="concept">${text.learnRbac}</span></p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">${text.auditLog}</button>
+            <button class="btn">${text.inviteMember}</button>
+          </div>
+        </div>
+        <section class="panel">
+          <div class="member-summary">
+            <div class="metric"><strong>${pendingCount}</strong><span>${text.pendingInvites}</span></div>
+            <div class="metric"><strong>${appData.members.length}</strong><span>${text.spaceMembers}</span></div>
+            <div class="metric"><strong>4</strong><span>RBAC Roles</span></div>
+          </div>
+          <h2>${text.pendingInvites} <span class="badge medium">${pendingCount}</span></h2>
+          <div class="empty-invite">${text.noPendingInvites}</div>
+          <div class="table-toolbar">
+            <h2>${text.spaceMembers} <span class="badge medium">${appData.members.length}</span></h2>
+            <div class="button-row">
+              <input placeholder="${text.searchMembers}">
+              <button class="btn secondary">${text.copyInviteLink}</button>
+              <button class="btn">${text.inviteMember}</button>
+            </div>
+          </div>
+          <div class="member-table">
+            <div class="member-row header">
+              <span>${text.nameEmail}</span>
+              <span>${text.role}</span>
+              <span>${text.joinedAt}</span>
+              <span>${text.actions}</span>
+            </div>
+            ${appData.members.map((member) => `
+              <div class="member-row">
+                <div class="member-name"><strong>${member.name}</strong><span>${member.email}</span></div>
+                <div>
+                  ${member.protected ? `<span class="badge healthy">${roleLabel(member.role)}</span>` : `
+                    <select class="role-select">
+                      <option>${roleLabel(member.role)}</option>
+                      <option>${text.adminRole}</option>
+                      <option>${text.reviewerRole}</option>
+                      <option>${text.viewerRole}</option>
+                    </select>
+                  `}
+                </div>
+                <span>${member.joinedAt}</span>
+                <span>${member.protected ? "-" : `<button class="icon-btn" title="${text.removeMember}">⌫</button>`}</span>
+              </div>
+            `).join("")}
+          </div>
+        </section>
+      `);
+    }
+
+    function renderGeneralSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.generalTitle}</h1>
+            <p>${text.generalSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn">${text.save}</button></div>
+        </div>
+        <section class="panel">
+          <div class="field-grid">
+            <div class="field">
+              <label>${text.language}</label>
+              <select id="settingsLanguageSelect" aria-label="${text.language}">
+                <option value="zh-CN" ${uiState.lang === "zh-CN" ? "selected" : ""}>zh-CN</option>
+                <option value="en-US" ${uiState.lang === "en-US" ? "selected" : ""}>en-US</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>${text.theme}</label>
+              <select id="settingsThemeSelect" aria-label="${text.theme}">
+                <option value="day" ${uiState.theme === "day" ? "selected" : ""}>day</option>
+                <option value="night" ${uiState.theme === "night" ? "selected" : ""}>night</option>
+              </select>
+            </div>
+            <div class="field"><label>${text.defaultKnowledgeSpace}</label><input value="${account.defaultSpace}"></div>
+            <div class="toggle-row"><span>${text.notifications}</span><span class="toggle-pill ${account.notifications ? "on" : ""}"></span></div>
+          </div>
+        </section>
+      `);
+    }
+
+    function renderUserInfoSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.userInfoTitle}</h1>
+            <p>${text.userInfoSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.cancel}</button><button class="btn">${text.save}</button></div>
+        </div>
+        <section class="panel">
+          <div class="field-grid">
+            <div class="field"><label>${text.fullName}</label><input value="${account.name}"></div>
+            <div class="field"><label>${text.email}</label><input value="${account.email}"></div>
+            <div class="field"><label>${text.organization}</label><input value="${account.organization}"></div>
+            <div class="field"><label>${text.globalRole}</label><input value="${account.globalRole}"></div>
+            <div class="source-row"><span>${text.recentActivity}</span><strong>${account.recentActivity}</strong></div>
+          </div>
+        </section>
+      `);
+    }
+
+    function renderApiInfoSettings() {
+      const text = copy();
+      const account = appData.account;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.apiInfoTitle}</h1>
+            <p>${text.apiInfoSubtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.revokeKey}</button><button class="btn">${text.rotateKey}</button></div>
+        </div>
+        <section class="panel">
+          <div class="member-summary">
+            <div class="metric"><strong>${text.configured}</strong><span>${text.apiKeyStatus}</span></div>
+            <div class="metric"><strong>${account.scopes.length}</strong><span>${text.scopes}</span></div>
+            <div class="metric"><strong>${account.lastUsed}</strong><span>${text.lastUsed}</span></div>
+          </div>
+          <div class="file-tree">
+            ${account.scopes.map((scope) => `<div class="file-row"><span>${scope}</span><span class="badge healthy">${text.available}</span></div>`).join("")}
+          </div>
+          <p class="field-note">${text.apiInfoSubtitle}</p>
+        </section>
+      `);
+    }
+
+    function renderRegistrationSettings() {
+      const text = copy();
+      const registration = appData.registration;
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.registrationTitle}</h1>
+            <p>${text.registrationSubtitle}</p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary">${text.cancel}</button>
+            <button class="btn">${text.save}</button>
+          </div>
+        </div>
+        <div class="registration-grid">
+          <section class="panel">
+            <h2>${text.registrationMode}</h2>
+            <div class="settings-tabs">
+              <button class="settings-tab ${registration.enabled ? "active" : ""}">${text.selfRegistration}</button>
+              <button class="settings-tab ${registration.mode === "domain_restricted" ? "active" : ""}">${text.domainRestricted}</button>
+              <button class="settings-tab ${registration.mode === "invite_only" ? "active" : ""}">${text.inviteOnly}</button>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label>${text.approvedDomain}</label>
+                <input value="${registration.allowedDomain}">
+              </div>
+              <div class="field">
+                <label>${text.defaultSpace}</label>
+                <input value="${registration.defaultSpace}">
+              </div>
+              <div class="toggle-row"><span>${text.requiresApproval}</span><span class="toggle-pill ${registration.requiresApproval ? "on" : ""}"></span></div>
+            </div>
+            <p class="field-note">${text.registrationNote}</p>
+          </section>
+          <aside class="config-panel" style="position:static;">
+            <h2>${text.signupPreview}</h2>
+            <div class="field-grid" style="margin-top:14px;">
+              <div class="field"><label>${text.fullName}</label><input value="Atlas User"></div>
+              <div class="field"><label>${text.email}</label><input value="user@atlas.example"></div>
+              <div class="field"><label>${text.password}</label><input value="********" type="password"></div>
+              <div class="field"><label>${text.requestedSpace}</label><input value="IBM i Modernization"></div>
+              <button class="btn">${text.createAccount}</button>
+            </div>
+          </aside>
+        </div>
+      `);
+    }
+
+    function renderEngineSettings(kind) {
+      const text = copy();
+      const titles = {
+        vector: [text.vectorTitle, text.vectorSubtitle],
+        parser: [text.parserTitle, text.parserSubtitle],
+        storage: [text.storageTitle, text.storageSubtitle]
+      };
+      const [title, subtitle] = titles[kind];
+      const engines = appData.engines[kind];
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${title}</h1>
+            <p>${subtitle}</p>
+          </div>
+          <div class="button-row"><button class="btn secondary">${text.testConnection}</button><button class="btn">${text.addEngine}</button></div>
+        </div>
+        <section class="panel">
+          <div class="engine-grid">
+            ${engines.map((engine) => `
+              <article class="engine-card ${engine.status === "default" ? "default" : ""}">
+                <div class="card-foot" style="margin-top:0;">
+                  <h3>${engine.name}</h3>
+                  <span class="badge ${engine.status === "default" ? "healthy" : engine.status === "experimental" ? "review" : "medium"}">${engine.status === "default" ? text.defaultEngine : engine.status === "experimental" ? text.experimental : text.available}</span>
+                </div>
+                <p style="color:var(--muted);line-height:1.5;">${engine.summary}</p>
+                <div class="source-row"><span>${text.adapter}</span><strong>${engine.adapter}</strong></div>
+                <div class="source-row" style="margin-top:8px;"><span>${text.configSummary}</span><strong>${engine.status}</strong></div>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+      `);
+    }
+
+    function renderModelSettings() {
+      const text = copy();
+      const managedModels = appData.models.filter((model) => ["deepseek-flash", "dashscope-embedding"].includes(model.id));
+      const categories = [
+        ["all", text.allModels, managedModels.length],
+        ["chat", text.chatModels, managedModels.filter((model) => model.type === "chat").length],
+        ["embedding", text.embeddingModels, managedModels.filter((model) => model.type === "embedding").length],
+        ["rerank", text.rerankModels, 0],
+        ["vision", text.visionModels, 0],
+        ["speech", text.speechModels, 0]
+      ];
+      renderSettingsFrame(`
+        <div class="page-head">
+          <div class="title-block">
+            <h1>${text.modelSettingsTitle}</h1>
+            <p>${text.modelSettingsSubtitle}</p>
+          </div>
+          <div class="button-row">
+            <button class="btn secondary add-model-btn">＋ ${uiState.lang === "zh-CN" ? "添加模型" : "Add Model"}</button>
+          </div>
+        </div>
+        <section class="model-info-panel">
+          <strong>${text.builtinModel}</strong>
+          <p>${text.builtinModelHelp}</p>
+          <a href="#" aria-label="${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"}">
+            ${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"} ↗
+          </a>
+        </section>
+        <nav class="model-list-tabs" aria-label="${text.modelSettingsTitle}">
+          ${categories.map(([key, label, count], index) => `<button class="model-list-tab ${index === 0 ? "active" : ""}" type="button">${label}(${count})</button>`).join("")}
+        </nav>
+        <section class="model-list-grid">
+          ${managedModels.map((model) => `
+            <button class="model-list-card" data-model-id="${model.id}" type="button">
+              <span class="model-icon">${model.type === "embedding" ? "⌘" : "□"}</span>
+              <span>
+                <h3>${model.displayName}</h3>
+                <p>${model.provider}${model.type === "embedding" ? " · 向量维度 1024" : ""}</p>
+              </span>
+            </button>
+          `).join("")}
+        </section>
+      `);
+    }
+
+    function renderDocs() {
+      const batch = appData.batch;
+      const text = copy();
+      const metrics = [
+        ["Total files", batch.totalFiles],
+        ["PDF converted", batch.pdfConverted],
+        ["Markdown generated", batch.markdownGenerated],
+        ["Review required", batch.reviewRequired],
+        ["Failed", batch.failed]
+      ];
+      return `
+        <div class="doc-grid">
+          <section class="panel">
+            <h2>${batch.name}</h2>
+            <p style="color:var(--muted);line-height:1.55;">${text.batchHelp}</p>
+            <div class="button-row" style="justify-content:flex-start;">
+              <button class="btn">${text.uploadFolder}</button>
+              <button class="btn secondary">${text.uploadZip}</button>
+            </div>
+            <div class="metric-grid">
+              ${metrics.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join("")}
+            </div>
+            <div class="progress-list">
+              ${batch.progress.map((item) => `
+                <div>
+                  <div class="progress-head"><span>${item.label}</span><span>${item.value}%</span></div>
+                  <div class="progress"><span style="width:${item.value}%"></span></div>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+          <section class="panel">
+            <h2>${text.fileTree}</h2>
+            <div class="file-tree">
+              ${batch.files.map((file) => `
+                <div class="file-row">
+                  <span class="file-path">${file.path}</span>
+                  <span class="badge ${statusClass[file.status]}">${file.status}</span>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderWiki() {
+      const wiki = appData.wiki;
+      const text = copy();
+      return `
+        <div class="wiki-layout">
+          <aside class="wiki-rail">
+            <h3>Wiki Index</h3>
+            <input class="search" placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
+            <ul class="index-list">
+              ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
+            </ul>
+            <h3 style="margin-top:22px;">${text.recentUpdates}</h3>
+            <ul class="recent-list">${wiki.recent.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </aside>
+          <article class="wiki-main">
+            <header>
+              <h2>IBM i Modernization / LM Wiki</h2>
+              <p style="color:var(--muted);line-height:1.55;">${text.wikiIntro}</p>
+            </header>
+            ${wiki.sections.map((section) => `
+              <section class="wiki-section" id="${section.id}">
+                <h3>${section.title}</h3>
+                <p>${linkConcepts(section.body)}</p>
+                <div class="trace">source_trace: BRD_Methodology.pdf / page 12; RPG_Scan_Result.pdf / page 6; review_status: REVIEW_REQUIRED; confidence: medium</div>
+              </section>
+            `).join("")}
+          </article>
+          <aside class="wiki-rail">
+            <h3>Metadata</h3>
+            <div class="metadata-list">
+              <div><strong>Source Documents</strong>${wiki.metadata.sourceDocuments}</div>
+              <div><strong>Confidence</strong>${wiki.metadata.confidence}</div>
+              <div><strong>Review Status</strong><span class="badge review">${wiki.metadata.reviewStatus}</span></div>
+              <div><strong>Last Updated</strong>${wiki.metadata.lastUpdated}</div>
+              <div><strong>Owner</strong>${wiki.metadata.owner}</div>
+              <div><strong>Related Concepts</strong>
+                <ul class="related-list">${wiki.metadata.relatedConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderGraph() {
+      const text = copy();
+      return `
+        <div class="graph-layout">
+          <section class="graph-canvas">
+            <div class="graph-tooltip" id="graphTooltip"></div>
+            <svg class="graph-svg" id="graphSvg" viewBox="0 0 900 600" role="img" aria-label="IBM i Modernization 知识图谱"></svg>
+          </section>
+          <aside class="panel">
+            <h2>${text.graphOverview}</h2>
+            <p style="color:var(--muted);line-height:1.55;">${text.graphHelp}</p>
+            <div class="legend-list">
+              ${legendItems().map((item) => `
+                <div class="legend-item"><span><span class="dot ${item.color}"></span>${item.label}</span><strong>${item.count}</strong></div>
+              `).join("")}
+            </div>
+            <div class="panel" style="margin-top:14px;box-shadow:none;" id="nodeDetail">
+              <h3>${text.nodeDetail}</h3>
+              <p style="color:var(--muted);line-height:1.55;">${text.nodeDetailHelp}</p>
+            </div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderReview() {
+      const review = appData.review;
+      const text = copy();
+      return `
+        <div class="review-grid">
+          <section class="review-pane">
+            <h3>${text.pdfPreview}</h3>
+            <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
+            <div class="pdf-preview">
+              <div>
+                <strong>PDF PAGE ${review.page}</strong>
+                <p>${text.pdfPlaceholder}</p>
+              </div>
+            </div>
+          </section>
+          <section class="review-pane">
+            <div class="card-foot" style="margin-top:0;">
+              <h3>${text.markdownPreview}</h3>
+              <span class="badge medium">${text.confidence} ${review.confidence}</span>
+            </div>
+            <div class="markdown-preview">${review.markdown.replace(/\n/g, "<br>")}</div>
+            <textarea placeholder="${text.reviewComments}"></textarea>
+            <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
+              <button class="btn">${text.approve}</button>
+              <button class="btn secondary">${text.needFix}</button>
+              <button class="btn secondary">${text.markOcr}</button>
+            </div>
+          </section>
+        </div>
+        <section class="panel" style="margin-top:16px;">
+          <h2>${text.lowConfidence}</h2>
+          <div class="queue">
+            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAsk() {
+      const ask = appData.ask;
+      const text = copy();
+      return `
+        <div class="ask-grid">
+          <section class="chat-panel">
+            <h3>${text.askTitle}</h3>
+            <div style="margin-top:16px;">
+              <div class="message user">${ask.question}</div>
+              <div class="message answer">
+                ${ask.answer}
+                <ul class="references">${ask.references.map((ref) => `<li>${ref}</li>`).join("")}</ul>
+                <p><span class="badge medium">${text.confidence}: ${ask.confidence}</span></p>
+              </div>
+            </div>
+            <div class="ask-input-row">
+              <input class="ask-input" placeholder="${text.askPlaceholder}" aria-label="${text.askPlaceholder}">
+              <button class="btn">${text.send}</button>
+            </div>
+          </section>
+          <aside class="panel">
+            <h2>${text.askPolicy}</h2>
+            <p style="color:var(--muted);line-height:1.62;">${text.askPolicyText}</p>
+            <div class="source-row"><span>${text.approvedWikiPages}</span><strong>42</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>${text.evidenceChunks}</span><strong>318</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>${text.reviewRequired}</span><strong>35</strong></div>
+          </aside>
+        </div>
+      `;
+    }
+
+    // Interactions
+    function linkConcepts(text) {
+      const concepts = Object.keys(appData.wiki.concepts).sort((a, b) => b.length - a.length);
+      return concepts.reduce((result, concept) => {
+        const escaped = concept.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return result.replace(new RegExp(escaped, "g"), `<span class="concept" title="${appData.wiki.concepts[concept]}">${concept}</span>`);
+      }, text);
+    }
+
+    function showHome() {
+      uiState.view = "home";
+      uiState.settingsOpen = false;
+      uiState.createSpaceOpen = false;
+      homeView.classList.add("active");
+      spaceView.classList.remove("active");
+      settingsView.classList.remove("active");
+      createSpaceView.classList.remove("active");
+      document.querySelectorAll("#sideNav button").forEach((button, index) => {
+        button.classList.toggle("active", index === 0);
+      });
+    }
+
+    function showSpace(tab = "wiki") {
+      uiState.view = "space";
+      uiState.activeTab = tab;
+      uiState.settingsOpen = false;
+      uiState.createSpaceOpen = false;
+      renderSpace(tab);
+      homeView.classList.remove("active");
+      spaceView.classList.add("active");
+      settingsView.classList.remove("active");
+      createSpaceView.classList.remove("active");
+      document.querySelectorAll("#sideNav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.navKey === "all");
+      });
+    }
+
+    function showSettings(panel = uiState.settingsPanel) {
+      uiState.settingsOpen = true;
+      uiState.createSpaceOpen = false;
+      uiState.settingsPanel = panel;
+      renderSettings();
+      settingsView.classList.add("active");
+      createSpaceView.classList.remove("active");
+      renderNav();
+    }
+
+    function closeSettings() {
+      uiState.settingsOpen = false;
+      settingsView.classList.remove("active");
+      renderNav();
+    }
+
+    function showCreateSpace() {
+      uiState.createSpaceOpen = true;
+      uiState.settingsOpen = false;
+      renderCreateSpace();
+      settingsView.classList.remove("active");
+      createSpaceView.classList.add("active");
+      renderNav();
+    }
+
+    function closeCreateSpace() {
+      uiState.createSpaceOpen = false;
+      createSpaceView.classList.remove("active");
+      renderNav();
+    }
+
+    function setTab(tab) {
+      uiState.activeTab = tab;
+      document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
+      document.querySelectorAll(".tab-view").forEach((view) => view.classList.toggle("active", view.id === `tab-${tab}`));
+      if (tab === "graph") {
+        renderGraphSvg();
+      }
+    }
+
+    function renderApp() {
+      const shouldKeepSettingsOpen = uiState.settingsOpen;
+      const activeSettingsPanel = uiState.settingsPanel;
+      applyPreferences();
+      renderNav();
+      renderHome();
+      if (uiState.view === "space") {
+        showSpace(uiState.activeTab);
+      } else {
+        showHome();
+      }
+      if (shouldKeepSettingsOpen) {
+        uiState.settingsOpen = true;
+        showSettings(activeSettingsPanel);
+      }
+      if (uiState.createSpaceOpen) {
+        showCreateSpace();
+      }
+    }
+
+    function legendItems() {
+      const counts = appData.graph.nodes.reduce((acc, node) => {
+        acc[node.type] = (acc[node.type] || 0) + 1;
+        return acc;
+      }, {});
+      return [
+        { label: "Wiki Page", color: "blue", count: counts["Wiki Page"] || 0 },
+        { label: "Entity", color: "green", count: counts.Entity || 0 },
+        { label: "Concept", color: "orange", count: counts.Concept || 0 },
+        { label: "Document", color: "gray", count: counts.Document || 0 },
+        { label: "Review Required", color: "red", count: counts["Review Required"] || 0 }
+      ];
+    }
+
+    function renderGraphSvg() {
+      const svg = document.querySelector("#graphSvg");
+      if (!svg) return;
+      const nodeById = Object.fromEntries(appData.graph.nodes.map((node) => [node.id, node]));
+      const edges = appData.graph.edges.map(([from, to]) => {
+        const a = nodeById[from];
+        const b = nodeById[to];
+        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--line)" stroke-width="1.5" />`;
+      }).join("");
+      const nodes = appData.graph.nodes.map((node) => `
+        <g class="graph-node" data-node="${node.id}">
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.88"></circle>
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.1" stroke-width="8"></circle>
+          <text class="graph-label" x="${node.x}" y="${node.y + node.r + 18}" text-anchor="middle">${node.label}</text>
+        </g>
+      `).join("");
+      svg.innerHTML = `<g>${edges}</g><g>${nodes}</g>`;
+    }
+
+    function showNodeDetail(nodeId) {
+      const node = appData.graph.nodes.find((item) => item.id === nodeId);
+      const detail = document.querySelector("#nodeDetail");
+      if (!node || !detail) return;
+      detail.innerHTML = `
+        <h3>${node.label}</h3>
+        <p><span class="badge" style="color:#fff;background:${graphColor[node.type]}">${node.type}</span></p>
+        <p style="color:var(--muted);line-height:1.55;">${node.detail}</p>
+      `;
+    }
+
+    function bindEvents() {
+      document.addEventListener("click", (event) => {
+        const spaceCard = event.target.closest("[data-space]");
+        if (spaceCard && spaceCard.dataset.space === "IBM i Modernization") {
+          showSpace("wiki");
+        }
+
+        const promptChip = event.target.closest("[data-prompt]");
+        if (promptChip) {
+          const input = document.querySelector("#homeDialogInput");
+          if (input) {
+            input.value = promptChip.dataset.prompt;
+            input.focus();
+          }
+        }
+
+        const kbItem = event.target.closest(".kb-item");
+        if (kbItem && kbItem.dataset.kb === "IBM i Modernization") {
+          showSpace("ask");
+        }
+
+        const navButton = event.target.closest("[data-nav]");
+        if (navButton) {
+          if (navButton.dataset.navKey === "space") showSpace("wiki");
+          else showHome();
+        }
+
+        const openSettingsButton = event.target.closest("[data-open-settings]");
+        if (openSettingsButton) {
+          showSettings("general");
+        }
+
+        const createSpaceButton = event.target.closest("[data-create-space]");
+        if (createSpaceButton) {
+          showCreateSpace();
+        }
+
+        if (event.target.id === "closeSettings" || event.target.id === "settingsView") {
+          closeSettings();
+        }
+
+        if (event.target.id === "closeCreateSpace" || event.target.id === "cancelCreateSpace") {
+          closeCreateSpace();
+        }
+
+        const indexStrategy = event.target.closest("[data-index-strategy]");
+        if (indexStrategy) {
+          uiState.selectedIndexStrategy = indexStrategy.dataset.indexStrategy;
+          renderCreateSpace();
+        }
+
+        const knowledgeType = event.target.closest("[data-knowledge-type]");
+        if (knowledgeType) {
+          uiState.selectedKnowledgeType = knowledgeType.dataset.knowledgeType;
+          renderCreateSpace();
+        }
+
+        const createStep = event.target.closest("[data-create-step]");
+        if (createStep) {
+          uiState.createStep = createStep.dataset.createStep;
+          renderCreateSpace();
+        }
+
+        const settingsPanel = event.target.closest("[data-settings-panel]");
+        if (settingsPanel) {
+          showSettings(settingsPanel.dataset.settingsPanel);
+        }
+
+        const modelCard = event.target.closest("[data-model-id]");
+        if (modelCard) {
+          uiState.selectedModelId = modelCard.dataset.modelId;
+          showSettings("models");
+        }
+
+        if (event.target.id === "backHome") {
+          showHome();
+        }
+
+        const tab = event.target.closest("[data-tab]");
+        if (tab) {
+          setTab(tab.dataset.tab);
+        }
+
+        const indexItem = event.target.closest("[data-section]");
+        if (indexItem) {
+          const target = document.getElementById(indexItem.dataset.section);
+          document.querySelectorAll(".index-list button").forEach((button) => button.classList.remove("active"));
+          document.querySelectorAll(".wiki-section").forEach((section) => section.classList.remove("highlight"));
+          indexItem.classList.add("active");
+          if (target) {
+            target.classList.add("highlight");
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+
+        const graphNode = event.target.closest(".graph-node");
+        if (graphNode) {
+          showNodeDetail(graphNode.dataset.node);
+        }
+      });
+
+      document.addEventListener("change", (event) => {
+        if (event.target.id === "settingsLanguageSelect") {
+          uiState.lang = event.target.value;
+          localStorage.setItem("atlas-lang", uiState.lang);
+          renderApp();
+          return;
+        }
+
+        if (event.target.id === "settingsThemeSelect") {
+          uiState.theme = event.target.value;
+          localStorage.setItem("atlas-theme", uiState.theme);
+          renderApp();
+        }
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        const graphNode = event.target.closest(".graph-node");
+        const tooltip = document.querySelector("#graphTooltip");
+        if (!tooltip) return;
+        if (!graphNode) {
+          tooltip.style.display = "none";
+          return;
+        }
+        const node = appData.graph.nodes.find((item) => item.id === graphNode.dataset.node);
+        tooltip.innerHTML = `<strong>${node.label}</strong><br>${node.type}<br>${node.detail}`;
+        tooltip.style.display = "block";
+        const canvasRect = document.querySelector(".graph-canvas").getBoundingClientRect();
+        tooltip.style.left = `${event.clientX - canvasRect.left + 14}px`;
+        tooltip.style.top = `${event.clientY - canvasRect.top + 14}px`;
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && uiState.settingsOpen) {
+          closeSettings();
+        }
+      });
+    }
+
+    renderApp();
+    bindEvents();
+  </script>
+</body>
+</html>
