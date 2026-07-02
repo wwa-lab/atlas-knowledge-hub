@@ -5,26 +5,38 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vue-tsc -b && vite build",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
+    "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "format": "prettier --write \"src/**/*.{js,ts,jsx,tsx,vue}\"",
+    "build": "npm run lint && npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "prepare": "bash ../scripts/setup-hooks.sh"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^6.0.7",
     "vue": "^3.5.39"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.57.0",
     "@tsconfig/node24": "^24.0.2",
     "@types/node": "^25.0.0",
-    "@vue/tsconfig": "^0.9.1",
     "@vitest/coverage-v8": "^4.1.9",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.9.1",
+    "eslint": "^10.6.0",
+    "eslint-plugin-vue": "^10.9.2",
     "jsdom": "^28.0.1",
+    "prettier": "^3.9.4",
+    "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.62.1",
     "vite": "^8.1.2",
     "vitest": "^4.1.9",
     "vue-tsc": "^3.3.6"

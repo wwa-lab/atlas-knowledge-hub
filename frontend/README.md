@@ -20,15 +20,41 @@ Future Phase 1 work should incrementally extract this prototype into Vue compone
 - Vitest for unit/component tests.
 - Playwright for critical flow smoke tests.
 
+## Setup
+
+```bash
+npm ci
+npm run dev    # Vite dev server on http://127.0.0.1:5173
+```
+
+The `prepare` script automatically runs `../scripts/setup-hooks.sh` after `npm install`, which configures pre-commit and pre-push git hooks.
+
 ## Commands
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
-npm run test:coverage
-npm run build
-npm run e2e
+npm run dev                # Start Vite dev server
+npm run lint              # ESLint and Prettier check
+npm run lint:fix          # ESLint and Prettier auto-fix
+npm run format            # Format with Prettier
+npm run typecheck         # Vue TSC type check
+npm run test              # Vitest unit/component tests
+npm run test:coverage     # Vitest with coverage report
+npm run build             # Build (runs lint → typecheck → vite build)
+npm run e2e               # Playwright critical-flow E2E tests
 ```
+
+## Code Quality
+
+All code must pass:
+- **Linting**: `npm run lint` (ESLint + Prettier)
+- **Type checking**: `npm run typecheck` (vue-tsc)
+- **Tests**: `npm run test` with ≥80% coverage
+- **Build**: `npm run build` succeeds
+
+Git hooks enforce these automatically:
+- **Pre-commit**: `lint:fix`, `format`, `test` (then stages changes)
+- **Pre-push**: `typecheck`, `test`
+
+See [FRONTEND_CODING_STANDARD.md](../docs/FRONTEND_CODING_STANDARD.md) for component patterns and testing standards.
 
 All data in Phase 1 is mock-only. Do not add external API calls, real credentials, production auth, a production database, or concrete parser/vector/storage/model integrations here.

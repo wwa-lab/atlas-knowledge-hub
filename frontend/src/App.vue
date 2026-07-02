@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const prototypeSrc = "/atlas-prototype.html";
+const prototypeSrc = '/atlas-prototype.html'
 </script>
 
 <template>

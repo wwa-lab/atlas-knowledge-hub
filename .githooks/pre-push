@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# Pre-push hook: typecheck and test frontend
+cd frontend
+npm run typecheck && npm run test
