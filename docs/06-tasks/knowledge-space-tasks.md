@@ -2,9 +2,13 @@
 
 ## Status
 
-Phase 0 prototype task sweep complete on 2026-07-02.
+Phase 1 frontend implementation started on 2026-07-02 after stakeholder authorization.
 
 All `T-KS-001` through `T-KS-027` tasks are complete for the current static prototype scope, with one phase decision: `T-KS-014` records that Atlas should continue static prototype validation and should not scaffold Vue until stakeholder acceptance explicitly starts Phase 1.
+
+Stakeholder authorization to start Phase 1 was given on 2026-07-02. Phase 1 starts with a Vue 3 + Vite + TypeScript frontend shell that reproduces the current FE behavior with mock data only. Backend, database, authentication, production persistence, and real adapter integrations remain out of scope until later phases.
+
+After stakeholder review, the current Phase 1 FE is now the frontend baseline even where it differs from the earlier static prototype. `frontend/public/atlas-prototype.html` is the active FE fidelity file, and `prototypes/index.html` mirrors it for direct static review.
 
 See `docs/00-context/knowledge-space-prototype-review.md` for review notes and verification evidence.
 
@@ -46,6 +50,9 @@ See `docs/00-context/knowledge-space-prototype-review.md` for review notes and v
 | T-KS-025 | Define future account/API/engine contracts. | Data model, API guide | `AccountSettings`, `ApiAccessInfo`, `EngineConfig`, and API guidance documented. |
 | T-KS-026 | Convert Settings from a main view into sidebar shortcuts plus an All Settings modal/sheet. | T-KS-018, T-KS-021, T-KS-023, T-KS-024 | Sidebar settings shortcuts open the correct modal panel; All Settings opens over the current view; close returns to the previous view. |
 | T-KS-027 | Harden responsive prototype behavior across common viewport sizes. | T-KS-001, T-KS-026 | Sidebar, cards, settings modal, graph, review, Ask, member table, and engine layouts remain usable at wide desktop, laptop, tablet, and narrow mobile widths. |
+| T-KS-028 | Start Phase 1 Vue frontend shell with mock data. | T-KS-014, stakeholder authorization | `frontend` has Vue 3, Vite, TypeScript, typed mock data, core Knowledge Space surfaces, and no backend/external service calls. |
+| T-KS-029 | Add Phase 1 frontend verification baseline. | T-KS-028 | Frontend typecheck, build, unit/component tests, coverage, and E2E smoke test pass or skipped checks are explicitly reported with reasons. |
+| T-KS-030 | Align static HTML and SDD docs to current Phase 1 FE baseline. | T-KS-028, stakeholder review | `prototypes/index.html` mirrors `frontend/public/atlas-prototype.html`; spec, design, tasks, and frontend README describe the current FE layout and interactions. |
 
 ## Completion Matrix
 
@@ -64,7 +71,7 @@ See `docs/00-context/knowledge-space-prototype-review.md` for review notes and v
 | T-KS-011 | Complete | Ask answer, two source references, and medium confidence verified. |
 | T-KS-012 | Complete | Trace, confidence, and review metadata verified across Wiki, Review, Graph, and Ask surfaces. |
 | T-KS-013 | Complete | Static constraints verified: no external dependency, network call, real secret, or private path introduced. |
-| T-KS-014 | Complete | Decision: continue static prototype validation; do not scaffold Vue yet. |
+| T-KS-014 | Complete | Original Phase 0 decision recorded; later superseded by 2026-07-02 stakeholder authorization to start Phase 1. |
 | T-KS-015 | Complete | Language switching preserves UI state and updates primary UI copy. |
 | T-KS-016 | Complete | Day/night token switching and readability verified in acceptance sweep. |
 | T-KS-017 | Complete | `UiPreference` contract documented in data model. |
@@ -78,6 +85,9 @@ See `docs/00-context/knowledge-space-prototype-review.md` for review notes and v
 | T-KS-025 | Complete | `AccountSettings`, `ApiAccessInfo`, `EngineConfig`, and API guidance documented. |
 | T-KS-026 | Complete | Sidebar shortcuts and All Settings modal behavior verified. |
 | T-KS-027 | Complete | Responsive behavior verified across wide desktop, desktop, laptop, tablet, narrow, and mobile widths. |
+| T-KS-028 | Complete | `frontend/` now contains a Vue 3 + Vite + TypeScript host for the accepted attachment prototype fidelity baseline. |
+| T-KS-029 | Complete | Typecheck, build, Vitest coverage, and Playwright E2E smoke checks passed for the Phase 1 shell. |
+| T-KS-030 | Complete | Current FE baseline mirrored from `frontend/public/atlas-prototype.html` to `prototypes/index.html`; SDD docs updated to current home library, create Knowledge Space, General Settings language/theme, and list-style model management behavior. |
 
 ## T-KS-001 Review Result
 
@@ -143,7 +153,7 @@ Result:
 - Full task assertions: 26 passed, 0 failed.
 - Responsive overflow sweep: passed with no unexpected body-level horizontal overflow, modal viewport escape, or control text overflow.
 - Static syntax, diff hygiene, network/dependency scan, and secret/private-path scan passed.
-- Phase decision: remain in Phase 0 static prototype validation until stakeholders explicitly accept the prototype and start Phase 1 Vue implementation.
+- Phase decision at that time: remain in Phase 0 static prototype validation until stakeholders explicitly accept the prototype and start Phase 1 Vue implementation. This condition was later satisfied by 2026-07-02 stakeholder authorization.
 
 ## Test Plan
 
@@ -170,3 +180,38 @@ Future implementation phase:
 - Unit tests for data mappers, status mapping, and component behavior.
 - Integration tests for API contracts when backend exists.
 - E2E tests for create space, upload batch, review content, publish Wiki, graph exploration, and Ask evidence flow.
+
+## Phase 1 Frontend Shell Result
+
+Started Phase 1 on 2026-07-02 after stakeholder authorization.
+
+Implemented scope:
+
+- Vue 3 + Vite + TypeScript application under `frontend/`.
+- The current FE prototype is preserved as `frontend/public/atlas-prototype.html` and hosted by the Vue app as the Phase 1 fidelity baseline.
+- `prototypes/index.html` mirrors the current FE prototype for direct static review.
+- Core FE behavior remains available for Home Knowledge Space library, create Knowledge Space panel, Knowledge Space detail, Documents, Wiki, Graph, Review, Ask, language/theme controls in General Settings, and Settings modal.
+- Typed mock data and tests remain in place as the starting point for later component extraction.
+- Phase 1 remains mock-only: no backend, database, authentication, production persistence, external service calls, real credentials, or concrete parser/vector/storage/model integrations.
+
+Verification result:
+
+- `npm run typecheck` passed.
+- `npm run build` passed.
+- `npm run test:coverage` passed with 4 tests and above-threshold coverage.
+- `npm run e2e` passed with 1 Playwright Chromium smoke test.
+
+## T-KS-030 Current FE Baseline Alignment Result
+
+Completed on 2026-07-02 after stakeholder direction to use the current FE as the source of truth.
+
+Updated scope:
+
+- `prototypes/index.html` now mirrors `frontend/public/atlas-prototype.html`.
+- `docs/03-spec/knowledge-space-spec.md` describes the current Home Knowledge Space library, create Knowledge Space panel, General Settings language/theme controls, and list-style Model Management page.
+- `docs/05-design/knowledge-space-design.md` describes the same current FE layout and preserves Atlas visual direction instead of treating WeKnora as a style source.
+- `frontend/README.md` explains the current FE baseline and static mirror relationship.
+
+Verification result:
+
+- Static HTML mirror and SDD alignment are verified as part of the Phase 1 frontend check set.

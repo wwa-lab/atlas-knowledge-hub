@@ -13,6 +13,7 @@ Draft.
 - Use Chinese UI labels where appropriate for the internal demo.
 - Support bilingual demos without hiding canonical technical terms.
 - Support day and night modes through shared tokens rather than duplicated layouts.
+- Treat the current Phase 1 FE as the layout baseline; older Phase 0 dialogue-first notes are historical unless reintroduced explicitly.
 
 ## Page Structure
 
@@ -21,23 +22,25 @@ Draft.
 - Left sidebar: Knowledge, Agents, Shared Spaces, Chat, recent dialogue items, workspace summary, common settings shortcuts, connected tools, and user/account footer information.
 - Sidebar settings shortcuts include member management, model management, API information, vector database engine, parsing engine, and storage engine.
 - Sidebar includes an `全部设置` / `All Settings` entry that opens the full settings modal/sheet.
-- Sidebar footer area includes compact language and theme controls.
 - Main area title: `知识库`.
-- Primary first-screen experience: dialogue mode inspired by WeKnora.
-- Below dialogue mode: Knowledge Space cards.
+- Primary first-screen experience: Knowledge Space library card grid.
+- The create action uses a compact folder-plus icon button near the page title rather than a generic text-only block.
+- A `我创建的` / created-by-me filter and count sits above the card grid.
+- Knowledge Space cards show title, short description, document count, lightweight capability/status icons, and owner/created marker.
+- The current Phase 1 baseline does not show the earlier dialogue hero on Home.
 
 ### Language Control
 
-- Location: persistent shell, preferably sidebar footer or top utility area.
+- Location: Settings > General Settings.
 - Prototype languages: Chinese and English.
 - Default: Chinese.
-- The control should be compact and visible without competing with product actions.
+- The control appears as a regular settings form field, not as a global floating or top-right utility button.
 - Primary navigation, headings, buttons, placeholders, tabs, section labels, and common helper text should switch.
 - Domain terms and product nouns may remain canonical when translation would reduce clarity.
 
 ### Theme Control
 
-- Location: persistent shell next to language control.
+- Location: Settings > General Settings.
 - Modes: day and night.
 - Default: day.
 - Use CSS/design tokens for background, panel, soft panel, text, muted text, borders, primary color, and shadows.
@@ -63,7 +66,7 @@ Layout:
 - The modal/sheet uses a two-column layout: grouped settings navigation on the left and active settings content on the right.
 - The close affordance returns to the previously visible product view.
 - Sidebar shortcuts may open directly to a specific settings sub-view.
-- `All Settings` opens the general settings sub-view by default.
+- `All Settings` opens the General Settings sub-view by default.
 - The visual model may be inspired by modern AI-native knowledge products, but Atlas must not copy WeKnora assets, proprietary styling, or implementation details.
 
 Behavior:
@@ -76,10 +79,14 @@ Behavior:
 
 Layout:
 
-- Settings uses a compact enterprise configuration layout.
-- Left/main area shows model categories and model cards.
-- Right-side configuration panel shows the selected model details.
-- The visual language may reference WeKnora-style model configuration without copying implementation details.
+- Settings uses a compact enterprise management layout.
+- The current Phase 1 baseline is a list-style model management page.
+- Top area shows page title, description, close affordance, and an Add Model action.
+- An information panel explains built-in models and links to management guidance in mock form.
+- Category filters appear as horizontal tabs above the model cards.
+- Model cards appear in a responsive grid and show model name, provider/source summary, and type icon.
+- The current baseline does not include a persistent right-side edit/configuration panel.
+- Future edit/create flows may use a modal or dedicated panel, but they should preserve the Atlas visual system instead of copying WeKnora styling.
 
 Model categories:
 
@@ -92,15 +99,8 @@ Model categories:
 
 Configuration fields:
 
-- Model source: Ollama or API.
-- Provider.
-- Model name.
-- Display name.
-- Base URL.
-- API Key status.
-- Custom request headers.
-- Multimodal support.
-- Thinking parameter format.
+- Detailed provider/source fields are future implementation fields, not required in the current Phase 1 list baseline.
+- Future fields may include model source, provider, model name, display name, Base URL, API Key status, custom request headers, multimodal support, and thinking-parameter format.
 
 GitHub/Copilot guidance:
 
@@ -111,9 +111,8 @@ GitHub/Copilot guidance:
 
 Actions:
 
-- Test connection.
-- Cancel.
-- Save.
+- Add Model.
+- Future edit flows may include test connection, cancel, and save.
 
 All actions are visual-only in prototype mode.
 
@@ -236,22 +235,27 @@ Design notes:
 - Copy should reinforce that engines are adapter-backed and not hardcoded.
 - Add/test/save controls are visual-only in prototype mode.
 
-### Home Dialogue Mode
+### Create Knowledge Space
 
 Elements:
 
-- Hero title and subtitle.
-- Suggested question chips.
-- Knowledge base selector popover.
-- Selected knowledge context card.
-- Large input with placeholder.
-- Tool row: quick answer, scope, image/file affordances, selected context indicator, model selector, send.
+- Full-screen create panel opened by the Home folder-plus action.
+- Left step navigation: Basic Info, Model Config, Vector Storage, Parser Engine, Image Processing, Audio Processing, Storage Engine, Chunk Settings, Knowledge Graph, Advanced Settings.
+- Right content area for the active step.
+- Basic Info heading and helper text.
+- Knowledge Space type segmented control: document and FAQ/question-answer.
+- Index strategy cards: RAG retrieval and Wiki Knowledge Space.
+- Knowledge Space name input.
+- Optional description textarea with character count.
+- Close, cancel, and create controls.
 
 Behavior:
 
-- Suggested question click fills the input.
-- Selecting `IBM i Modernization` may route to the space Ask tab.
-- No real model call in prototype mode.
+- Step navigation updates active visual state.
+- Document/FAQ selection updates the active type.
+- RAG/Wiki card selection updates the active index strategy.
+- Create and cancel are visual-only in prototype mode.
+- No backend resource is created in Phase 1.
 
 ### Space Detail
 
@@ -331,8 +335,8 @@ Layout:
 | Component | Responsibility |
 |---|---|
 | `AppShell` | Sidebar and main content layout. |
-| `KnowledgeHome` | Home title, dialogue mode, and card list. |
-| `DialogueMode` | Suggested prompts, selected context, and chat input. |
+| `KnowledgeHome` | Home title, create action, created-by-me filter, and Knowledge Space card grid. |
+| `CreateKnowledgeSpacePanel` | Full-screen create flow with step navigation and basic-info mock controls. |
 | `KnowledgeSpaceCard` | Space summary card. |
 | `SpaceDetailShell` | Breadcrumb, actions, and tabs. |
 | `DocumentBatchPanel` | Batch metrics and progress. |
@@ -342,8 +346,8 @@ Layout:
 | `GraphViewer` | Lightweight graph rendering and node detail. |
 | `ReviewWorkbench` | Side-by-side source and Markdown review. |
 | `AskPanel` | Chat-like question/answer surface with sources. |
-| `ModelManagement` | Settings view for configured models and model editing. |
-| `ModelConfigPanel` | Provider/source/API fields and advanced options. |
+| `ModelManagement` | Settings view for Add Model action, built-in-model info, category filters, and model cards. |
+| `ModelConfigPanel` | Future provider/source/API fields and advanced options when edit/create flows are implemented. |
 | `RegistrationSettings` | Settings view for registration mode and sign-up preview. |
 | `MemberManagement` | Settings view for Knowledge Space invitations, members, roles, and actions. |
 | `AccountSettings` | Settings views for general preferences, user profile, and API information. |
@@ -359,7 +363,8 @@ Layout:
 ## Visual System
 
 - White panels on light gray page background.
-- Green primary action and focus color.
+- Atlas blue-gray primary action and focus color.
+- Green remains available for positive status, created markers, and future success states.
 - Rounded cards around 8px radius.
 - Soft shadows.
 - Compact but readable spacing.

@@ -145,3 +145,14 @@ Verification result:
 - Full task assertions: 26 passed, 0 failed.
 - Responsive sweep: no unexpected body-level horizontal overflow, modal escape, or text/control overflow across wide desktop, desktop, laptop, tablet, narrow, and mobile viewports.
 - Static checks: JavaScript syntax, diff hygiene, dependency/network scan, and secret/private-path scan passed.
+
+### 2026-07-02: Phase 1 FE Baseline Alignment
+
+Stakeholder review later authorized Phase 1 and clarified that the current FE should be treated as the frontend source of truth, even where it differs from the earlier Phase 0 prototype.
+
+Alignment update:
+
+- `frontend/public/atlas-prototype.html` is the active Phase 1 FE fidelity baseline.
+- `prototypes/index.html` mirrors the current FE baseline for direct static review.
+- The SDD spec, design, and task docs now describe the current Home Knowledge Space library, create Knowledge Space panel, General Settings language/theme controls, and list-style Model Management page.
+- Earlier Phase 0 dialogue-first notes remain historical review evidence, not the current UI target unless reintroduced explicitly.

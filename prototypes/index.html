@@ -572,6 +572,272 @@
       background: var(--panel-soft);
     }
 
+    .create-space-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      background: var(--panel);
+    }
+
+    .create-space-modal.active {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .create-rail {
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-soft);
+      border-right: 1px solid var(--line);
+    }
+
+    .create-rail h1 {
+      margin: 0;
+      padding: 26px 22px 32px;
+      font-size: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .create-steps {
+      display: grid;
+      gap: 8px;
+      padding: 18px 12px;
+    }
+
+    .create-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 12px;
+      color: var(--muted);
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .create-step:hover {
+      color: var(--primary-dark);
+      background: var(--panel);
+    }
+
+    .create-step.active {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+    }
+
+    .create-step-icon {
+      display: inline-grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .create-main {
+      position: relative;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-width: 0;
+      max-height: 100vh;
+      background: var(--panel);
+    }
+
+    .create-content {
+      min-width: 0;
+      padding: 30px 36px 34px;
+      overflow: auto;
+    }
+
+    .create-close {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      width: 38px;
+      height: 38px;
+      color: #666;
+      background: #f0f0f0;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .create-content h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .create-subtitle {
+      margin: 10px 0 30px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .create-form {
+      display: grid;
+      gap: 24px;
+      max-width: 1120px;
+    }
+
+    .create-label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .required {
+      color: #ef4f5f;
+    }
+
+    .type-toggle {
+      display: inline-flex;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .type-toggle button {
+      min-width: 92px;
+      min-height: 42px;
+      color: var(--ink);
+      border: 0;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .type-toggle button.active {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .create-help {
+      display: block;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .index-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .index-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 118px;
+      padding: 18px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .index-option.active {
+      background: var(--primary-soft);
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+    }
+
+    .fake-checkbox {
+      display: inline-grid;
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .index-option:not(.active) .fake-checkbox {
+      color: transparent;
+      background: var(--panel);
+      border-color: var(--line);
+    }
+
+    .option-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .new-pill {
+      padding: 2px 8px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 5px;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .create-input,
+    .create-textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--panel);
+      font-size: 15px;
+      outline: none;
+    }
+
+    .create-input {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .create-textarea {
+      min-height: 128px;
+      padding: 12px;
+    }
+
+    .create-count {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .create-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 18px 36px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .create-actions button {
+      min-width: 96px;
+      min-height: 38px;
+      padding: 0 18px;
+      border-radius: var(--radius);
+      font-size: 15px;
+    }
+
+    .create-actions .primary {
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
     .settings-subnav {
       display: grid;
       gap: 5px;
@@ -627,10 +893,110 @@
       gap: 12px;
     }
 
+    .model-info-panel {
+      padding: 18px 20px;
+      margin: 18px 0 36px;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .model-info-panel strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .model-info-panel a {
+      display: inline-flex;
+      gap: 6px;
+      margin-top: 12px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .model-list-tabs {
+      display: flex;
+      gap: 34px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .model-list-tab {
+      min-height: 46px;
+      padding: 0 0 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+      font-size: 15px;
+    }
+
+    .model-list-tab.active {
+      color: var(--primary-dark);
+      border-color: var(--primary);
+      font-weight: 800;
+    }
+
+    .model-list-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .model-list-card {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 118px;
+      padding: 24px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: none;
+    }
+
+    .model-list-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 32%, var(--line));
+    }
+
+    .model-icon {
+      display: grid;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: var(--radius);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .model-list-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .model-list-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .add-model-btn {
+      color: var(--primary-dark);
+      background: var(--panel);
+      border-color: var(--primary);
+    }
+
     .model-card {
       display: grid;
       gap: 10px;
-      min-width: 0;
       min-height: 124px;
       padding: 14px;
       text-align: left;
@@ -655,13 +1021,11 @@
     .model-head strong {
       display: block;
       margin-bottom: 4px;
-      overflow-wrap: anywhere;
     }
 
     .model-provider {
       color: var(--muted);
       font-size: 12px;
-      overflow-wrap: anywhere;
     }
 
     .model-meta {
@@ -746,19 +1110,6 @@
       background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-    }
-
-    .secret-row > span {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .secret-row .icon-btn {
-      width: auto;
-      min-width: 30px;
-      padding: 0 8px;
-      font-size: 13px;
-      white-space: normal;
     }
 
     .toggle-pill {
@@ -901,6 +1252,135 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
+    }
+
+    .library-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 20px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .library-toolbar .owner-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .library-toolbar .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border-radius: 999px;
+    }
+
+    .library-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .library-card {
+      position: relative;
+      display: grid;
+      min-height: 200px;
+      padding: 22px;
+      overflow: hidden;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .library-card::after {
+      position: absolute;
+      top: -68px;
+      right: -58px;
+      width: 150px;
+      height: 150px;
+      content: "";
+      background: var(--primary-soft);
+      opacity: 0.55;
+      border-radius: 50%;
+    }
+
+    .library-card:hover {
+      border-color: rgba(63, 111, 143, 0.32);
+      transform: translateY(-1px);
+    }
+
+    .library-card h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+      line-height: 1.3;
+    }
+
+    .library-card p {
+      display: -webkit-box;
+      min-height: 52px;
+      margin: 0;
+      overflow: hidden;
+      color: var(--muted);
+      line-height: 1.48;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .library-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 13px;
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+    }
+
+    .library-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .library-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 30px;
+      padding: 5px 9px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .owner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 28px;
+      padding: 4px 9px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .card,
@@ -1653,6 +2133,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .library-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .knowledge-popover {
         left: 26px;
         transform: none;
@@ -1777,6 +2261,7 @@
       }
 
       .cards,
+      .library-cards,
       .model-grid,
       .engine-grid,
       .metric-grid,
@@ -1916,10 +2401,6 @@
       <nav class="side-nav" id="sideNav" aria-label="主导航"></nav>
       <div class="side-footer">
         <div id="sideFooterText">内部知识工作台 · 已连接企业知识空间</div>
-        <div class="utility-controls">
-          <button class="utility-btn" id="languageToggle" type="button">中文</button>
-          <button class="utility-btn" id="themeToggle" type="button">日间</button>
-        </div>
       </div>
     </aside>
 
@@ -1928,6 +2409,7 @@
       <section class="view" id="spaceView"></section>
     </main>
     <section class="settings-modal" id="settingsView" aria-modal="true" role="dialog"></section>
+    <section class="create-space-modal" id="createSpaceView" aria-modal="true" role="dialog"></section>
   </div>
 
   <script>
@@ -1938,10 +2420,12 @@
       view: "home",
       activeTab: "wiki",
       settingsOpen: false,
+      createSpaceOpen: false,
+      createStep: "basic",
+      selectedKnowledgeType: "document",
+      selectedIndexStrategy: "rag",
       settingsPanel: "members",
-      selectedModelId: "deepseek-flash",
-      selectedModelCategory: "all",
-      homeQuestion: ""
+      selectedModelId: "deepseek-flash"
     };
 
     const i18n = {
@@ -1976,10 +2460,10 @@
         sectionTitle: "知识空间",
         sectionSubtitle: "进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。",
         openLabel: "打开",
-        owner: "负责人",
-        documents: "文档",
-        wikiPages: "Wiki 页面",
-        reviews: "待审核",
+        owner: "Owner",
+        documents: "Documents",
+        wikiPages: "Wiki Pages",
+        reviews: "Reviews",
         breadcrumbHome: "知识库",
         spaceSubtitle: "从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。",
         backHome: "返回知识库",
@@ -1987,48 +2471,30 @@
         uploadZip: "上传 ZIP",
         tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
         batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
-        totalFiles: "文件总数",
-        pdfConverted: "已转 PDF",
-        markdownGenerated: "已生成 Markdown",
-        failed: "失败",
         fileTree: "文件树与解析状态",
-        wikiIndex: "Wiki 目录",
         wikiSearch: "搜索 Wiki 页面...",
-        recentUpdates: "最近更新",
+        recentUpdates: "Recent Updates",
         wikiIntro: "Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。",
-        metadata: "元数据",
-        sourceDocuments: "来源文档",
-        reviewStatus: "审核状态",
-        lastUpdated: "最后更新",
-        relatedConcepts: "相关概念",
         graphOverview: "图谱概览",
         graphHelp: "轻量知识图谱。节点来自已发布 Wiki、源文档和待审核证据。",
-        nodeDetail: "节点详情",
+        nodeDetail: "Node Detail",
         nodeDetailHelp: "点击图谱节点查看来源、类型和关系说明。",
-        wikiPageNode: "Wiki 页面",
-        entityNode: "实体",
-        conceptNode: "概念",
-        documentNode: "文档",
-        reviewRequiredNode: "需审核",
-        pdfPreview: "PDF 页面预览",
+        pdfPreview: "PDF Page Preview",
         pdfPlaceholder: "表格、流程图和扫描文本预览占位",
-        source: "来源",
-        page: "页",
-        pdfPage: "PDF 第 {page} 页",
-        markdownPreview: "Markdown 预览",
-        reviewComments: "输入审核意见...",
-        approve: "通过",
-        needFix: "需要修复",
-        markOcr: "标记需 OCR",
-        lowConfidence: "低置信度页面",
+        markdownPreview: "Markdown Preview",
+        reviewComments: "Review comments...",
+        approve: "Approve",
+        needFix: "Need Fix",
+        markOcr: "Mark OCR Required",
+        lowConfidence: "Low confidence pages",
         askTitle: "Ask IBM i Modernization",
         askPlaceholder: "Ask about IBM i Modernization...",
-        confidence: "置信度",
+        confidence: "Confidence",
         askPolicy: "可信回答策略",
         askPolicyText: "Ask 只展示来自已审核或带有清晰 source_trace 的证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。",
         approvedWikiPages: "Approved Wiki pages",
         evidenceChunks: "Evidence chunks",
-        reviewRequired: "待审核",
+        reviewRequired: "Review required",
         modelSettingsTitle: "模型配置",
         modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
         builtinModel: "内置模型",
@@ -2039,7 +2505,6 @@
         rerankModels: "ReRank",
         visionModels: "视觉",
         speechModels: "语音",
-        noModelsInCategory: "当前分类暂无模型。",
         editModel: "编辑模型",
         editModelSubtitle: "配置用于对话的大语言模型",
         modelSource: "模型来源",
@@ -2050,7 +2515,7 @@
         modelName: "模型名称",
         displayName: "显示名称（可选）",
         baseUrl: "Base URL",
-        credentialLabel: "API Key（可选）",
+        apiKey: "API Key（可选）",
         configured: "已配置",
         replace: "更换",
         remove: "移除",
@@ -2086,10 +2551,6 @@
         learnRbac: "了解 RBAC",
         pendingInvites: "待接受的邀请",
         noPendingInvites: "暂无待接受的邀请。",
-        invitedBy: "邀请人",
-        invitedAt: "邀请时间",
-        pendingStatus: "待接受",
-        resendInvite: "重新发送",
         spaceMembers: "空间成员",
         searchMembers: "按姓名或邮箱搜索",
         inviteMember: "邀请成员",
@@ -2148,12 +2609,7 @@
         configSummary: "配置摘要",
         defaultEngine: "DEFAULT",
         available: "可用",
-        experimental: "实验性",
-        mockSpace: "Mock 空间",
-        batchParsing: "批处理中",
-        rbacRoles: "RBAC 角色",
-        noKey: "未配置 Key",
-        notConfigured: "未配置"
+        experimental: "实验性"
       },
       "en-US": {
         nav: ["Knowledge", "Agents", "Shared Spaces", "Chat"],
@@ -2197,34 +2653,16 @@
         uploadZip: "Upload ZIP",
         tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
         batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
-        totalFiles: "Total files",
-        pdfConverted: "PDF converted",
-        markdownGenerated: "Markdown generated",
-        failed: "Failed",
         fileTree: "File Tree And Parsing Status",
-        wikiIndex: "Wiki Index",
         wikiSearch: "Search Wiki pages...",
         recentUpdates: "Recent Updates",
         wikiIntro: "Auto-generated normalized Markdown page. Dense, evidence-first content awaiting SME review for low-confidence sections.",
-        metadata: "Metadata",
-        sourceDocuments: "Source Documents",
-        reviewStatus: "Review Status",
-        lastUpdated: "Last Updated",
-        relatedConcepts: "Related Concepts",
         graphOverview: "Graph Overview",
         graphHelp: "Lightweight knowledge graph. Nodes come from published Wiki pages, source documents, and review-required evidence.",
         nodeDetail: "Node Detail",
         nodeDetailHelp: "Click a graph node to inspect source, type, and relationship notes.",
-        wikiPageNode: "Wiki Page",
-        entityNode: "Entity",
-        conceptNode: "Concept",
-        documentNode: "Document",
-        reviewRequiredNode: "Review Required",
         pdfPreview: "PDF Page Preview",
         pdfPlaceholder: "Table, diagram, and scanned text preview placeholder",
-        source: "Source",
-        page: "page",
-        pdfPage: "PDF PAGE {page}",
         markdownPreview: "Markdown Preview",
         reviewComments: "Review comments...",
         approve: "Approve",
@@ -2249,7 +2687,6 @@
         rerankModels: "ReRank",
         visionModels: "Vision",
         speechModels: "Speech",
-        noModelsInCategory: "No models in this category.",
         editModel: "Edit Model",
         editModelSubtitle: "Configure the large language model used for dialogue",
         modelSource: "Model Source",
@@ -2260,7 +2697,7 @@
         modelName: "Model Name",
         displayName: "Display Name (optional)",
         baseUrl: "Base URL",
-        credentialLabel: "API Key (optional)",
+        apiKey: "API Key (optional)",
         configured: "Configured",
         replace: "Replace",
         remove: "Remove",
@@ -2296,10 +2733,6 @@
         learnRbac: "Learn RBAC",
         pendingInvites: "Pending Invitations",
         noPendingInvites: "No pending invitations.",
-        invitedBy: "Invited By",
-        invitedAt: "Invited At",
-        pendingStatus: "Pending",
-        resendInvite: "Resend",
         spaceMembers: "Space Members",
         searchMembers: "Search by name or email",
         inviteMember: "Invite Member",
@@ -2358,12 +2791,7 @@
         configSummary: "Config Summary",
         defaultEngine: "DEFAULT",
         available: "Available",
-        experimental: "Experimental",
-        mockSpace: "Mock Space",
-        batchParsing: "Batch Parsing",
-        rbacRoles: "RBAC Roles",
-        noKey: "No Key",
-        notConfigured: "Not configured"
+        experimental: "Experimental"
       }
     };
 
@@ -2647,16 +3075,7 @@
         defaultSpace: "IBM i Modernization",
         requiresApproval: true
       },
-      invitations: [
-        {
-          name: "Architecture SME",
-          email: "architecture.sme@example.local",
-          role: "reviewer",
-          invitedBy: "leo",
-          invitedAt: "2026/07/01 16:20",
-          status: "pending"
-        }
-      ],
+      invitations: [],
       members: [
         {
           name: "leo",
@@ -2743,10 +3162,9 @@
     const homeView = document.querySelector("#homeView");
     const spaceView = document.querySelector("#spaceView");
     const settingsView = document.querySelector("#settingsView");
+    const createSpaceView = document.querySelector("#createSpaceView");
     const sideNav = document.querySelector("#sideNav");
     const sideFooterText = document.querySelector("#sideFooterText");
-    const languageToggle = document.querySelector("#languageToggle");
-    const themeToggle = document.querySelector("#themeToggle");
 
     function copy() {
       return i18n[uiState.lang];
@@ -2757,10 +3175,6 @@
       document.documentElement.lang = uiState.lang;
       document.documentElement.dataset.theme = uiState.theme;
       sideFooterText.textContent = text.footer;
-      languageToggle.textContent = text.languageButton;
-      themeToggle.textContent = text.themeButton[uiState.theme];
-      languageToggle.setAttribute("aria-label", uiState.lang === "zh-CN" ? "Switch to English" : "切换到中文");
-      themeToggle.setAttribute("aria-label", uiState.theme === "day" ? "切换到夜间模式" : "Switch to day mode");
     }
 
     // Rendering
@@ -2806,8 +3220,10 @@
     }
 
     function renderHome() {
-      const dialog = appData.dialog;
       const text = copy();
+      const createdLabel = uiState.lang === "zh-CN" ? "我创建的" : "Created by me";
+      const ownerLabel = uiState.lang === "zh-CN" ? "我创建" : "Created";
+      const libraryDescriptions = new Map(appData.spaces.map((space) => [space.name, space.description]));
       homeView.innerHTML = `
         <div class="page-head">
           <div class="title-block">
@@ -2815,75 +3231,33 @@
             <p>${text.homeSubtitle}</p>
           </div>
           <div class="button-row">
-            <button class="btn secondary">${text.filter}</button>
-            <button class="btn">${text.newSpace}</button>
+            <button class="btn" aria-label="${text.newSpace}" data-create-space="true">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3.75 6.75a2 2 0 0 1 2-2h4.1l2 2.25h6.4a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H5.75a2 2 0 0 1-2-2V6.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 13.25h5.5M14.75 10.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
         </div>
-        <section class="dialog-hero" aria-label="知识库对话模式">
-          <div class="dialog-center">
-            <h2>${uiState.lang === "zh-CN" ? dialog.title : text.dialogTitle}</h2>
-            <p>${text.dialogSubtitle}</p>
-            <div class="prompt-chips">
-              ${dialog.prompts.map((prompt) => `<button class="prompt-chip" data-prompt="${prompt}">${prompt}</button>`).join("")}
-            </div>
-            <div class="knowledge-popover">
-              <h3>${text.kbTitle}</h3>
-              <ul class="kb-list">
-                ${dialog.knowledgeBases.map((kb) => `
-                  <li class="kb-item ${kb.selected ? "selected" : ""}" data-kb="${kb.name}">
-                    <span class="folder-icon">□</span>
-                    <span>${kb.name} <span class="kb-count">(${kb.count})</span></span>
-                  </li>
-                `).join("")}
-              </ul>
-            </div>
-            <div class="selected-kb-card">
-              <strong>${dialog.selected.name}</strong><span class="badge healthy">${text.docType}</span>
-              <p>${dialog.selected.description}</p>
-              <p>${text.docCount}</p>
-            </div>
-            <div class="dialog-box">
-              <textarea class="dialog-input" id="homeDialogInput" placeholder="${text.dialogPlaceholder}">${escapeHtml(uiState.homeQuestion)}</textarea>
-              <div class="dialog-tools">
-                <div class="tool-left">
-                  <button class="mini-btn">${text.quickAsk}</button>
-                  <button class="icon-btn" title="联网范围">◎</button>
-                  <button class="icon-btn" title="上传图片">▧</button>
-                  <button class="icon-btn" title="添加附件">⌇</button>
-                  <button class="mini-btn" title="${text.selectedKbTitle}">@ <span class="badge healthy" style="margin-left:4px;">1</span></button>
-                </div>
-                <div class="tool-right">
-                  <button class="model-select">DeepSeek Flash⌄</button>
-                  <button class="icon-btn" title="${text.send}"><span class="send-dot"></span></button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <div class="section-title">
-          <div>
-            <h2>${text.sectionTitle}</h2>
-            <p>${text.sectionSubtitle}</p>
-          </div>
+        <div class="library-toolbar" aria-label="${createdLabel}">
+          <button class="owner-chip">♙ ${createdLabel}</button>
+          <span class="count-pill">${appData.dialog.knowledgeBases.length}</span>
+          <span>⌄</span>
         </div>
-        <div class="cards">
-          ${appData.spaces.map((space) => `
-            <button class="card" data-space="${space.name}" aria-label="${text.openLabel} ${space.name}">
+        <div class="library-cards">
+          ${appData.dialog.knowledgeBases.map((kb) => `
+            <button class="library-card" data-space="${kb.name}" aria-label="${text.openLabel} ${kb.name}">
               <div>
-                <div class="card-foot" style="margin-top:0;">
-                  <h2>${space.name}</h2>
-                  <span class="badge ${statusClass[space.status]}">${statusLabel(space.status)}</span>
+                <h2>${kb.name}</h2>
+                <p>${libraryDescriptions.get(kb.name) || kb.name}</p>
+              </div>
+              <div class="library-meta">
+                <div class="library-badges">
+                  <span class="library-badge">□ ${kb.count}</span>
+                  <span class="library-badge">⚗</span>
+                  <span class="library-badge">?</span>
                 </div>
-                <p>${space.description}</p>
-              </div>
-              <div class="stats">
-                <div class="stat"><strong>${space.documents}</strong><span>${text.documents}</span></div>
-                <div class="stat"><strong>${space.wikiPages}</strong><span>${text.wikiPages}</span></div>
-                <div class="stat"><strong>${space.reviews}</strong><span>${text.reviews}</span></div>
-              </div>
-              <div class="card-foot">
-                <span>${text.owner}: ${space.owner}</span>
-                <span>${space.updated}</span>
+                <span class="owner-badge">♙ ${ownerLabel}</span>
               </div>
             </button>
           `).join("")}
@@ -2908,9 +3282,9 @@
               <h1>IBM i Modernization</h1>
               <p>${text.spaceSubtitle}</p>
               <div class="space-meta">
-                <span class="badge healthy">${text.mockSpace}</span>
-                <span class="badge review">35 ${text.reviewRequired}</span>
-                <span class="badge parsing">${text.batchParsing}</span>
+                <span class="badge healthy">Mock Space</span>
+                <span class="badge review">35 Review Required</span>
+                <span class="badge parsing">Batch Parsing</span>
               </div>
             </div>
             <div class="button-row">
@@ -2963,16 +3337,6 @@
       }[role] || role;
     }
 
-    function statusLabel(status) {
-      const text = copy();
-      return {
-        "Review Required": text.reviewRequired,
-        Healthy: text.available,
-        Parsing: text.batchParsing,
-        REVIEW_REQUIRED: text.reviewRequired
-      }[status] || status;
-    }
-
     function renderSettings() {
       if (uiState.settingsPanel === "general") {
         renderGeneralSettings();
@@ -3011,10 +3375,74 @@
       `;
     }
 
+    function renderCreateSpace() {
+      const isZh = uiState.lang === "zh-CN";
+      createSpaceView.innerHTML = `
+        <aside class="create-rail">
+          <h1>${isZh ? "新建知识库" : "Create Knowledge Space"}</h1>
+          <nav class="create-steps" aria-label="${isZh ? "新建步骤" : "Creation steps"}">
+            <button class="create-step ${uiState.createStep === "basic" ? "active" : ""}" data-create-step="basic"><span class="create-step-icon">i</span>${isZh ? "基本信息" : "Basic Info"}</button>
+            <button class="create-step ${uiState.createStep === "model" ? "active" : ""}" data-create-step="model"><span class="create-step-icon">□</span>${isZh ? "模型配置" : "Model Config"}</button>
+            <button class="create-step ${uiState.createStep === "vector" ? "active" : ""}" data-create-step="vector"><span class="create-step-icon">▤</span>${isZh ? "向量存储" : "Vector Storage"}</button>
+            <button class="create-step ${uiState.createStep === "parser" ? "active" : ""}" data-create-step="parser"><span class="create-step-icon">▧</span>${isZh ? "解析引擎" : "Parser Engine"}</button>
+            <button class="create-step ${uiState.createStep === "image" ? "active" : ""}" data-create-step="image"><span class="create-step-icon">▣</span>${isZh ? "图像处理" : "Image Processing"}</button>
+            <button class="create-step ${uiState.createStep === "audio" ? "active" : ""}" data-create-step="audio"><span class="create-step-icon">◉</span>${isZh ? "音频处理" : "Audio Processing"}</button>
+            <button class="create-step ${uiState.createStep === "storage" ? "active" : ""}" data-create-step="storage"><span class="create-step-icon">☁</span>${isZh ? "存储引擎" : "Storage Engine"}</button>
+            <button class="create-step ${uiState.createStep === "chunk" ? "active" : ""}" data-create-step="chunk"><span class="create-step-icon">◌</span>${isZh ? "分块设置" : "Chunk Settings"}</button>
+            <button class="create-step ${uiState.createStep === "graph" ? "active" : ""}" data-create-step="graph"><span class="create-step-icon">◎</span>${isZh ? "知识图谱" : "Knowledge Graph"}</button>
+            <button class="create-step ${uiState.createStep === "advanced" ? "active" : ""}" data-create-step="advanced"><span class="create-step-icon">⚙</span>${isZh ? "高级设置" : "Advanced Settings"}</button>
+          </nav>
+        </aside>
+        <main class="create-main">
+          <button class="create-close" id="closeCreateSpace" aria-label="${isZh ? "关闭" : "Close"}">×</button>
+          <div class="create-content">
+            <h2>${isZh ? "基本信息" : "Basic Info"}</h2>
+            <p class="create-subtitle">${isZh ? "设置知识库的名称和描述信息" : "Set the knowledge space name and description."}</p>
+            <form class="create-form">
+              <div>
+                <span class="create-label">${isZh ? "知识库类型" : "Knowledge Space Type"} <span class="required">*</span></span>
+                <div class="type-toggle" role="group" aria-label="${isZh ? "知识库类型" : "Knowledge Space Type"}">
+                  <button class="${uiState.selectedKnowledgeType === "document" ? "active" : ""}" data-knowledge-type="document" type="button">${isZh ? "文档" : "Document"}</button>
+                  <button class="${uiState.selectedKnowledgeType === "faq" ? "active" : ""}" data-knowledge-type="faq" type="button">${isZh ? "问答" : "FAQ"}</button>
+                </div>
+                <p class="create-help">${isZh ? "FAQ 类型适合结构化问答数据；文档型支持文件解析与分块；Wiki 类型由 LLM 自动构建互链知识页面。" : "FAQ is suitable for structured Q&A. Document spaces support parsing and chunking. Wiki spaces can be generated by LLMs."}</p>
+              </div>
+              <div>
+                <span class="create-label">${isZh ? "索引策略" : "Index Strategy"} <span class="required">*</span></span>
+                <p class="create-help">${isZh ? "配置文档上传后的处理管道，可以独立开启或关闭每种索引方式" : "Configure indexing after upload. Each index type can be toggled independently."}</p>
+                <div class="index-options">
+                  <button class="index-option ${uiState.selectedIndexStrategy === "rag" ? "active" : ""}" data-index-strategy="rag" type="button">
+                    <span class="fake-checkbox">✓</span>
+                    <span><span class="option-title">RAG ${isZh ? "检索" : "Search"}</span><span class="create-help">${isZh ? "对文档进行分块、向量化和关键词索引，支持混合检索" : "Chunk, vectorize, and keyword-index documents for hybrid retrieval."}</span></span>
+                  </button>
+                  <button class="index-option ${uiState.selectedIndexStrategy === "wiki" ? "active" : ""}" data-index-strategy="wiki" type="button">
+                    <span class="fake-checkbox">✓</span>
+                    <span><span class="option-title">Wiki ${isZh ? "知识库" : "Knowledge"} <span class="new-pill">NEW</span></span><span class="create-help">${isZh ? "自动生成互相关联的 Wiki 知识页面，构建结构化知识体系" : "Automatically generate linked Wiki knowledge pages."}</span></span>
+                  </button>
+                </div>
+              </div>
+              <label>
+                <span class="create-label">${isZh ? "知识库名称" : "Knowledge Space Name"} <span class="required">*</span></span>
+                <input class="create-input" placeholder="${isZh ? "请输入知识库名称" : "Enter knowledge space name"}">
+              </label>
+              <label>
+                <span class="create-label">${isZh ? "知识库描述" : "Knowledge Space Description"}</span>
+                <textarea class="create-textarea" maxlength="200" placeholder="${isZh ? "请输入知识库描述（可选）" : "Enter description (optional)"}"></textarea>
+                <div class="create-count">0/200</div>
+              </label>
+            </form>
+          </div>
+          <div class="create-actions">
+            <button id="cancelCreateSpace" type="button">${isZh ? "取消" : "Cancel"}</button>
+            <button class="primary" type="button">${isZh ? "创建知识库" : "Create Space"}</button>
+          </div>
+        </main>
+      `;
+    }
+
     function renderMemberSettings() {
       const text = copy();
-      const pendingInvitations = appData.invitations.filter((invite) => invite.status === "pending");
-      const pendingCount = pendingInvitations.length;
+      const pendingCount = appData.invitations.filter((invite) => invite.status === "pending").length;
       renderSettingsFrame(`
         <div class="page-head">
           <div class="title-block">
@@ -3030,27 +3458,10 @@
           <div class="member-summary">
             <div class="metric"><strong>${pendingCount}</strong><span>${text.pendingInvites}</span></div>
             <div class="metric"><strong>${appData.members.length}</strong><span>${text.spaceMembers}</span></div>
-            <div class="metric"><strong>4</strong><span>${text.rbacRoles}</span></div>
+            <div class="metric"><strong>4</strong><span>RBAC Roles</span></div>
           </div>
           <h2>${text.pendingInvites} <span class="badge medium">${pendingCount}</span></h2>
-          ${pendingCount === 0 ? `<div class="empty-invite">${text.noPendingInvites}</div>` : `
-            <div class="member-table" style="margin-bottom:18px;">
-              <div class="member-row header">
-                <span>${text.nameEmail}</span>
-                <span>${text.role}</span>
-                <span>${text.invitedAt}</span>
-                <span>${text.actions}</span>
-              </div>
-              ${pendingInvitations.map((invite) => `
-                <div class="member-row">
-                  <div class="member-name"><strong>${invite.name}</strong><span>${invite.email}</span></div>
-                  <span><span class="badge medium">${roleLabel(invite.role)}</span></span>
-                  <span>${invite.invitedAt}<br><small>${text.invitedBy}: ${invite.invitedBy}</small></span>
-                  <span><span class="badge review">${text.pendingStatus}</span> <button class="icon-btn" title="${text.resendInvite}">↻</button></span>
-                </div>
-              `).join("")}
-            </div>
-          `}
+          <div class="empty-invite">${text.noPendingInvites}</div>
           <div class="table-toolbar">
             <h2>${text.spaceMembers} <span class="badge medium">${appData.members.length}</span></h2>
             <div class="button-row">
@@ -3101,8 +3512,20 @@
         </div>
         <section class="panel">
           <div class="field-grid">
-            <div class="field"><label>${text.language}</label><select><option>${uiState.lang}</option><option>zh-CN</option><option>en-US</option></select></div>
-            <div class="field"><label>${text.theme}</label><select><option>${uiState.theme}</option><option>day</option><option>night</option></select></div>
+            <div class="field">
+              <label>${text.language}</label>
+              <select id="settingsLanguageSelect" aria-label="${text.language}">
+                <option value="zh-CN" ${uiState.lang === "zh-CN" ? "selected" : ""}>zh-CN</option>
+                <option value="en-US" ${uiState.lang === "en-US" ? "selected" : ""}>en-US</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>${text.theme}</label>
+              <select id="settingsThemeSelect" aria-label="${text.theme}">
+                <option value="day" ${uiState.theme === "day" ? "selected" : ""}>day</option>
+                <option value="night" ${uiState.theme === "night" ? "selected" : ""}>night</option>
+              </select>
+            </div>
             <div class="field"><label>${text.defaultKnowledgeSpace}</label><input value="${account.defaultSpace}"></div>
             <div class="toggle-row"><span>${text.notifications}</span><span class="toggle-pill ${account.notifications ? "on" : ""}"></span></div>
           </div>
@@ -3244,19 +3667,15 @@
 
     function renderModelSettings() {
       const text = copy();
+      const managedModels = appData.models.filter((model) => ["deepseek-flash", "dashscope-embedding"].includes(model.id));
       const categories = [
-        ["all", text.allModels, appData.models.length],
-        ["chat", text.chatModels, appData.models.filter((model) => model.type === "chat").length],
-        ["embedding", text.embeddingModels, appData.models.filter((model) => model.type === "embedding").length],
+        ["all", text.allModels, managedModels.length],
+        ["chat", text.chatModels, managedModels.filter((model) => model.type === "chat").length],
+        ["embedding", text.embeddingModels, managedModels.filter((model) => model.type === "embedding").length],
         ["rerank", text.rerankModels, 0],
-        ["vision", text.visionModels, appData.models.filter((model) => model.type === "vision").length],
+        ["vision", text.visionModels, 0],
         ["speech", text.speechModels, 0]
       ];
-      const visibleModels = uiState.selectedModelCategory === "all"
-        ? appData.models
-        : appData.models.filter((model) => model.type === uiState.selectedModelCategory);
-      const selectedInCategory = visibleModels.find((model) => model.id === uiState.selectedModelId);
-      const selected = selectedInCategory || visibleModels[0] || appData.models.find((model) => model.id === uiState.selectedModelId) || appData.models[0];
       renderSettingsFrame(`
         <div class="page-head">
           <div class="title-block">
@@ -3264,94 +3683,30 @@
             <p>${text.modelSettingsSubtitle}</p>
           </div>
           <div class="button-row">
-            <button class="btn secondary">${text.testConnection}</button>
-            <button class="btn">${text.save}</button>
+            <button class="btn secondary add-model-btn">＋ ${uiState.lang === "zh-CN" ? "添加模型" : "Add Model"}</button>
           </div>
         </div>
-        <div class="settings-layout">
-          <section class="panel">
-            <h2>${text.builtinModel}</h2>
-            <p style="color:var(--muted);line-height:1.55;">${text.builtinModelHelp}</p>
-            <div class="settings-tabs">
-              ${categories.map(([key, label, count]) => `<button class="settings-tab ${uiState.selectedModelCategory === key ? "active" : ""}" data-model-category="${key}" type="button">${label} (${count})</button>`).join("")}
-            </div>
-            <div class="model-grid">
-              ${visibleModels.length === 0 ? `<div class="empty-invite">${text.noModelsInCategory}</div>` : visibleModels.map((model) => `
-                <button class="model-card ${model.id === selected.id ? "active" : ""}" data-model-id="${model.id}" type="button">
-                  <div class="model-head">
-                    <div>
-                      <strong>${model.displayName}</strong>
-                      <span class="model-provider">${model.provider}</span>
-                    </div>
-                    <span class="badge ${model.type === "chat" ? "healthy" : "medium"}">${model.type}</span>
-                  </div>
-                  <div class="model-meta">
-                    <span class="badge ${model.apiKeyStatus === "configured" ? "approved" : "review"}">${model.apiKeyStatus === "configured" ? text.configured : text.noKey}</span>
-                    <span class="badge parsing">${model.source}</span>
-                  </div>
-                  <p style="color:var(--muted);line-height:1.45;margin:0;">${model.note}</p>
-                </button>
-              `).join("")}
-            </div>
-          </section>
-          <aside class="config-panel">
-            <div class="model-head">
-              <div>
-                <h2>${text.editModel}</h2>
-                <p style="color:var(--muted);margin:6px 0 0;">${text.editModelSubtitle}</p>
-              </div>
-              <span class="badge healthy">${selected.type}</span>
-            </div>
-            <div class="config-section">
-              <h3>${text.modelSource}</h3>
-              <div class="button-row" style="justify-content:flex-start;">
-                <button class="btn secondary">${text.ollama}</button>
-                <button class="btn">${text.api}</button>
-              </div>
-            </div>
-            <div class="config-section">
-              <h3>${text.accessConfig}</h3>
-              <div class="field-grid">
-                <div class="field"><label>${text.provider}</label><select><option>${selected.provider}</option><option>GitHub Models</option><option>GitHub Copilot</option><option>OpenAI Compatible</option><option>Ollama</option></select></div>
-                <div class="field"><label>${text.modelName}</label><input value="${selected.name}"></div>
-                <div class="field"><label>${text.displayName}</label><input value="${selected.displayName}"></div>
-                <div class="field"><label>${text.baseUrl}</label><input value="${selected.baseUrl}"></div>
-                <div class="field">
-                  <label>${text.credentialLabel}</label>
-                  <div class="secret-row">
-                    <span>● ${selected.apiKeyStatus === "configured" ? text.configured : text.notConfigured}</span>
-                    <span><button class="icon-btn" type="button">${text.replace}</button><button class="icon-btn" type="button">${text.remove}</button></span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label>${text.customHeaders}</label>
-                  <div class="secret-row"><span>Authorization, Content-Type</span><button class="icon-btn" type="button">＋ ${text.addHeader}</button></div>
-                  <p class="field-note">${text.modelSafetyNote}</p>
-                </div>
-              </div>
-            </div>
-            <div class="config-section">
-              <h3>${text.advancedOptions}</h3>
-              <div class="field-grid">
-                <div class="toggle-row"><span>${text.multimodal}</span><span class="toggle-pill ${selected.supportsMultimodal ? "on" : ""}"></span></div>
-                <div class="field">
-                  <label>${text.thinkingFormat}</label>
-                  <select>
-                    <option>${selected.thinkingFormat === "none" ? text.noThinking : selected.thinkingFormat === "provider_default" ? text.providerDefault : text.customThinking}</option>
-                    <option>${text.noThinking}</option>
-                    <option>${text.providerDefault}</option>
-                    <option>${text.customThinking}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="button-row" style="margin-top:18px;">
-              <button class="btn secondary">${text.testConnection}</button>
-              <button class="btn secondary">${text.cancel}</button>
-              <button class="btn">${text.save}</button>
-            </div>
-          </aside>
-        </div>
+        <section class="model-info-panel">
+          <strong>${text.builtinModel}</strong>
+          <p>${text.builtinModelHelp}</p>
+          <a href="#" aria-label="${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"}">
+            ${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"} ↗
+          </a>
+        </section>
+        <nav class="model-list-tabs" aria-label="${text.modelSettingsTitle}">
+          ${categories.map(([key, label, count], index) => `<button class="model-list-tab ${index === 0 ? "active" : ""}" type="button">${label}(${count})</button>`).join("")}
+        </nav>
+        <section class="model-list-grid">
+          ${managedModels.map((model) => `
+            <button class="model-list-card" data-model-id="${model.id}" type="button">
+              <span class="model-icon">${model.type === "embedding" ? "⌘" : "□"}</span>
+              <span>
+                <h3>${model.displayName}</h3>
+                <p>${model.provider}${model.type === "embedding" ? " · 向量维度 1024" : ""}</p>
+              </span>
+            </button>
+          `).join("")}
+        </section>
       `);
     }
 
@@ -3359,11 +3714,11 @@
       const batch = appData.batch;
       const text = copy();
       const metrics = [
-        [text.totalFiles, batch.totalFiles],
-        [text.pdfConverted, batch.pdfConverted],
-        [text.markdownGenerated, batch.markdownGenerated],
-        [text.reviewRequired, batch.reviewRequired],
-        [text.failed, batch.failed]
+        ["Total files", batch.totalFiles],
+        ["PDF converted", batch.pdfConverted],
+        ["Markdown generated", batch.markdownGenerated],
+        ["Review required", batch.reviewRequired],
+        ["Failed", batch.failed]
       ];
       return `
         <div class="doc-grid">
@@ -3392,7 +3747,7 @@
               ${batch.files.map((file) => `
                 <div class="file-row">
                   <span class="file-path">${file.path}</span>
-                  <span class="badge ${statusClass[file.status]}">${statusLabel(file.status)}</span>
+                  <span class="badge ${statusClass[file.status]}">${file.status}</span>
                 </div>
               `).join("")}
             </div>
@@ -3407,7 +3762,7 @@
       return `
         <div class="wiki-layout">
           <aside class="wiki-rail">
-            <h3>${text.wikiIndex}</h3>
+            <h3>Wiki Index</h3>
             <input class="search" placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
             <ul class="index-list">
               ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
@@ -3429,14 +3784,14 @@
             `).join("")}
           </article>
           <aside class="wiki-rail">
-            <h3>${text.metadata}</h3>
+            <h3>Metadata</h3>
             <div class="metadata-list">
-              <div><strong>${text.sourceDocuments}</strong>${wiki.metadata.sourceDocuments}</div>
-              <div><strong>${text.confidence}</strong>${wiki.metadata.confidence}</div>
-              <div><strong>${text.reviewStatus}</strong><span class="badge review">${statusLabel(wiki.metadata.reviewStatus)}</span></div>
-              <div><strong>${text.lastUpdated}</strong>${wiki.metadata.lastUpdated}</div>
-              <div><strong>${text.owner}</strong>${wiki.metadata.owner}</div>
-              <div><strong>${text.relatedConcepts}</strong>
+              <div><strong>Source Documents</strong>${wiki.metadata.sourceDocuments}</div>
+              <div><strong>Confidence</strong>${wiki.metadata.confidence}</div>
+              <div><strong>Review Status</strong><span class="badge review">${wiki.metadata.reviewStatus}</span></div>
+              <div><strong>Last Updated</strong>${wiki.metadata.lastUpdated}</div>
+              <div><strong>Owner</strong>${wiki.metadata.owner}</div>
+              <div><strong>Related Concepts</strong>
                 <ul class="related-list">${wiki.metadata.relatedConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
               </div>
             </div>
@@ -3477,10 +3832,10 @@
         <div class="review-grid">
           <section class="review-pane">
             <h3>${text.pdfPreview}</h3>
-            <p style="color:var(--muted);">${text.source}: ${review.source} / ${text.page} ${review.page}</p>
+            <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
             <div class="pdf-preview">
               <div>
-                <strong>${text.pdfPage.replace("{page}", review.page)}</strong>
+                <strong>PDF PAGE ${review.page}</strong>
                 <p>${text.pdfPlaceholder}</p>
               </div>
             </div>
@@ -3502,7 +3857,7 @@
         <section class="panel" style="margin-top:16px;">
           <h2>${text.lowConfidence}</h2>
           <div class="queue">
-            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">${statusLabel("REVIEW_REQUIRED")}</span></div>`).join("")}
+            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
           </div>
         </section>
       `;
@@ -3540,13 +3895,6 @@
     }
 
     // Interactions
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
     function linkConcepts(text) {
       const concepts = Object.keys(appData.wiki.concepts).sort((a, b) => b.length - a.length);
       return concepts.reduce((result, concept) => {
@@ -3558,9 +3906,11 @@
     function showHome() {
       uiState.view = "home";
       uiState.settingsOpen = false;
+      uiState.createSpaceOpen = false;
       homeView.classList.add("active");
       spaceView.classList.remove("active");
       settingsView.classList.remove("active");
+      createSpaceView.classList.remove("active");
       document.querySelectorAll("#sideNav button").forEach((button, index) => {
         button.classList.toggle("active", index === 0);
       });
@@ -3570,10 +3920,12 @@
       uiState.view = "space";
       uiState.activeTab = tab;
       uiState.settingsOpen = false;
+      uiState.createSpaceOpen = false;
       renderSpace(tab);
       homeView.classList.remove("active");
       spaceView.classList.add("active");
       settingsView.classList.remove("active");
+      createSpaceView.classList.remove("active");
       document.querySelectorAll("#sideNav button").forEach((button) => {
         button.classList.toggle("active", button.dataset.navKey === "all");
       });
@@ -3581,15 +3933,32 @@
 
     function showSettings(panel = uiState.settingsPanel) {
       uiState.settingsOpen = true;
+      uiState.createSpaceOpen = false;
       uiState.settingsPanel = panel;
       renderSettings();
       settingsView.classList.add("active");
+      createSpaceView.classList.remove("active");
       renderNav();
     }
 
     function closeSettings() {
       uiState.settingsOpen = false;
       settingsView.classList.remove("active");
+      renderNav();
+    }
+
+    function showCreateSpace() {
+      uiState.createSpaceOpen = true;
+      uiState.settingsOpen = false;
+      renderCreateSpace();
+      settingsView.classList.remove("active");
+      createSpaceView.classList.add("active");
+      renderNav();
+    }
+
+    function closeCreateSpace() {
+      uiState.createSpaceOpen = false;
+      createSpaceView.classList.remove("active");
       renderNav();
     }
 
@@ -3617,6 +3986,9 @@
         uiState.settingsOpen = true;
         showSettings(activeSettingsPanel);
       }
+      if (uiState.createSpaceOpen) {
+        showCreateSpace();
+      }
     }
 
     function legendItems() {
@@ -3624,13 +3996,12 @@
         acc[node.type] = (acc[node.type] || 0) + 1;
         return acc;
       }, {});
-      const text = copy();
       return [
-        { label: text.wikiPageNode, color: "blue", count: counts["Wiki Page"] || 0 },
-        { label: text.entityNode, color: "green", count: counts.Entity || 0 },
-        { label: text.conceptNode, color: "orange", count: counts.Concept || 0 },
-        { label: text.documentNode, color: "gray", count: counts.Document || 0 },
-        { label: text.reviewRequiredNode, color: "red", count: counts["Review Required"] || 0 }
+        { label: "Wiki Page", color: "blue", count: counts["Wiki Page"] || 0 },
+        { label: "Entity", color: "green", count: counts.Entity || 0 },
+        { label: "Concept", color: "orange", count: counts.Concept || 0 },
+        { label: "Document", color: "gray", count: counts.Document || 0 },
+        { label: "Review Required", color: "red", count: counts["Review Required"] || 0 }
       ];
     }
 
@@ -3666,20 +4037,6 @@
 
     function bindEvents() {
       document.addEventListener("click", (event) => {
-        if (event.target.id === "languageToggle") {
-          uiState.lang = uiState.lang === "zh-CN" ? "en-US" : "zh-CN";
-          localStorage.setItem("atlas-lang", uiState.lang);
-          renderApp();
-          return;
-        }
-
-        if (event.target.id === "themeToggle") {
-          uiState.theme = uiState.theme === "day" ? "night" : "day";
-          localStorage.setItem("atlas-theme", uiState.theme);
-          renderApp();
-          return;
-        }
-
         const spaceCard = event.target.closest("[data-space]");
         if (spaceCard && spaceCard.dataset.space === "IBM i Modernization") {
           showSpace("wiki");
@@ -3688,9 +4045,8 @@
         const promptChip = event.target.closest("[data-prompt]");
         if (promptChip) {
           const input = document.querySelector("#homeDialogInput");
-          uiState.homeQuestion = promptChip.dataset.prompt;
           if (input) {
-            input.value = uiState.homeQuestion;
+            input.value = promptChip.dataset.prompt;
             input.focus();
           }
         }
@@ -3711,19 +4067,40 @@
           showSettings("general");
         }
 
+        const createSpaceButton = event.target.closest("[data-create-space]");
+        if (createSpaceButton) {
+          showCreateSpace();
+        }
+
         if (event.target.id === "closeSettings" || event.target.id === "settingsView") {
           closeSettings();
+        }
+
+        if (event.target.id === "closeCreateSpace" || event.target.id === "cancelCreateSpace") {
+          closeCreateSpace();
+        }
+
+        const indexStrategy = event.target.closest("[data-index-strategy]");
+        if (indexStrategy) {
+          uiState.selectedIndexStrategy = indexStrategy.dataset.indexStrategy;
+          renderCreateSpace();
+        }
+
+        const knowledgeType = event.target.closest("[data-knowledge-type]");
+        if (knowledgeType) {
+          uiState.selectedKnowledgeType = knowledgeType.dataset.knowledgeType;
+          renderCreateSpace();
+        }
+
+        const createStep = event.target.closest("[data-create-step]");
+        if (createStep) {
+          uiState.createStep = createStep.dataset.createStep;
+          renderCreateSpace();
         }
 
         const settingsPanel = event.target.closest("[data-settings-panel]");
         if (settingsPanel) {
           showSettings(settingsPanel.dataset.settingsPanel);
-        }
-
-        const modelCategory = event.target.closest("[data-model-category]");
-        if (modelCategory) {
-          uiState.selectedModelCategory = modelCategory.dataset.modelCategory;
-          showSettings("models");
         }
 
         const modelCard = event.target.closest("[data-model-id]");
@@ -3759,9 +4136,18 @@
         }
       });
 
-      document.addEventListener("input", (event) => {
-        if (event.target.id === "homeDialogInput") {
-          uiState.homeQuestion = event.target.value;
+      document.addEventListener("change", (event) => {
+        if (event.target.id === "settingsLanguageSelect") {
+          uiState.lang = event.target.value;
+          localStorage.setItem("atlas-lang", uiState.lang);
+          renderApp();
+          return;
+        }
+
+        if (event.target.id === "settingsThemeSelect") {
+          uiState.theme = event.target.value;
+          localStorage.setItem("atlas-theme", uiState.theme);
+          renderApp();
         }
       });
 
