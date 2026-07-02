@@ -181,12 +181,30 @@ Use adapter boundaries for:
 
 - Converter tools.
 - Parser/OCR tools.
+- Agent runtimes and tool-calling frameworks.
 - Vector database engines.
 - Storage engines.
 - Model providers.
 - Search providers.
 
 Product logic should depend on product-facing interfaces, not concrete engines such as `document-normalize`, MinerU, Docling, PaddleOCR, PostgreSQL/pgvector, Milvus, Qdrant, Ollama, DeepSeek, GitHub Models, or S3-compatible storage.
+
+## Backend And Agent Architecture
+
+Atlas backend direction is Java + Spring Boot as the control plane.
+
+Spring Boot owns:
+
+- Product APIs and validation.
+- Knowledge Space, batch, file, Wiki, review, graph, member, model, and settings metadata.
+- Workflow status and state transitions.
+- Authentication, RBAC, and audit when production security is introduced.
+- Agent run, tool invocation, artifact, and review-required output records.
+- Adapter registry and policy decisions.
+
+Agent, parser, OCR, document AI, model, vector, storage, and search execution belongs behind an adapter/worker plane. Workers may be implemented in Python, Node.js, Go, Java, or another appropriate runtime. The core backend must not depend directly on one agent SDK, one MCP runtime, one parser, one model provider, or one vector database.
+
+Agent-generated or LLM-generated outputs are untrusted by default and must remain review-required unless SME-approved or deterministically validated. Store or expose source trace, tool-call metadata, artifacts, confidence/evidence, errors, and audit events when available.
 
 ## Trace And Review
 
