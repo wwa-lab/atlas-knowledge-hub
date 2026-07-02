@@ -630,6 +630,7 @@
     .model-card {
       display: grid;
       gap: 10px;
+      min-width: 0;
       min-height: 124px;
       padding: 14px;
       text-align: left;
@@ -654,11 +655,13 @@
     .model-head strong {
       display: block;
       margin-bottom: 4px;
+      overflow-wrap: anywhere;
     }
 
     .model-provider {
       color: var(--muted);
       font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     .model-meta {
@@ -743,6 +746,19 @@
       background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: var(--radius);
+    }
+
+    .secret-row > span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .secret-row .icon-btn {
+      width: auto;
+      min-width: 30px;
+      padding: 0 8px;
+      font-size: 13px;
+      white-space: normal;
     }
 
     .toggle-pill {
@@ -1923,7 +1939,9 @@
       activeTab: "wiki",
       settingsOpen: false,
       settingsPanel: "members",
-      selectedModelId: "deepseek-flash"
+      selectedModelId: "deepseek-flash",
+      selectedModelCategory: "all",
+      homeQuestion: ""
     };
 
     const i18n = {
@@ -1958,10 +1976,10 @@
         sectionTitle: "知识空间",
         sectionSubtitle: "进入空间后可查看文档批次、LM Wiki、图谱、Review 和 Ask。",
         openLabel: "打开",
-        owner: "Owner",
-        documents: "Documents",
-        wikiPages: "Wiki Pages",
-        reviews: "Reviews",
+        owner: "负责人",
+        documents: "文档",
+        wikiPages: "Wiki 页面",
+        reviews: "待审核",
         breadcrumbHome: "知识库",
         spaceSubtitle: "从项目文档包到可审核 LM Wiki、轻量知识图谱和可信 Ask 的目标体验。",
         backHome: "返回知识库",
@@ -1969,30 +1987,48 @@
         uploadZip: "上传 ZIP",
         tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
         batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
+        totalFiles: "文件总数",
+        pdfConverted: "已转 PDF",
+        markdownGenerated: "已生成 Markdown",
+        failed: "失败",
         fileTree: "文件树与解析状态",
+        wikiIndex: "Wiki 目录",
         wikiSearch: "搜索 Wiki 页面...",
-        recentUpdates: "Recent Updates",
+        recentUpdates: "最近更新",
         wikiIntro: "Auto-generated normalized Markdown page. 内容密集、证据优先，等待 SME 对低置信度段落进行确认。",
+        metadata: "元数据",
+        sourceDocuments: "来源文档",
+        reviewStatus: "审核状态",
+        lastUpdated: "最后更新",
+        relatedConcepts: "相关概念",
         graphOverview: "图谱概览",
         graphHelp: "轻量知识图谱。节点来自已发布 Wiki、源文档和待审核证据。",
-        nodeDetail: "Node Detail",
+        nodeDetail: "节点详情",
         nodeDetailHelp: "点击图谱节点查看来源、类型和关系说明。",
-        pdfPreview: "PDF Page Preview",
+        wikiPageNode: "Wiki 页面",
+        entityNode: "实体",
+        conceptNode: "概念",
+        documentNode: "文档",
+        reviewRequiredNode: "需审核",
+        pdfPreview: "PDF 页面预览",
         pdfPlaceholder: "表格、流程图和扫描文本预览占位",
-        markdownPreview: "Markdown Preview",
-        reviewComments: "Review comments...",
-        approve: "Approve",
-        needFix: "Need Fix",
-        markOcr: "Mark OCR Required",
-        lowConfidence: "Low confidence pages",
+        source: "来源",
+        page: "页",
+        pdfPage: "PDF 第 {page} 页",
+        markdownPreview: "Markdown 预览",
+        reviewComments: "输入审核意见...",
+        approve: "通过",
+        needFix: "需要修复",
+        markOcr: "标记需 OCR",
+        lowConfidence: "低置信度页面",
         askTitle: "Ask IBM i Modernization",
         askPlaceholder: "Ask about IBM i Modernization...",
-        confidence: "Confidence",
+        confidence: "置信度",
         askPolicy: "可信回答策略",
         askPolicyText: "Ask 只展示来自已审核或带有清晰 source_trace 的证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。",
         approvedWikiPages: "Approved Wiki pages",
         evidenceChunks: "Evidence chunks",
-        reviewRequired: "Review required",
+        reviewRequired: "待审核",
         modelSettingsTitle: "模型配置",
         modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
         builtinModel: "内置模型",
@@ -2003,6 +2039,7 @@
         rerankModels: "ReRank",
         visionModels: "视觉",
         speechModels: "语音",
+        noModelsInCategory: "当前分类暂无模型。",
         editModel: "编辑模型",
         editModelSubtitle: "配置用于对话的大语言模型",
         modelSource: "模型来源",
@@ -2049,6 +2086,10 @@
         learnRbac: "了解 RBAC",
         pendingInvites: "待接受的邀请",
         noPendingInvites: "暂无待接受的邀请。",
+        invitedBy: "邀请人",
+        invitedAt: "邀请时间",
+        pendingStatus: "待接受",
+        resendInvite: "重新发送",
         spaceMembers: "空间成员",
         searchMembers: "按姓名或邮箱搜索",
         inviteMember: "邀请成员",
@@ -2107,7 +2148,12 @@
         configSummary: "配置摘要",
         defaultEngine: "DEFAULT",
         available: "可用",
-        experimental: "实验性"
+        experimental: "实验性",
+        mockSpace: "Mock 空间",
+        batchParsing: "批处理中",
+        rbacRoles: "RBAC 角色",
+        noKey: "未配置 Key",
+        notConfigured: "未配置"
       },
       "en-US": {
         nav: ["Knowledge", "Agents", "Shared Spaces", "Chat"],
@@ -2151,16 +2197,34 @@
         uploadZip: "Upload ZIP",
         tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
         batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
+        totalFiles: "Total files",
+        pdfConverted: "PDF converted",
+        markdownGenerated: "Markdown generated",
+        failed: "Failed",
         fileTree: "File Tree And Parsing Status",
+        wikiIndex: "Wiki Index",
         wikiSearch: "Search Wiki pages...",
         recentUpdates: "Recent Updates",
         wikiIntro: "Auto-generated normalized Markdown page. Dense, evidence-first content awaiting SME review for low-confidence sections.",
+        metadata: "Metadata",
+        sourceDocuments: "Source Documents",
+        reviewStatus: "Review Status",
+        lastUpdated: "Last Updated",
+        relatedConcepts: "Related Concepts",
         graphOverview: "Graph Overview",
         graphHelp: "Lightweight knowledge graph. Nodes come from published Wiki pages, source documents, and review-required evidence.",
         nodeDetail: "Node Detail",
         nodeDetailHelp: "Click a graph node to inspect source, type, and relationship notes.",
+        wikiPageNode: "Wiki Page",
+        entityNode: "Entity",
+        conceptNode: "Concept",
+        documentNode: "Document",
+        reviewRequiredNode: "Review Required",
         pdfPreview: "PDF Page Preview",
         pdfPlaceholder: "Table, diagram, and scanned text preview placeholder",
+        source: "Source",
+        page: "page",
+        pdfPage: "PDF PAGE {page}",
         markdownPreview: "Markdown Preview",
         reviewComments: "Review comments...",
         approve: "Approve",
@@ -2185,6 +2249,7 @@
         rerankModels: "ReRank",
         visionModels: "Vision",
         speechModels: "Speech",
+        noModelsInCategory: "No models in this category.",
         editModel: "Edit Model",
         editModelSubtitle: "Configure the large language model used for dialogue",
         modelSource: "Model Source",
@@ -2231,6 +2296,10 @@
         learnRbac: "Learn RBAC",
         pendingInvites: "Pending Invitations",
         noPendingInvites: "No pending invitations.",
+        invitedBy: "Invited By",
+        invitedAt: "Invited At",
+        pendingStatus: "Pending",
+        resendInvite: "Resend",
         spaceMembers: "Space Members",
         searchMembers: "Search by name or email",
         inviteMember: "Invite Member",
@@ -2289,7 +2358,12 @@
         configSummary: "Config Summary",
         defaultEngine: "DEFAULT",
         available: "Available",
-        experimental: "Experimental"
+        experimental: "Experimental",
+        mockSpace: "Mock Space",
+        batchParsing: "Batch Parsing",
+        rbacRoles: "RBAC Roles",
+        noKey: "No Key",
+        notConfigured: "Not configured"
       }
     };
 
@@ -2573,7 +2647,16 @@
         defaultSpace: "IBM i Modernization",
         requiresApproval: true
       },
-      invitations: [],
+      invitations: [
+        {
+          name: "Architecture SME",
+          email: "architecture.sme@example.local",
+          role: "reviewer",
+          invitedBy: "leo",
+          invitedAt: "2026/07/01 16:20",
+          status: "pending"
+        }
+      ],
       members: [
         {
           name: "leo",
@@ -2760,7 +2843,7 @@
               <p>${text.docCount}</p>
             </div>
             <div class="dialog-box">
-              <textarea class="dialog-input" id="homeDialogInput" placeholder="${text.dialogPlaceholder}"></textarea>
+              <textarea class="dialog-input" id="homeDialogInput" placeholder="${text.dialogPlaceholder}">${escapeHtml(uiState.homeQuestion)}</textarea>
               <div class="dialog-tools">
                 <div class="tool-left">
                   <button class="mini-btn">${text.quickAsk}</button>
@@ -2789,7 +2872,7 @@
               <div>
                 <div class="card-foot" style="margin-top:0;">
                   <h2>${space.name}</h2>
-                  <span class="badge ${statusClass[space.status]}">${space.status}</span>
+                  <span class="badge ${statusClass[space.status]}">${statusLabel(space.status)}</span>
                 </div>
                 <p>${space.description}</p>
               </div>
@@ -2825,9 +2908,9 @@
               <h1>IBM i Modernization</h1>
               <p>${text.spaceSubtitle}</p>
               <div class="space-meta">
-                <span class="badge healthy">Mock Space</span>
-                <span class="badge review">35 Review Required</span>
-                <span class="badge parsing">Batch Parsing</span>
+                <span class="badge healthy">${text.mockSpace}</span>
+                <span class="badge review">35 ${text.reviewRequired}</span>
+                <span class="badge parsing">${text.batchParsing}</span>
               </div>
             </div>
             <div class="button-row">
@@ -2880,6 +2963,16 @@
       }[role] || role;
     }
 
+    function statusLabel(status) {
+      const text = copy();
+      return {
+        "Review Required": text.reviewRequired,
+        Healthy: text.available,
+        Parsing: text.batchParsing,
+        REVIEW_REQUIRED: text.reviewRequired
+      }[status] || status;
+    }
+
     function renderSettings() {
       if (uiState.settingsPanel === "general") {
         renderGeneralSettings();
@@ -2920,7 +3013,8 @@
 
     function renderMemberSettings() {
       const text = copy();
-      const pendingCount = appData.invitations.filter((invite) => invite.status === "pending").length;
+      const pendingInvitations = appData.invitations.filter((invite) => invite.status === "pending");
+      const pendingCount = pendingInvitations.length;
       renderSettingsFrame(`
         <div class="page-head">
           <div class="title-block">
@@ -2936,10 +3030,27 @@
           <div class="member-summary">
             <div class="metric"><strong>${pendingCount}</strong><span>${text.pendingInvites}</span></div>
             <div class="metric"><strong>${appData.members.length}</strong><span>${text.spaceMembers}</span></div>
-            <div class="metric"><strong>4</strong><span>RBAC Roles</span></div>
+            <div class="metric"><strong>4</strong><span>${text.rbacRoles}</span></div>
           </div>
           <h2>${text.pendingInvites} <span class="badge medium">${pendingCount}</span></h2>
-          <div class="empty-invite">${text.noPendingInvites}</div>
+          ${pendingCount === 0 ? `<div class="empty-invite">${text.noPendingInvites}</div>` : `
+            <div class="member-table" style="margin-bottom:18px;">
+              <div class="member-row header">
+                <span>${text.nameEmail}</span>
+                <span>${text.role}</span>
+                <span>${text.invitedAt}</span>
+                <span>${text.actions}</span>
+              </div>
+              ${pendingInvitations.map((invite) => `
+                <div class="member-row">
+                  <div class="member-name"><strong>${invite.name}</strong><span>${invite.email}</span></div>
+                  <span><span class="badge medium">${roleLabel(invite.role)}</span></span>
+                  <span>${invite.invitedAt}<br><small>${text.invitedBy}: ${invite.invitedBy}</small></span>
+                  <span><span class="badge review">${text.pendingStatus}</span> <button class="icon-btn" title="${text.resendInvite}">↻</button></span>
+                </div>
+              `).join("")}
+            </div>
+          `}
           <div class="table-toolbar">
             <h2>${text.spaceMembers} <span class="badge medium">${appData.members.length}</span></h2>
             <div class="button-row">
@@ -3133,7 +3244,6 @@
 
     function renderModelSettings() {
       const text = copy();
-      const selected = appData.models.find((model) => model.id === uiState.selectedModelId) || appData.models[0];
       const categories = [
         ["all", text.allModels, appData.models.length],
         ["chat", text.chatModels, appData.models.filter((model) => model.type === "chat").length],
@@ -3142,6 +3252,11 @@
         ["vision", text.visionModels, appData.models.filter((model) => model.type === "vision").length],
         ["speech", text.speechModels, 0]
       ];
+      const visibleModels = uiState.selectedModelCategory === "all"
+        ? appData.models
+        : appData.models.filter((model) => model.type === uiState.selectedModelCategory);
+      const selectedInCategory = visibleModels.find((model) => model.id === uiState.selectedModelId);
+      const selected = selectedInCategory || visibleModels[0] || appData.models.find((model) => model.id === uiState.selectedModelId) || appData.models[0];
       renderSettingsFrame(`
         <div class="page-head">
           <div class="title-block">
@@ -3158,10 +3273,10 @@
             <h2>${text.builtinModel}</h2>
             <p style="color:var(--muted);line-height:1.55;">${text.builtinModelHelp}</p>
             <div class="settings-tabs">
-              ${categories.map(([key, label, count], index) => `<button class="settings-tab ${index === 0 ? "active" : ""}" type="button">${label} (${count})</button>`).join("")}
+              ${categories.map(([key, label, count]) => `<button class="settings-tab ${uiState.selectedModelCategory === key ? "active" : ""}" data-model-category="${key}" type="button">${label} (${count})</button>`).join("")}
             </div>
             <div class="model-grid">
-              ${appData.models.map((model) => `
+              ${visibleModels.length === 0 ? `<div class="empty-invite">${text.noModelsInCategory}</div>` : visibleModels.map((model) => `
                 <button class="model-card ${model.id === selected.id ? "active" : ""}" data-model-id="${model.id}" type="button">
                   <div class="model-head">
                     <div>
@@ -3171,7 +3286,7 @@
                     <span class="badge ${model.type === "chat" ? "healthy" : "medium"}">${model.type}</span>
                   </div>
                   <div class="model-meta">
-                    <span class="badge ${model.apiKeyStatus === "configured" ? "approved" : "review"}">${model.apiKeyStatus === "configured" ? text.configured : "No Key"}</span>
+                    <span class="badge ${model.apiKeyStatus === "configured" ? "approved" : "review"}">${model.apiKeyStatus === "configured" ? text.configured : text.noKey}</span>
                     <span class="badge parsing">${model.source}</span>
                   </div>
                   <p style="color:var(--muted);line-height:1.45;margin:0;">${model.note}</p>
@@ -3204,7 +3319,7 @@
                 <div class="field">
                   <label>${text.credentialLabel}</label>
                   <div class="secret-row">
-                    <span>● ${selected.apiKeyStatus === "configured" ? text.configured : "Not configured"}</span>
+                    <span>● ${selected.apiKeyStatus === "configured" ? text.configured : text.notConfigured}</span>
                     <span><button class="icon-btn" type="button">${text.replace}</button><button class="icon-btn" type="button">${text.remove}</button></span>
                   </div>
                 </div>
@@ -3244,11 +3359,11 @@
       const batch = appData.batch;
       const text = copy();
       const metrics = [
-        ["Total files", batch.totalFiles],
-        ["PDF converted", batch.pdfConverted],
-        ["Markdown generated", batch.markdownGenerated],
-        ["Review required", batch.reviewRequired],
-        ["Failed", batch.failed]
+        [text.totalFiles, batch.totalFiles],
+        [text.pdfConverted, batch.pdfConverted],
+        [text.markdownGenerated, batch.markdownGenerated],
+        [text.reviewRequired, batch.reviewRequired],
+        [text.failed, batch.failed]
       ];
       return `
         <div class="doc-grid">
@@ -3277,7 +3392,7 @@
               ${batch.files.map((file) => `
                 <div class="file-row">
                   <span class="file-path">${file.path}</span>
-                  <span class="badge ${statusClass[file.status]}">${file.status}</span>
+                  <span class="badge ${statusClass[file.status]}">${statusLabel(file.status)}</span>
                 </div>
               `).join("")}
             </div>
@@ -3292,7 +3407,7 @@
       return `
         <div class="wiki-layout">
           <aside class="wiki-rail">
-            <h3>Wiki Index</h3>
+            <h3>${text.wikiIndex}</h3>
             <input class="search" placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
             <ul class="index-list">
               ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
@@ -3314,14 +3429,14 @@
             `).join("")}
           </article>
           <aside class="wiki-rail">
-            <h3>Metadata</h3>
+            <h3>${text.metadata}</h3>
             <div class="metadata-list">
-              <div><strong>Source Documents</strong>${wiki.metadata.sourceDocuments}</div>
-              <div><strong>Confidence</strong>${wiki.metadata.confidence}</div>
-              <div><strong>Review Status</strong><span class="badge review">${wiki.metadata.reviewStatus}</span></div>
-              <div><strong>Last Updated</strong>${wiki.metadata.lastUpdated}</div>
-              <div><strong>Owner</strong>${wiki.metadata.owner}</div>
-              <div><strong>Related Concepts</strong>
+              <div><strong>${text.sourceDocuments}</strong>${wiki.metadata.sourceDocuments}</div>
+              <div><strong>${text.confidence}</strong>${wiki.metadata.confidence}</div>
+              <div><strong>${text.reviewStatus}</strong><span class="badge review">${statusLabel(wiki.metadata.reviewStatus)}</span></div>
+              <div><strong>${text.lastUpdated}</strong>${wiki.metadata.lastUpdated}</div>
+              <div><strong>${text.owner}</strong>${wiki.metadata.owner}</div>
+              <div><strong>${text.relatedConcepts}</strong>
                 <ul class="related-list">${wiki.metadata.relatedConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
               </div>
             </div>
@@ -3362,10 +3477,10 @@
         <div class="review-grid">
           <section class="review-pane">
             <h3>${text.pdfPreview}</h3>
-            <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
+            <p style="color:var(--muted);">${text.source}: ${review.source} / ${text.page} ${review.page}</p>
             <div class="pdf-preview">
               <div>
-                <strong>PDF PAGE ${review.page}</strong>
+                <strong>${text.pdfPage.replace("{page}", review.page)}</strong>
                 <p>${text.pdfPlaceholder}</p>
               </div>
             </div>
@@ -3387,7 +3502,7 @@
         <section class="panel" style="margin-top:16px;">
           <h2>${text.lowConfidence}</h2>
           <div class="queue">
-            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
+            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">${statusLabel("REVIEW_REQUIRED")}</span></div>`).join("")}
           </div>
         </section>
       `;
@@ -3425,6 +3540,13 @@
     }
 
     // Interactions
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
     function linkConcepts(text) {
       const concepts = Object.keys(appData.wiki.concepts).sort((a, b) => b.length - a.length);
       return concepts.reduce((result, concept) => {
@@ -3502,12 +3624,13 @@
         acc[node.type] = (acc[node.type] || 0) + 1;
         return acc;
       }, {});
+      const text = copy();
       return [
-        { label: "Wiki Page", color: "blue", count: counts["Wiki Page"] || 0 },
-        { label: "Entity", color: "green", count: counts.Entity || 0 },
-        { label: "Concept", color: "orange", count: counts.Concept || 0 },
-        { label: "Document", color: "gray", count: counts.Document || 0 },
-        { label: "Review Required", color: "red", count: counts["Review Required"] || 0 }
+        { label: text.wikiPageNode, color: "blue", count: counts["Wiki Page"] || 0 },
+        { label: text.entityNode, color: "green", count: counts.Entity || 0 },
+        { label: text.conceptNode, color: "orange", count: counts.Concept || 0 },
+        { label: text.documentNode, color: "gray", count: counts.Document || 0 },
+        { label: text.reviewRequiredNode, color: "red", count: counts["Review Required"] || 0 }
       ];
     }
 
@@ -3565,8 +3688,9 @@
         const promptChip = event.target.closest("[data-prompt]");
         if (promptChip) {
           const input = document.querySelector("#homeDialogInput");
+          uiState.homeQuestion = promptChip.dataset.prompt;
           if (input) {
-            input.value = promptChip.dataset.prompt;
+            input.value = uiState.homeQuestion;
             input.focus();
           }
         }
@@ -3594,6 +3718,12 @@
         const settingsPanel = event.target.closest("[data-settings-panel]");
         if (settingsPanel) {
           showSettings(settingsPanel.dataset.settingsPanel);
+        }
+
+        const modelCategory = event.target.closest("[data-model-category]");
+        if (modelCategory) {
+          uiState.selectedModelCategory = modelCategory.dataset.modelCategory;
+          showSettings("models");
         }
 
         const modelCard = event.target.closest("[data-model-id]");
@@ -3626,6 +3756,12 @@
         const graphNode = event.target.closest(".graph-node");
         if (graphNode) {
           showNodeDetail(graphNode.dataset.node);
+        }
+      });
+
+      document.addEventListener("input", (event) => {
+        if (event.target.id === "homeDialogInput") {
+          uiState.homeQuestion = event.target.value;
         }
       });
 

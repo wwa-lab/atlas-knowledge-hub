@@ -2,7 +2,11 @@
 
 ## Status
 
-Draft.
+Phase 0 prototype task sweep complete on 2026-07-02.
+
+All `T-KS-001` through `T-KS-027` tasks are complete for the current static prototype scope, with one phase decision: `T-KS-014` records that Atlas should continue static prototype validation and should not scaffold Vue until stakeholder acceptance explicitly starts Phase 1.
+
+See `docs/00-context/knowledge-space-prototype-review.md` for review notes and verification evidence.
 
 ## Implementation Gates
 
@@ -42,6 +46,104 @@ Draft.
 | T-KS-025 | Define future account/API/engine contracts. | Data model, API guide | `AccountSettings`, `ApiAccessInfo`, `EngineConfig`, and API guidance documented. |
 | T-KS-026 | Convert Settings from a main view into sidebar shortcuts plus an All Settings modal/sheet. | T-KS-018, T-KS-021, T-KS-023, T-KS-024 | Sidebar settings shortcuts open the correct modal panel; All Settings opens over the current view; close returns to the previous view. |
 | T-KS-027 | Harden responsive prototype behavior across common viewport sizes. | T-KS-001, T-KS-026 | Sidebar, cards, settings modal, graph, review, Ask, member table, and engine layouts remain usable at wide desktop, laptop, tablet, and narrow mobile widths. |
+
+## Completion Matrix
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-KS-001 | Complete | Prototype review recorded in `docs/00-context/knowledge-space-prototype-review.md`. |
+| T-KS-002 | Complete | Home cards show required fields and IBM i opens detail. |
+| T-KS-003 | Complete | Suggested prompts fill input, selected context is visible, and no network calls exist. |
+| T-KS-004 | Complete | Back button, default Wiki tab, and tab switching verified. |
+| T-KS-005 | Complete | Document batch metrics and progress render from mock data. |
+| T-KS-006 | Complete | File paths and status badges render with readable labels. |
+| T-KS-007 | Complete | Wiki index highlight, concepts, metadata, trace, confidence, and review status verified. |
+| T-KS-008 | Complete | Inline SVG graph nodes, legend, tooltip/click detail behavior verified. |
+| T-KS-009 | Complete | Review source/Markdown panes, comments, actions, and queue verified. |
+| T-KS-010 | Complete | Review state transitions documented in data flow, API guide, and `docs/review-workflow.md`. |
+| T-KS-011 | Complete | Ask answer, two source references, and medium confidence verified. |
+| T-KS-012 | Complete | Trace, confidence, and review metadata verified across Wiki, Review, Graph, and Ask surfaces. |
+| T-KS-013 | Complete | Static constraints verified: no external dependency, network call, real secret, or private path introduced. |
+| T-KS-014 | Complete | Decision: continue static prototype validation; do not scaffold Vue yet. |
+| T-KS-015 | Complete | Language switching preserves UI state and updates primary UI copy. |
+| T-KS-016 | Complete | Day/night token switching and readability verified in acceptance sweep. |
+| T-KS-017 | Complete | `UiPreference` contract documented in data model. |
+| T-KS-018 | Complete | Model settings view, edit panel, category filtering, and empty category state verified. |
+| T-KS-019 | Complete | `ModelConfig` and masked secret behavior documented in data model and API guide. |
+| T-KS-020 | Complete | Registration settings and mock sign-up preview verified as visual-only. |
+| T-KS-021 | Complete | Member management includes pending invitation, members, roles, search, invite, copy-link, remove affordances. |
+| T-KS-022 | Complete | `UserAccount`, `SpaceMembership`, `SpaceInvitation`, `RegistrationPolicy`, and API guidance documented. |
+| T-KS-023 | Complete | General, User Information, and API Information settings verified with mock/masked data. |
+| T-KS-024 | Complete | Vector, parser, and storage engine settings verified as adapter-backed mock configs. |
+| T-KS-025 | Complete | `AccountSettings`, `ApiAccessInfo`, `EngineConfig`, and API guidance documented. |
+| T-KS-026 | Complete | Sidebar shortcuts and All Settings modal behavior verified. |
+| T-KS-027 | Complete | Responsive behavior verified across wide desktop, desktop, laptop, tablet, narrow, and mobile widths. |
+
+## T-KS-001 Review Result
+
+Static review found that the prototype already covers most required Knowledge Space surfaces: home cards, dialogue mode, space tabs, Documents, Wiki, Graph, Review, Ask, settings shell, model settings, registration, member management, account settings, and engine settings.
+
+Follow-up gaps are tracked in `docs/00-context/knowledge-space-prototype-review.md`. The highest-priority gaps are:
+
+- Preserve typed home dialogue input across language/theme re-renders.
+- Move remaining hardcoded labels into the bilingual copy map.
+- Verify responsive and night-mode behavior across representative viewport widths.
+- Decide whether model category tabs and pending invitation rows need interactive demo behavior before stakeholder review.
+
+## T-KS-015 Implementation Result
+
+The prototype language switching hardening is complete for the current static prototype scope.
+
+Implemented behavior:
+
+- Home dialogue typed input is stored in UI state and survives language/theme re-renders.
+- Suggested prompt clicks update the same stored input state.
+- Documents metrics, Wiki labels, Graph legend labels, Review source/page labels, space state badges, member RBAC labels, and model credential empty-state labels now use the bilingual copy map.
+- Canonical product and evidence terms remain stable where translation would reduce traceability.
+
+## Acceptance Sweep Result
+
+`T-KS-013`, `T-KS-016`, and `T-KS-027` are complete for the current static prototype scope.
+
+Checks performed:
+
+- Static JavaScript syntax validation.
+- Diff hygiene check.
+- External dependency and network-call scan.
+- Secret/private-path scan.
+- Chrome headless interaction checks for language/theme state preservation, tab activation, and settings modal behavior.
+- Chrome headless viewport checks across wide desktop, desktop, laptop, tablet, narrow, and mobile sizes for Home, Wiki, Graph, Review, Ask, member settings, model settings, and parser engine settings.
+
+Result:
+
+- No external dependency, network call, real secret, or private path was introduced.
+- No body-level horizontal overflow, settings-modal viewport escape, or unexpected text/control overflow remains.
+- Night mode remained readable in the checked surfaces.
+- Model settings text-button and long-model-name wrapping issues found during acceptance were fixed in the prototype.
+
+## T-KS-018 And T-KS-021 Implementation Result
+
+The remaining prototype demo hardening tasks are complete for the current static prototype scope.
+
+Implemented behavior:
+
+- Model category tabs now maintain selected category state and filter visible model cards.
+- Empty model categories show an explicit empty state.
+- Member Management now shows a mock pending invitation row as well as active members.
+- Pending invitation rows include invitee identity, role, invite time, inviter, pending status, and a resend affordance.
+
+## Full Task Sweep Result
+
+The full Phase 0 `knowledge-space` task sweep completed on 2026-07-02.
+
+Chrome headless verification covered Home cards, dialogue input, space routing, Documents, Wiki, Graph, Review, Ask, language/theme switching, all Settings panels, model category filtering, pending invitations, settings modal behavior, and responsive layout.
+
+Result:
+
+- Full task assertions: 26 passed, 0 failed.
+- Responsive overflow sweep: passed with no unexpected body-level horizontal overflow, modal viewport escape, or control text overflow.
+- Static syntax, diff hygiene, network/dependency scan, and secret/private-path scan passed.
+- Phase decision: remain in Phase 0 static prototype validation until stakeholders explicitly accept the prototype and start Phase 1 Vue implementation.
 
 ## Test Plan
 
