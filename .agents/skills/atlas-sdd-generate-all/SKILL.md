@@ -2,8 +2,8 @@
 name: atlas-sdd-generate-all
 description: >
   Atlas Knowledge Hub project-specific SDD orchestration skill. Use this skill when the user asks
-  Claude Code to generate all SDD documents for an Atlas slice, bootstrap a feature slice, create
-  bilingual SDD docs, or prepare implementation-ready documentation for Codex. This skill produces
+  Claude Code, Codex, or another SDD-capable agent to generate all SDD documents for an Atlas slice,
+  bootstrap a feature slice, create bilingual SDD docs, or prepare implementation-ready documentation for Codex. This skill produces
   the full Atlas SDD document set in English and Simplified Chinese, using current project rules,
   FE baseline, product docs, and imported Control Tower SDD skills as the operating model.
 ---
@@ -18,7 +18,7 @@ This is a project-local orchestration skill. It does not replace the smaller SDD
 
 ## Mandatory Skill Chain
 
-When generating a full SDD set, Claude Code must use the project-local SDD skills as a chain, not write every document from scratch in one pass.
+When generating a full SDD set, the SDD-generating agent must use the project-local SDD skills as a chain, not write every document from scratch in one pass.
 
 Use this order:
 
@@ -65,11 +65,13 @@ Before generating documents, read the current repository context:
 
 If any required context file is missing, record it in Open Questions and continue with the safest available context.
 
-## Claude Code / Codex Boundary
+## Agent / Implementation Boundary
 
-Claude Code owns SDD documents. Codex owns implementation.
+Claude Code is the preferred SDD document generator when available. Codex may also generate or update SDD documents when that is the fastest safe path or when implementation reveals that the docs must be repaired.
 
-This skill must produce complete, reviewable SDD artifacts and task checklists for Codex. Do not perform broad implementation changes as part of this skill unless the user explicitly changes the division of responsibility.
+Codex is the preferred implementation agent.
+
+This skill must produce complete, reviewable SDD artifacts and task checklists for implementation. Do not perform broad implementation changes as part of this skill unless the user explicitly asks the same agent to continue into implementation.
 
 ## Output Language Rule
 

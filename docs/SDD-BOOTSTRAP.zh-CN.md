@@ -10,30 +10,28 @@ Control Tower 导入的原始 bootstrap 内容，改为使用 Atlas 项目的规
 
 ## 工作模式
 
-Atlas 使用分工明确的协作模式：
+Atlas 优先达成项目目标，而不是僵硬绑定某一个工具角色：
 
-- Claude Code 负责生成和审查 SDD 文档。
-- Codex 负责实现、测试、验证和实现证据汇报。
+- Claude Code 可作为默认优先的 SDD 文档生成工具。
+- Codex 也可以在需要时生成或更新 SDD 文档，尤其是它正在执行目标并发现文档需要修正时。
+- Codex 仍然是默认优先的实现、测试、验证和实现证据汇报工具。
+- 任何生成 SDD 的 agent 都必须遵守同一套 Atlas bootstrap、双语输出、skill chain、traceability 和质量门禁。
 
-默认情况下，Claude Code 不负责大范围实现代码；Codex 也不得静默扩大已接受
-SDD 文档之外的产品范围。
+不要把 SDD 生成理解成 Claude-only。也不要因为进入实现阶段就忽略 SDD。
 
 ## 一键 SDD Skill
 
 Atlas slice 文档应从这个入口开始：
 
-- `.claude/skills/atlas-sdd-generate-all/SKILL.md`
-
-同一 skill 也镜像到 Codex 可见路径：
-
-- `.agents/skills/atlas-sdd-generate-all/SKILL.md`
+- Claude Code 使用 `.claude/skills/atlas-sdd-generate-all/SKILL.md`
+- Codex 可参考并使用 `.agents/skills/atlas-sdd-generate-all/SKILL.md`
 
 这个 skill 是生成完整双语 SDD 文档集的一键入口。它必须编排项目本地 SDD
 skills，而不是临时手写所有文档。
 
 ## 必须使用的 Skill 链
 
-Claude Code 应按以下顺序使用项目本地 skills：
+生成 SDD 的 agent 应按以下顺序使用项目本地 skills：
 
 | 顺序 | Skill | 用途 |
 |---|---|---|
@@ -53,7 +51,7 @@ Claude Code 应按以下顺序使用项目本地 skills：
 
 ## 生成 SDD 前必须读取的上下文
 
-Claude Code 必须读取或明确处理：
+生成 SDD 的 agent 必须读取或明确处理：
 
 - `PROJECT_RULES.md`
 - `AGENTS.md`
@@ -70,7 +68,7 @@ Claude Code 必须读取或明确处理：
 
 ## 推荐 Slice Goal 格式
 
-让 Claude Code 生成 SDD 时，建议使用：
+让 agent 生成 SDD 时，建议使用：
 
 ```text
 Goal: <用户可感知的目标>
@@ -83,7 +81,7 @@ Verification: <命令、检查或人工 review>
 Constraints: <mock-only、adapter、安全、阶段、数据安全限制>
 ```
 
-如果用户只给了自然语言目标，Claude Code 可以推断最小安全 slice contract，但必须
+如果用户只给了自然语言目标，agent 可以推断最小安全 slice contract，但必须
 记录假设。
 
 ## 双语输出规则
@@ -206,7 +204,7 @@ Atlas 使用分阶段交付：
 
 ## Codex Handoff
 
-Claude Code 生成双语 SDD 文档并由用户接受 scope 后，应明确 handoff 给 Codex：
+双语 SDD 文档生成并由用户接受 scope 后，应明确 handoff 给 Codex：
 
 ```text
 Codex: implement <slice> strictly against docs/03-spec/<slice>-spec.md and
@@ -222,6 +220,8 @@ Codex 应报告：
 - 跳过的检查及原因。
 - 剩余风险。
 - SDD 与实现之间的任何 mismatch。
+
+如果 Codex 同时负责生成或修复 SDD 文档，它必须先完成 SDD gate，再在 scope 清晰且已接受或可安全推断时进入实现。
 
 ## 质量门禁
 

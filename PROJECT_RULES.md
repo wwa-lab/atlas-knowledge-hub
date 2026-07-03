@@ -43,11 +43,13 @@ For goal-driven SDD work:
 - Treat verification evidence as part of the deliverable, not an optional summary.
 - If the goal conflicts with Atlas phase discipline or product rules, stop and surface the conflict before coding.
 
-## Claude Code And Codex Collaboration
+## SDD And Implementation Collaboration
 
-Use Claude Code and Codex as complementary roles instead of asking both tools to own the same work.
+Use Claude Code and Codex as complementary roles when helpful, but optimize for the project goal rather than a rigid tool boundary.
 
-Claude Code is the primary SDD document owner. Use Claude Code for:
+Claude Code is the preferred SDD document owner when available. Codex may also generate or update SDD documents when that is the fastest safe path, when Claude Code is not being used, or when implementation work reveals that SDD docs must be corrected before coding can continue.
+
+Use SDD-capable agents for:
 
 - Product-level requirements.
 - Slice requirements.
@@ -63,9 +65,11 @@ Claude Code is the primary SDD document owner. Use Claude Code for:
 - Traceability and acceptance criteria.
 - SDD document quality review.
 
-Claude Code outputs should stop at complete, reviewable SDD artifacts, implementation guidance, and task checklists. Claude Code should not directly own broad implementation changes unless the user explicitly changes the division of responsibility.
+For full Atlas SDD generation, use `docs/SDD-BOOTSTRAP.md` / `docs/SDD-BOOTSTRAP.zh-CN.md` and the project-local `atlas-sdd-generate-all` workflow. Claude Code uses `.claude/skills/atlas-sdd-generate-all/`; Codex can use the mirrored `.agents/skills/atlas-sdd-generate-all/`. The workflow must orchestrate the project-local SDD skill chain: `req-to-user-story`, `user-story-to-spec`, `spec-to-architecture`, `architecture-to-design`, `design-to-tasks`, and `review-doc-quality`.
 
-Codex is the primary implementation owner. Use Codex for:
+SDD generation should stop at complete, reviewable SDD artifacts, implementation guidance, and task checklists unless the user explicitly asks the same agent to continue into implementation.
+
+Codex is the preferred implementation owner. Use Codex for:
 
 - Reading the accepted SDD documents and task checklist.
 - Checking scope, assumptions, and acceptance criteria before editing code.
@@ -74,15 +78,15 @@ Codex is the primary implementation owner. Use Codex for:
 - Updating implementation-adjacent docs when behavior or verification evidence changes.
 - Reporting completed tasks, verification evidence, residual risks, and blocked checks.
 
-Codex must not silently expand product scope beyond the accepted SDD. If the SDD is missing, stale, ambiguous, or conflicts with the current FE baseline or implementation reality, Codex should surface the mismatch and either request an SDD update or make the smallest documented implementation-safe adjustment.
+Implementation agents must not silently expand product scope beyond the accepted SDD. If the SDD is missing, stale, ambiguous, or conflicts with the current FE baseline or implementation reality, the agent should surface the mismatch and either update the SDD under the same rules or request an SDD update before continuing.
 
-Default handoff:
+Default handoff, when using both tools:
 
-1. Claude Code produces or updates the bilingual SDD documents for a slice.
+1. Claude Code or Codex produces or updates the bilingual SDD documents for a slice.
 2. The user accepts the SDD scope and tasks.
 3. Codex implements strictly against `docs/03-spec/` and `docs/06-tasks/`.
 4. Codex reports verification evidence and any SDD/implementation mismatches.
-5. Material SDD changes go back through Claude Code unless the user explicitly asks Codex to update the documents directly.
+5. Material SDD changes go back through the SDD workflow. Claude Code is preferred when available, but Codex may update the documents directly when it is already handling the goal and follows the same rules.
 
 Source-of-truth hierarchy for implementation:
 

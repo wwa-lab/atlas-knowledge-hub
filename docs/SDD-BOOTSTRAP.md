@@ -1,168 +1,232 @@
-# SDD Bootstrap
+# SDD Bootstrap: Atlas Knowledge Hub
 
-## Goal
+## Purpose
 
-Use the repo in a simple, repeatable `Spec Driven Development` loop before writing code. Every slice produces a complete 9-document set before implementation begins.
+This document is the Atlas Knowledge Hub starter guide for Spec Driven Development. It replaces the imported Control Tower bootstrap content with Atlas-specific rules, paths, roles, skills, and quality gates.
 
-## Recommended Order
+Use it whenever a new Atlas slice needs to move from product intent to an implementation-ready task checklist.
 
-Follow this sequence for each slice:
+## Operating Model
 
-1. `00-context`
-2. `01-requirements` — `{slice}-requirements.md`
-3. `02-user-stories` — `{slice}-stories.md`
-4. `03-spec` — `{slice}-spec.md`
-5. `04-architecture` — `{slice}-architecture.md` + `{slice}-data-flow.md` + `{slice}-data-model.md`
-6. `05-design` — `{slice}-design.md` + `contracts/{slice}-API_IMPLEMENTATION_GUIDE.md`
-7. `06-tasks` — `{slice}-tasks.md`
-8. code
+Atlas optimizes for the goal, not for a rigid tool boundary.
+
+- Claude Code is the preferred SDD document generator when available.
+- Codex may also generate or update SDD documents when that is the fastest safe path or when implementation reveals that docs must be repaired.
+- Codex is the preferred implementation agent.
+- Any agent that writes SDD must follow the same Atlas bootstrap, bilingual output rules, skill chain, traceability rules, and quality gates.
+
+Do not treat SDD generation as Claude-only. Do not treat implementation as permission to ignore SDD.
+
+## One-Entry SDD Skill
+
+For Atlas slice documentation, start from:
+
+- `.claude/skills/atlas-sdd-generate-all/SKILL.md` for Claude Code.
+- `.agents/skills/atlas-sdd-generate-all/SKILL.md` for Codex visibility and use.
+
+This skill is the one-entry workflow for generating the full bilingual SDD set. It must orchestrate the project-local SDD skills instead of writing every document ad hoc.
+
+## Mandatory Skill Chain
+
+Use the project-local skills in this order:
+
+| Order | Skill | Purpose |
+|---|---|---|
+| 1 | `atlas-sdd-generate-all` | Establish slice contract, orchestration, file paths, bilingual rules, and final consistency gate. |
+| 2 | `req-to-user-story` | Convert requirements and slice scope into user stories and acceptance criteria. |
+| 3 | `user-story-to-spec` | Convert stories into implementation-facing behavior. |
+| 4 | `spec-to-architecture` | Derive architecture, data flow, and data model from the spec. |
+| 5 | `architecture-to-design` | Derive UX, component, API, data, and implementation design. |
+| 6 | `design-to-tasks` | Convert design into Codex-ready implementation tasks. |
+| 7 | `review-doc-quality` | Review completeness, traceability, quality, and bilingual consistency. |
+
+Use `architecture-review` when the slice materially changes architecture, backend/API contracts, persistence, adapter boundaries, security, or data flow.
+
+Use `review-code-against-design` only after implementation exists; it is not part of the initial SDD generation pass.
+
+## Required Context Before Generating SDD
+
+The SDD-generating agent must read or explicitly account for:
+
+- `PROJECT_RULES.md`
+- `AGENTS.md`
+- `DEVELOPMENT_STANDARDS.md`
+- `docs/SDD-BOOTSTRAP.md`
+- `docs/SDD-BOOTSTRAP.zh-CN.md`
+- `docs/00-context/sdd-profile.md`
+- `docs/01-requirements/requirement.md`
+- Relevant existing slice documents under `docs/01-*` through `docs/06-*`
+- Current FE baseline when frontend behavior is involved:
+  - `frontend/public/atlas-prototype.html`
+  - `prototypes/index.html`
+
+If required context is missing or stale, record that in Open Questions or Assumptions rather than silently inventing a replacement.
+
+## Recommended Slice Goal Shape
+
+Use this structure when asking an agent to generate SDD documents:
+
+```text
+Goal: <user-facing outcome>
+Slice: <stable kebab-case slice slug>
+Phase: <Phase 1 / Phase 2 / Phase 3 / Phase 4>
+Scope: <included behavior and explicit exclusions>
+Sources: <product docs, FE baseline, references>
+Acceptance: <observable completion criteria>
+Verification: <commands, checks, or manual review>
+Constraints: <mock-only, adapter, security, phase, data-safety limits>
+```
+
+If the user provides only a plain-language goal, infer a minimal safe slice contract and document assumptions.
+
+## Bilingual Output Rule
+
+Every new or materially updated SDD document must have two copies:
+
+- English: default filename.
+- Simplified Chinese: `.zh-CN.md` companion.
+
+Examples:
+
+- `docs/01-requirements/{slice}-requirements.md`
+- `docs/01-requirements/{slice}-requirements.zh-CN.md`
+- `docs/03-spec/{slice}-spec.md`
+- `docs/03-spec/{slice}-spec.zh-CN.md`
+
+Both language copies must preserve the same scope, requirement IDs, user story IDs, acceptance criteria, architecture decisions, API contracts, task IDs, verification requirements, and open questions.
+
+Do not translate stable IDs.
+
+## Atlas SDD Document Set
+
+Generate or update the following documents for each slice.
+
+| Stage | English path | Chinese path | Required |
+|---|---|---|---|
+| Traceability | `docs/00-context/{slice}-traceability.md` | `docs/00-context/{slice}-traceability.zh-CN.md` | Yes |
+| Requirements | `docs/01-requirements/{slice}-requirements.md` | `docs/01-requirements/{slice}-requirements.zh-CN.md` | Yes |
+| User Stories | `docs/02-user-stories/{slice}-stories.md` | `docs/02-user-stories/{slice}-stories.zh-CN.md` | Yes |
+| Specification | `docs/03-spec/{slice}-spec.md` | `docs/03-spec/{slice}-spec.zh-CN.md` | Yes |
+| Architecture | `docs/04-architecture/{slice}-architecture.md` | `docs/04-architecture/{slice}-architecture.zh-CN.md` | Yes |
+| Data Flow | `docs/04-architecture/{slice}-data-flow.md` | `docs/04-architecture/{slice}-data-flow.zh-CN.md` | Yes |
+| Data Model | `docs/04-architecture/{slice}-data-model.md` | `docs/04-architecture/{slice}-data-model.zh-CN.md` | Yes |
+| Design | `docs/05-design/{slice}-design.md` | `docs/05-design/{slice}-design.zh-CN.md` | Yes |
+| API Guide | `docs/05-design/contracts/{slice}-API_IMPLEMENTATION_GUIDE.md` | `docs/05-design/contracts/{slice}-API_IMPLEMENTATION_GUIDE.zh-CN.md` | Required before backend/API work |
+| Tasks | `docs/06-tasks/{slice}-tasks.md` | `docs/06-tasks/{slice}-tasks.zh-CN.md` | Yes |
+
+For frontend-only Phase 1 slices, the API Guide may be deferred only when the tasks and traceability file explicitly say that backend/API work is out of scope.
+
+## Document Order
+
+Follow this order:
+
+1. Establish slice contract.
+2. Requirements.
+3. User stories.
+4. Specification.
+5. Architecture.
+6. Data flow.
+7. Data model.
+8. Design.
+9. API Guide, when backend/API work is in scope.
+10. Tasks.
+11. Traceability update.
+12. Document quality review.
+13. User acceptance of SDD scope.
+14. Implementation handoff.
 
 ## Minimum Gate Before Code
 
-Do not start implementation until the slice can answer all of these clearly:
+Do not start implementation until the slice can answer:
 
-- What problem is this slice solving
-- Who is the user or actor
-- What is in scope and out of scope
-- What must happen in the happy path
-- What must happen in error or empty states
-- What data shape or state contract is needed
-- Which module owns which responsibility
-- How acceptance will be checked
+- What problem is this slice solving?
+- Who are the users or actors?
+- What is in scope?
+- What is explicitly out of scope?
+- What must happen in the happy path?
+- What must happen in empty, error, loading, and edge states?
+- What data shape or state contract is needed?
+- Which component, module, API, or adapter owns each responsibility?
+- How will acceptance be checked?
+- Which verification commands or manual checks are required?
+- Are English and Chinese SDD copies synchronized?
 
-## The 9-Document Set Per Slice
+## Phase Discipline
 
-Every slice must produce all 9 documents before coding starts. This is enforced by CLAUDE.md rules #6 and #9.
+Atlas uses staged delivery:
 
-### Core Documents (6)
+| Phase | Scope |
+|---|---|
+| Phase 0 | Static prototype and SDD artifacts. |
+| Phase 1 | Vue frontend shell and mock data. |
+| Phase 2 | Backend metadata API and persistence. |
+| Phase 3 | Converter/parser/storage/vector/model adapters and processing pipeline. |
+| Phase 4 | Production hardening: auth, RBAC, secrets, audit, monitoring, deployment. |
 
-| # | Stage | File pattern | Content |
-|---|-------|-------------|---------|
-| 1 | Requirements | `01-requirements/{slice}-requirements.md` | Requirements extracted from PRD with REQ-IDs and PRD section refs |
-| 2 | User Stories | `02-user-stories/{slice}-stories.md` | Agile stories with acceptance criteria |
-| 3 | Spec | `03-spec/{slice}-spec.md` | Implementation-facing contracts |
-| 4 | Architecture | `04-architecture/{slice}-architecture.md` | System context, components, data flow, state, integration (with Mermaid diagrams) |
-| 5 | Design | `05-design/{slice}-design.md` | Concrete APIs, file structure, data model, visual decisions, DB schema |
-| 6 | Tasks | `06-tasks/{slice}-tasks.md` | Phased implementation breakdown |
+Do not skip phases unless the spec and tasks explicitly approve the change.
 
-### Supplementary Artifacts (3)
+## Current Product Baseline
 
-| # | Stage | File pattern | Content |
-|---|-------|-------------|---------|
-| 7 | Data Flow | `04-architecture/{slice}-data-flow.md` | Runtime data flows, sequence diagrams, state machines, error cascade, refresh strategy |
-| 8 | Data Model | `04-architecture/{slice}-data-model.md` | Domain model ER diagram, frontend types, backend DTOs/entities, DB schema DDL, type mapping |
-| 9 | API Guide | `05-design/contracts/{slice}-API_IMPLEMENTATION_GUIDE.md` | Full endpoint contracts with JSON examples, backend/frontend implementation guide, testing contracts |
+For current Phase 1 frontend work:
 
-## Slice Roadmap
+- `frontend/public/atlas-prototype.html` is the FE fidelity baseline.
+- `prototypes/index.html` mirrors the FE baseline for static review.
+- Visual and interaction parity should follow the current FE baseline, not the older dialogue-first prototype.
 
-The roadmap follows the PRD §10 information architecture. Each slice produces the complete 9-document set before implementation.
+## Atlas-Specific Constraints
 
-| Order | Slice | Status | Docs |
-|-------|-------|--------|------|
-| 0 | `shared-app-shell` | Completed (docs + code) | 9/9 |
-| 1 | `dashboard` | Completed (docs + code) | 9/9 |
-| 2 | `requirement` | Completed (docs + code) | 9/9 |
-| 3 | `incident` | Completed (docs + code) | 9/9 |
-| 4 | `team-space` | Docs complete; implementation pending | 9/9 |
-| 5 | **`project-space`** | **Docs complete; implementation pending** | 9/9 |
-| 6 | `project-management` | Not started | 0/9 |
-| 7 | `design-management` | Not started | 0/9 |
-| 8 | `code-build-management` | Not started | 0/9 |
-| 9 | `testing-management` | Not started | 0/9 |
-| 10 | `deployment-management` | Not started | 0/9 |
-| 11 | `ai-center` | Not started | 0/9 |
-| 12 | `report-center` | Not started | 0/9 |
-| 13 | `platform-center` | Not started | 0/9 |
+Every SDD slice must preserve these constraints:
 
-## Current Slice: Project Space
+- Mock-only for Phase 1.
+- No real company documents.
+- No credentials, raw API keys, tokens, private paths, or confidential screenshots.
+- No external network calls or external cloud dependencies in prototype/frontend mock work.
+- Parser, converter, model, vector database, storage, and search integrations stay behind adapter boundaries.
+- Agent runtimes and tool-calling frameworks stay behind adapter/worker boundaries.
+- `trinity-office` and `document-normalize` are internal tools behind adapters, not product workflow dependencies.
+- Source trace, confidence, and review status remain visible in Wiki, Review, Graph, and Ask surfaces.
+- LLM-generated or LLM-modified content remains review-required unless SME-approved or deterministically validated.
 
-Project Space is the single-project execution home — the contextual bridge between Team Space (Workspace-level operating home) and the lifecycle pages (Requirement / Design / Code / Test / Deploy / Incident). See PRD §11.3.
+## Implementation Handoff
 
-Documents for this slice:
+After the bilingual SDD set is produced and the user accepts the scope, handoff should be explicit:
 
-- Requirements: [project-space-requirements.md](01-requirements/project-space-requirements.md)
-- Stories: [project-space-stories.md](02-user-stories/project-space-stories.md)
-- Spec: [project-space-spec.md](03-spec/project-space-spec.md)
-- Architecture: [project-space-architecture.md](04-architecture/project-space-architecture.md)
-- Data Flow: [project-space-data-flow.md](04-architecture/project-space-data-flow.md)
-- Data Model: [project-space-data-model.md](04-architecture/project-space-data-model.md)
-- Design: [project-space-design.md](05-design/project-space-design.md)
-- API Guide: [project-space-API_IMPLEMENTATION_GUIDE.md](05-design/contracts/project-space-API_IMPLEMENTATION_GUIDE.md)
-- Tasks: [project-space-tasks.md](06-tasks/project-space-tasks.md)
+```text
+Codex: implement <slice> strictly against docs/03-spec/<slice>-spec.md and
+docs/06-tasks/<slice>-tasks.md. Do not expand scope. Preserve current FE
+baseline and run the verification listed in the tasks.
+```
 
-## Active Add-On: SDD Knowledge Graph
+Codex should report documents read, code changed, tests and checks run, skipped checks with reasons, residual risks, and any SDD/implementation mismatch.
 
-SDD Knowledge Graph is an additive Requirement Control Plane capability. It
-defines the document metadata, structured sync repository, graph artifacts,
-Neo4j projection, backend graph API, and Requirement Management graph view for
-decision support.
+If Codex is also generating or repairing SDD documents, it must first complete the SDD gate, then proceed to implementation only when the scope is clear and accepted or safely inferable.
 
-Documents for this add-on:
+## Quality Gates
 
-- Requirements: [sdd-knowledge-graph-requirements.md](01-requirements/sdd-knowledge-graph-requirements.md)
-- Stories: [sdd-knowledge-graph-stories.md](02-user-stories/sdd-knowledge-graph-stories.md)
-- Spec: [sdd-knowledge-graph-spec.md](03-spec/sdd-knowledge-graph-spec.md)
-- Architecture: [sdd-knowledge-graph-architecture.md](04-architecture/sdd-knowledge-graph-architecture.md)
-- Data Flow: [sdd-knowledge-graph-data-flow.md](04-architecture/sdd-knowledge-graph-data-flow.md)
-- Data Model: [sdd-knowledge-graph-data-model.md](04-architecture/sdd-knowledge-graph-data-model.md)
-- Design: [sdd-knowledge-graph-design.md](05-design/sdd-knowledge-graph-design.md)
-- API Guide: [sdd-knowledge-graph-API_IMPLEMENTATION_GUIDE.md](05-design/contracts/sdd-knowledge-graph-API_IMPLEMENTATION_GUIDE.md)
-- Tasks: [sdd-knowledge-graph-tasks.md](06-tasks/sdd-knowledge-graph-tasks.md)
+Before SDD handoff, verify:
 
-## Previous Slice: Team Space
+- English and Chinese SDD files exist for every touched artifact.
+- IDs match across both languages.
+- Requirements map to stories, spec, design, and tasks.
+- The spec is the behavior source of truth.
+- The tasks are actionable for Codex.
+- API Guide is present when backend/API work is in scope.
+- API Guide deferral is documented when frontend-only work omits it.
+- Adapter boundaries are explicit.
+- Current FE baseline is referenced for frontend work.
+- Open questions are explicit.
+- `review-doc-quality` has been applied or the reason for skipping is recorded.
 
-Team Space is the Workspace-level operating home — the contextual bridge between Dashboard (cross-team, cross-project global) and Project Space (single-project execution). See PRD §11.2.
+Before implementation completion, verify according to the active task plan. For Phase 1 frontend work, this usually includes:
 
-Documents for this slice:
+- `npm run typecheck`
+- `npm run build`
+- `npm run test:coverage`
+- `npm run e2e`
+- `git diff --check`
+- Dependency/network scan.
+- Secret/private-path scan.
 
-- Requirements: [team-space-requirements.md](01-requirements/team-space-requirements.md)
-- Stories: [team-space-stories.md](02-user-stories/team-space-stories.md)
-- Spec: [team-space-spec.md](03-spec/team-space-spec.md)
-- Architecture: [team-space-architecture.md](04-architecture/team-space-architecture.md)
-- Data Flow: [team-space-data-flow.md](04-architecture/team-space-data-flow.md)
-- Data Model: [team-space-data-model.md](04-architecture/team-space-data-model.md)
-- Design: [team-space-design.md](05-design/team-space-design.md)
-- API Guide: [team-space-API_IMPLEMENTATION_GUIDE.md](05-design/contracts/team-space-API_IMPLEMENTATION_GUIDE.md)
-- Tasks: [team-space-tasks.md](06-tasks/team-space-tasks.md)
+## Rule Of Thumb
 
-## First Slice In This Repo
-
-The first foundation slice was:
-
-- `shared-app-shell`
-
-Reference documents for this slice:
-
-- Context: [project-context.md](00-context/project-context.md)
-- Requirements: [shared-app-shell-requirements.md](01-requirements/shared-app-shell-requirements.md)
-- Stories: [shared-app-shell-stories.md](02-user-stories/shared-app-shell-stories.md)
-- Spec: [shared-app-shell-spec.md](03-spec/shared-app-shell-spec.md)
-- Architecture: [shared-app-shell-architecture.md](04-architecture/shared-app-shell-architecture.md)
-- Design: [shared-app-shell-design.md](05-design/shared-app-shell-design.md)
-- Tasks: [shared-app-shell-tasks.md](06-tasks/shared-app-shell-tasks.md)
-
-## How To Use This Starter
-
-When starting a new slice:
-
-1. Duplicate the structure of a completed slice (e.g., `requirement` or `team-space`) as a template
-2. Replace scope, stories, and contracts with the new slice content
-3. Make sure `03-spec` is the source of truth for implementation behavior
-4. Produce all 9 documents before breaking work into tasks
-5. Only then break work into tasks and start coding
-
-## Simple Rule Of Thumb
-
-If a coding decision cannot be traced back to a story or spec rule yet, the document alignment is not finished.
-
-## Quality Gates (per CLAUDE.md Lessons Learned)
-
-- **All 9 docs exist** before starting implementation (rule #6, #9)
-- **Architecture docs include Mermaid diagrams** for system context, component breakdown, data flow, state boundaries, integration (rule #7)
-- **Design docs include concrete implementation details** — file paths, component API contracts, data model, API contracts, DB schema DDL, error/empty states, integration boundary diagram (rule #8)
-- **Mermaid 8.x-compatible syntax only** — no `C4Context`, no `direction` inside subgraphs, no `[( )]` cylinder notation, no `→` in node text (rule #7)
-- **Package-by-feature** for backend domain modules (rule #3)
-- **Flyway migrations** for all schema changes — no `ddl-auto: update` (rule #4)
-- **Use what the user specifies** for tech versions (Java 21, not Java 17) (rule #2)
-- **Search the full project** before assuming file locations (rule #1)
-- **External-tool prompts are pointers**, not content duplication (rule #5)
+If an implementation decision cannot be traced to a requirement, story, spec, design, or task, the SDD is not ready for implementation.
