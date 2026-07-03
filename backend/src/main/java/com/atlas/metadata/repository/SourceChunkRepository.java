@@ -9,4 +9,7 @@ public interface SourceChunkRepository extends JpaRepository<SourceChunk, String
 
   /** Finds chunks for a file item. */
   List<SourceChunk> findByFileItemId(String fileItemId);
+
+  /** Finds chunks for file items. */
+  List<SourceChunk> findByFileItemIdIn(List<String> fileItemIds);
 }

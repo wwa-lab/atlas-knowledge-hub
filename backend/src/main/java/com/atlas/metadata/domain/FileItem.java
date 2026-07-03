@@ -89,6 +89,29 @@ public class FileItem {
     this.errorMessage = errorMessage;
   }
 
+  /** Applies a converter result while preserving review status. */
+  public void applyConversionResult(
+      FileStatus status, BigDecimal confidence, String pdfPath, String errorMessage) {
+    this.status = status;
+    this.confidence = confidence;
+    this.pdfPath = pdfPath;
+    this.errorMessage = errorMessage;
+  }
+
+  /** Applies a parser result while preserving PDF trace and review status. */
+  public void applyParserResult(
+      FileStatus status,
+      BigDecimal confidence,
+      String markdownPath,
+      String assetsPath,
+      String errorMessage) {
+    this.status = status;
+    this.confidence = confidence;
+    this.markdownPath = markdownPath;
+    this.assetsPath = assetsPath;
+    this.errorMessage = errorMessage;
+  }
+
   /** Updates the target review status from an explicit review action. */
   public void applyReviewStatus(ReviewStatus status) {
     if (status == ReviewStatus.PUBLISHED) {

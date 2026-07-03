@@ -1,7 +1,8 @@
 /**
- * Reserved Phase 3 adapter seam.
+ * Phase 3 adapter seam.
  *
- * <p>This metadata-api slice intentionally contains no converter, parser,
- * model, vector, storage, or network-engine integration.
+ * <p>Concrete converter and parser details may exist here, but product controller,
+ * service, repository, and domain layers must depend only on product-facing
+ * adapter contracts.
  */
 package com.atlas.metadata.adapter;

@@ -87,10 +87,18 @@ class MetadataApiContractIT extends AbstractPostgresIT {
         .perform(get("/api/spaces/ibm-i-modernization/batches"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
-        .andExpect(jsonPath("$.data[0].metrics.total").value(6))
-        .andExpect(jsonPath("$.data[0].metrics.markdownGenerated").value(1))
-        .andExpect(jsonPath("$.data[0].metrics.failed").value(1))
-        .andExpect(jsonPath("$.data[0].metrics.unsupported").value(1));
+        .andExpect(
+            jsonPath("$.data[?(@.id == 'batch-2026-06-20-001')].metrics.total", hasItem(6)))
+        .andExpect(
+            jsonPath(
+                    "$.data[?(@.id == 'batch-2026-06-20-001')].metrics.markdownGenerated",
+                    hasItem(1)))
+        .andExpect(
+            jsonPath("$.data[?(@.id == 'batch-2026-06-20-001')].metrics.failed", hasItem(1)))
+        .andExpect(
+            jsonPath(
+                    "$.data[?(@.id == 'batch-2026-06-20-001')].metrics.unsupported",
+                    hasItem(1)));
 
     mockMvc
         .perform(get("/api/batches/batch-2026-06-20-001"))
@@ -261,7 +269,7 @@ class MetadataApiContractIT extends AbstractPostgresIT {
   }
 
   @Test
-  void seedMigrationCreatesAllEightTablesAndMockRows() {
+  void seedMigrationCreatesAllAdapterTablesAndMockRows() {
     Set<String> tables =
         Set.copyOf(
             jdbcTemplate.queryForList(
@@ -282,7 +290,18 @@ class MetadataApiContractIT extends AbstractPostgresIT {
             "review_record",
             "wiki_page",
             "graph_node",
-            "graph_edge");
+            "graph_edge",
+            "conversion_run",
+            "conversion_file_result",
+            "parser_run",
+            "parser_file_result",
+            "storage_operation",
+            "storage_object",
+            "vector_run",
+            "vector_item_result",
+            "model_run",
+            "model_run_output",
+            "model_run_source_reference");
     assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM atlas.file_item", Integer.class))
         .isGreaterThanOrEqualTo(6);
     assertThat(

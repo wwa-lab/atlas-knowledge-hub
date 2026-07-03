@@ -8,59 +8,150 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Static guard that keeps Phase 2 adapter and engine scopes empty. */
+/** Static guard that keeps engine details inside Phase 3 adapter scopes only. */
 class AdapterSeamGuardTest {
 
   private static final Path BACKEND = Path.of("").toAbsolutePath();
+  private static final List<String> ENGINE_REFERENCES =
+      List.of(
+          "document-normalize",
+          "trinity-office",
+          "MinerU",
+          "Docling",
+          "PaddleOCR",
+          "pgvector",
+          "Milvus",
+          "Qdrant",
+          "AmazonS3",
+          "software.amazon.awssdk",
+          "MinioClient",
+          "MinIO",
+          "S3Client",
+          "putObject",
+          "getObject",
+          "OpenAI",
+          "Ollama",
+          "DeepSeek",
+          "GitHub Models",
+          "Copilot",
+          "ProcessBuilder",
+          "Runtime.getRuntime(",
+          "WebClient",
+          "RestTemplate",
+          "HttpClient");
 
   @Test
-  void adapterPackageContainsOnlyPackageInfoAndNoEngineReferences() throws IOException {
+  void adapterPackageMayContainAdapterContractsButNoOutboundNetworkClient() throws IOException {
     Path adapterDir =
         BACKEND.resolve("src/main/java/com/atlas/metadata/adapter").normalize();
-    List<Path> files;
-    try (var stream = Files.walk(adapterDir)) {
-      files = stream.filter(Files::isRegularFile).toList();
-    }
+    String adapterSource = readAll(adapterDir);
 
-    assertThat(files).singleElement().satisfies(path -> assertThat(path.getFileName().toString())
-        .isEqualTo("package-info.java"));
-    String adapterSource = Files.readString(files.getFirst());
     assertThat(adapterSource)
         .doesNotContain("WebClient")
         .doesNotContain("RestTemplate")
         .doesNotContain("HttpClient")
-        .doesNotContain("document-normalize")
-        .doesNotContain("trinity-office")
-        .doesNotContain("pgvector")
-        .doesNotContain("S3");
+        .doesNotContain("ProcessBuilder")
+        .doesNotContain("Runtime.getRuntime(");
+    assertThat(adapterSource)
+        .contains("trinity-office")
+        .contains("document-normalize")
+        .contains("mock-model")
+        .contains("mock-vector")
+        .contains("pgvector");
   }
 
   @Test
-  void mainSourceHasNoOutboundHttpClientOrEngineCall() throws IOException {
+  void nonAdapterProductLayersHaveNoOutboundClientCommandRunnerOrEngineCall() throws IOException {
     Path mainDir = BACKEND.resolve("src/main/java/com/atlas/metadata").normalize();
-    String source;
     try (var stream = Files.walk(mainDir)) {
-      source =
-          String.join(
-              "\n",
-              stream
-                  .filter(Files::isRegularFile)
-                  .map(this::read)
-                  .toList());
+      List<Path> files =
+          stream
+              .filter(Files::isRegularFile)
+              .filter(path -> !path.toString().contains("/adapter/"))
+              .toList();
+      for (Path file : files) {
+        String source = read(file);
+        for (String forbidden : ENGINE_REFERENCES) {
+          assertThat(source).as(file + " must not contain " + forbidden).doesNotContain(forbidden);
+        }
+      }
     }
+  }
+
+  @Test
+  void adapterImplementationAndDocsDoNotExposeSecretsOrPrivatePaths() throws IOException {
+    List<Path> paths =
+        List.of(
+            BACKEND.resolve("src/main/java/com/atlas/metadata/adapter").normalize(),
+            BACKEND.resolve("src/main/java/com/atlas/metadata/controller").normalize(),
+            BACKEND.resolve("src/main/java/com/atlas/metadata/service").normalize(),
+            BACKEND.resolve("src/main/java/com/atlas/metadata/repository").normalize(),
+            BACKEND.resolve("src/main/java/com/atlas/metadata/domain").normalize(),
+            BACKEND.getParent().resolve("docs/01-requirements/storage-adapter-requirements.md").normalize(),
+            BACKEND.getParent().resolve("docs/02-user-stories/storage-adapter-stories.md").normalize(),
+            BACKEND.getParent().resolve("docs/03-spec/storage-adapter-spec.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/storage-adapter-architecture.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/storage-adapter-data-flow.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/storage-adapter-data-model.md").normalize(),
+            BACKEND.getParent().resolve("docs/05-design/storage-adapter-design.md").normalize(),
+            BACKEND
+                .getParent()
+                .resolve("docs/05-design/contracts/storage-adapter-API_IMPLEMENTATION_GUIDE.md")
+                .normalize(),
+            BACKEND.getParent().resolve("docs/06-tasks/storage-adapter-tasks.md").normalize(),
+            BACKEND.getParent().resolve("docs/01-requirements/model-adapter-requirements.md").normalize(),
+            BACKEND.getParent().resolve("docs/02-user-stories/model-adapter-stories.md").normalize(),
+            BACKEND.getParent().resolve("docs/03-spec/model-adapter-spec.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/model-adapter-architecture.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/model-adapter-data-flow.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/model-adapter-data-model.md").normalize(),
+            BACKEND.getParent().resolve("docs/05-design/model-adapter-design.md").normalize(),
+            BACKEND
+                .getParent()
+                .resolve("docs/05-design/contracts/model-adapter-API_IMPLEMENTATION_GUIDE.md")
+                .normalize(),
+            BACKEND.getParent().resolve("docs/06-tasks/model-adapter-tasks.md").normalize(),
+            BACKEND.getParent().resolve("docs/01-requirements/vector-adapter-requirements.md").normalize(),
+            BACKEND.getParent().resolve("docs/02-user-stories/vector-adapter-stories.md").normalize(),
+            BACKEND.getParent().resolve("docs/03-spec/vector-adapter-spec.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/vector-adapter-architecture.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/vector-adapter-data-flow.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/vector-adapter-data-model.md").normalize(),
+            BACKEND.getParent().resolve("docs/05-design/vector-adapter-design.md").normalize(),
+            BACKEND
+                .getParent()
+                .resolve("docs/05-design/contracts/vector-adapter-API_IMPLEMENTATION_GUIDE.md")
+                .normalize(),
+            BACKEND.getParent().resolve("docs/06-tasks/vector-adapter-tasks.md").normalize(),
+            BACKEND.getParent().resolve("docs/00-context/vector-adapter-traceability.md").normalize());
+    String source =
+        String.join(
+            "\n",
+            paths.stream()
+                .filter(Files::exists)
+                .map(this::readPath)
+                .toList());
 
     assertThat(source)
-        .doesNotContain("WebClient")
-        .doesNotContain("RestTemplate")
-        .doesNotContain("HttpClient")
-        .doesNotContain("document-normalize")
-        .doesNotContain("trinity-office")
-        .doesNotContain("MinerU")
-        .doesNotContain("Docling")
-        .doesNotContain("PaddleOCR")
-        .doesNotContain("pgvector")
-        .doesNotContain("Milvus")
-        .doesNotContain("Qdrant");
+        .doesNotContain("AK" + "IA")
+        .doesNotContain("BE" + "GIN PRIVATE KEY")
+        .doesNotContain("BE" + "GIN RSA PRIVATE KEY")
+        .doesNotContain("/" + "Users/")
+        .doesNotContain("C:" + "\\\\");
+  }
+
+  private String readAll(Path dir) throws IOException {
+    try (var stream = Files.walk(dir)) {
+      return String.join("\n", stream.filter(Files::isRegularFile).map(this::read).toList());
+    }
+  }
+
+  private String readPath(Path path) {
+    try {
+      return Files.isDirectory(path) ? readAll(path) : read(path);
+    } catch (IOException ex) {
+      throw new IllegalStateException(ex);
+    }
   }
 
   private String read(Path path) {

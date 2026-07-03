@@ -40,11 +40,11 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 | 1 (FE) | `knowledge-space` | Vue 3 shell reproducing accepted IA: home library, global multi-Knowledge-Space chat, space shell, documents, processing center, wiki, graph, settings — mock data only | FE only, no API | ✅ (T-KS-001→031) |
 | 1 (FE) | `folder-upload` | Folder/ZIP upload mock: file inventory, tree, batch creation, mock status/report | FE only, no API | ✅ implemented (T-FU-001→013; T-FU-011 deferred optional) |
 | 2 (API) | `metadata-api` | Spring Boot metadata service: batch/file/space entities, PostgreSQL + Flyway, mock-free contract | Backend + DB | ✅ implemented (T-MA-001→013; T-MA-014 deferred FE cutover) |
-| 3 (adapter) | `converter-adapter` | `trinity-office` Office→PDF behind converter interface | Adapter, no direct call | 🔒 needs Phase 2 |
-| 3 (adapter) | `parser-adapter` | `document-normalize` PDF→Markdown/images behind parser interface | Adapter, no direct call | 🔒 needs Phase 2 |
-| 3 (adapter) | `storage-adapter` | S3-compatible object storage behind storage interface | Adapter, no direct call | 🔒 needs Phase 2 |
+| 3 (adapter) | `converter-adapter` | `trinity-office` Office→PDF behind converter interface | Adapter, no direct call | ✅ implemented (T-CA-001→010; mock-engine verified; real runtime contract deferred) |
+| 3 (adapter) | `parser-adapter` | `document-normalize` PDF→Markdown/images behind parser interface | Adapter, no direct call | ✅ implemented (T-PA-001→010; mock-engine verified; real runtime contract deferred) |
+| 3 (adapter) | `storage-adapter` | S3-compatible object storage behind storage interface | Adapter, no direct call | ✅ implemented (T-SA-001→010; `mvn verify` passed with mock storage) |
 | 3 (adapter) | `vector-adapter` | pgvector/vector DB behind vector interface | Adapter, no direct call | 🔒 needs Phase 2 |
-| 3 (adapter) | `model-adapter` | LLM/embedding provider behind model interface, secret-masked | Adapter, no direct call | 🔒 needs Phase 2 |
+| 3 (adapter) | `model-adapter` | LLM/embedding provider behind model interface, secret-masked | Adapter, no direct call | ✅ implemented |
 | 4 (hardening) | `review-publish` | SME review state machine + approved-Markdown publish to Wiki | Full stack | 🔒 needs Phase 3 |
 | 4 (hardening) | `knowledge-graph` | Node/edge extraction from approved pages + inspectable viz | Full stack | 🔒 needs Phase 3 |
 | 4 (hardening) | `ask-rag` | Source-grounded, review-aware Ask over approved content | Full stack | 🔒 needs Phase 3 |

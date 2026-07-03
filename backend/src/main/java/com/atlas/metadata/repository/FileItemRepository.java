@@ -13,6 +13,12 @@ public interface FileItemRepository extends JpaRepository<FileItem, String> {
   /** Finds all file items for metric derivation. */
   List<FileItem> findByBatchId(String batchId);
 
+  /** Finds file items for multiple batches. */
+  List<FileItem> findByBatchIdIn(List<String> batchIds);
+
+  /** Finds selected file items within one batch. */
+  List<FileItem> findByBatchIdAndIdIn(String batchId, List<String> ids);
+
   /** Finds paged file items by batch. */
   Page<FileItem> findByBatchId(String batchId, Pageable pageable);
 
