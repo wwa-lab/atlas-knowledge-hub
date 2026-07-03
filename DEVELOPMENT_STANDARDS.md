@@ -76,6 +76,8 @@ Phase 1 Vue frontend:
 
 ## Backend Standards
 
+> Concrete Java/Spring patterns, examples, and the pre-commit checklist live in [docs/BACKEND_CODING_STANDARD.md](docs/BACKEND_CODING_STANDARD.md) (the backend counterpart to `docs/FRONTEND_CODING_STANDARD.md`).
+
 Backend standards apply when Phase 2 starts:
 
 - Use Java and Spring Boot.

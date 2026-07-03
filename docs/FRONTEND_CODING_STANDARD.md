@@ -2,7 +2,9 @@
 
 Atlas Knowledge Hub Phase 1+ frontend development standards for Vue 3 + Vite + TypeScript.
 
-This document extends [DEVELOPMENT_STANDARDS.md](../DEVELOPMENT_STANDARDS.md) § Frontend Standards with concrete patterns and examples specific to Vue.
+This document extends [DEVELOPMENT_STANDARDS.md](../DEVELOPMENT_STANDARDS.md) § Frontend Standards with concrete patterns and examples specific to Vue. 中文版：[FRONTEND_CODING_STANDARD.zh-CN.md](FRONTEND_CODING_STANDARD.zh-CN.md).
+
+Rules are cross-checked against the [Vue.js Official Style Guide](https://vuejs.org/style-guide/), the [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html), and the [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript).
 
 ## File Organization
 
@@ -106,6 +108,41 @@ const handleClick = () => {
 - Define props with `withDefaults<Props>()` for clarity.
 - Use `defineEmits<{ eventName: [argType] }>()` for strongly-typed events.
 - Keep inline styles in `<style scoped>`; extract to `styles.css` only if reused across many components.
+
+## Vue Style Guide Rules
+
+We follow the official Vue.js Style Guide. Priority A is enforced; Priority B is strongly recommended.
+
+### Priority A — Essential (error prevention)
+
+- **Multi-word component names** (except root `App`): `KnowledgeSpaceCard`, not `Card` — avoids clashing with current/future HTML elements.
+- **Detailed, typed prop definitions:** every prop is typed; constrain values with unions and, where useful, a validator.
+  ```ts
+  const props = defineProps<{ status: 'Ready' | 'Review Required' | 'Parsing' }>()
+  ```
+- **Keyed `v-for`:** always bind a stable `:key` (`:key="space.id"`); never the array index for dynamic lists.
+- **Never `v-if` with `v-for` on the same element:** filter via a `computed`, or move `v-if` to a wrapper — `v-if` evaluates before the loop variable exists.
+- **Component-scoped styles:** every component (except `App`/layout) uses `<style scoped>` (or CSS modules); no global leakage.
+
+### Priority B — Strongly Recommended
+
+- **Filename casing:** PascalCase (`KnowledgeSpaceCard.vue`), consistent across the repo.
+- **Base components** get a `Base`/`App`/`V` prefix (`BaseButton.vue`).
+- **Tightly-coupled children carry the parent prefix:** `SpaceNav`, `SpaceDocumentsTab` — reads as belonging to `Space`.
+- **Word order high-level → modifier:** `SearchButtonClear`, not `ClearSearchButton`.
+- **Self-closing** components in SFC templates: `<KnowledgeSpaceCard />`.
+- **One attribute per line** when an element has multiple attributes.
+- **Simple template expressions:** no logic in `{{ }}` — move it to a named `computed`.
+- **Simple, composable computed properties:** split a complex computed into several well-named ones.
+- **Prop names:** `camelCase` in `defineProps`; `kebab-case` when passed in templates.
+- **Directive shorthands consistently:** always `:` / `@` / `#` (our convention), never mixed with the long form.
+
+## Modules & Exports
+
+- **Named exports for utilities, composables, and types** (Google TS) — predictable imports, safe renames. Vue SFCs use the implicit default export (unavoidable); everything else is named.
+- Use `const` by default, `let` only when reassigning, **never `var`** (Airbnb).
+- Prefer `readonly` / `Readonly<T>` for values never reassigned after construction (Google TS); composables return `computed()` for read-only reactive state.
+- Import order: framework (`vue`) → third-party → `@/` internal; no wildcard/`* as` imports.
 
 ## Types and Interfaces
 
