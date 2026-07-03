@@ -21,80 +21,65 @@ Atlas Knowledge Hub Phase 2+ 后端开发标准，面向 Java + Spring Boot + Po
 
 ## 文件与包组织
 
-**按功能分包。** 每个业务能力（space、batch、file、review）是自包含的包，持有自己的 controller、service、实体、repository、mapper 与 DTO。2+ 功能共享的代码放 `common/`。这使功能的改动面局部、功能间耦合低——加能力 = 加一个包，而非编辑五个层文件夹（`DEVELOPMENT_STANDARDS.md` § Backend）。
+**按层分包** —— 常规 Spring Boot 结构。按技术角色分组；保持 API/controller、application/service、repository、domain/实体、migration 职责分离（`DEVELOPMENT_STANDARDS.md` § Backend）。
 
 ```
 backend/
 ├── pom.xml
 ├── src/main/java/com/atlas/metadata/
 │   ├── MetadataApiApplication.java
-│   ├── space/                  # Knowledge Space 功能 —— 自包含
-│   │   ├── SpaceController.java
-│   │   ├── SpaceService.java
-│   │   ├── Space.java              # @Entity
-│   │   ├── SpaceRepository.java
-│   │   ├── SpaceMapper.java
-│   │   ├── SpaceType.java  IndexStrategy.java  SpaceStatus.java   # 功能内枚举
-│   │   └── dto/                    # SpaceRequest, SpaceResponse
-│   ├── batch/                  # Batch 功能
-│   │   ├── BatchController.java  BatchService.java
-│   │   ├── MetricsCalculator.java  # 由 file item 派生 metrics
-│   │   ├── Batch.java  BatchRepository.java  BatchMapper.java
-│   │   └── dto/
-│   ├── file/                   # File item + source chunk 功能
-│   │   ├── FileController.java  FileService.java
-│   │   ├── FileItem.java  SourceChunk.java
-│   │   ├── FileItemRepository.java  SourceChunkRepository.java  FileMapper.java
-│   │   └── dto/
-│   ├── review/                 # Review record 功能
-│   │   ├── ReviewController.java  ReviewService.java
-│   │   ├── ReviewRecord.java  ReviewRecordRepository.java  ReviewAction.java
-│   │   └── dto/
-│   ├── wiki/                   # WikiPage —— 仅实体 + repository（本切片无端点）
-│   │   └── WikiPage.java  WikiPageRepository.java
-│   ├── graph/                  # GraphNode/GraphEdge —— 仅实体（本切片无端点）
-│   │   └── GraphNode.java  GraphEdge.java
-│   ├── common/                 # 跨切面，2+ 功能共享（不是杂物箱）
-│   │   ├── web/                    # ApiEnvelope, ErrorBody, PageMeta, GlobalExceptionHandler
-│   │   ├── validation/             # @RelativePath 校验器
-│   │   └── enums/                  # 跨功能枚举：FileStatus, ReviewStatus, SourceKind, SourceType
+│   ├── controller/             # 轻薄 controller —— 每资源一个
+│   │   ├── SpaceController.java   BatchController.java
+│   │   └── FileController.java    ReviewController.java
+│   ├── service/                # application service：编排、映射、派生值
+│   │   ├── SpaceService.java   BatchService.java  FileService.java  ReviewService.java
+│   │   └── MetricsCalculator.java  # 由 file item 派生批次 metrics
+│   ├── repository/             # Spring Data JPA repository
+│   │   ├── SpaceRepository.java   BatchRepository.java  FileItemRepository.java
+│   │   └── SourceChunkRepository.java  ReviewRecordRepository.java
+│   ├── domain/                 # JPA 实体 + 不变量
+│   │   ├── Space.java  Batch.java  FileItem.java  SourceChunk.java
+│   │   └── ReviewRecord.java  WikiPage.java  GraphNode.java  GraphEdge.java
+│   ├── enums/                  # FileStatus, ReviewStatus, ReviewAction, SourceKind, SourceType,
+│   │                           #   SpaceType, IndexStrategy, SpaceStatus, GraphNodeType, GraphEdgeType
+│   ├── dto/                    # *Request / *Response record, ApiEnvelope, ErrorBody, PageMeta
+│   │   └── mapping/            # 实体 <-> DTO 映射
+│   ├── exception/              # GlobalExceptionHandler, NotFoundException, ConflictException
+│   ├── validation/             # @RelativePath 校验器
 │   └── adapter/                # 保留 SEAM —— Phase 3 前为空（仅 package-info.java）
 ├── src/main/resources/
 │   ├── application.yml         # 配置驱动；无字面量 secret
 │   └── db/migration/           # Flyway V<n>__<desc>.sql
 └── src/test/java/com/atlas/metadata/
-    ├── space/  batch/  file/  review/   # 测试镜像功能包
-    └── integration/            # Testcontainers PostgreSQL：跨功能 + migration 校验
+    ├── controller/             # 契约测试（@WebMvcTest）
+    ├── service/                # 单元测试（service、mapper、MetricsCalculator、校验器）
+    └── integration/            # Testcontainers PostgreSQL：repository + migration 校验
 ```
 
-- **按功能分包，而非按层。** 无顶层 `controllers/`、`services/`、`models/` 堆放。一个功能的 controller、service、实体、repository、mapper、DTO 放在一起。
-- **`common/` 只放真正共享的代码**（信封、异常处理器、校验器、跨功能枚举）。若某物只被一个功能用，就放那个功能里——别让 `common/` 变成什么都往里塞的地方。
-- **枚举归属：** 单功能用的枚举随其功能（`SpaceType` 在 `space/`）；跨功能的枚举进 `common/enums`（`FileStatus`——被 `file/` 与 `batch/` 用；`ReviewStatus`——被 `file/`、`review/`、`wiki/`、`graph/` 用）。
-- **跨功能调用走 service → service**，绝不 controller → 另一 controller，也绝不 service → 另一功能的 repository。这是保持功能解耦的关键。
-- **测试镜像功能包**；跨功能与 migration 测试放 `integration/`。
+- **按层分包，每包一种角色。** controller 在 `controller/`，service 在 `service/`，实体在 `domain/`，以此类推。不要把 controller 与 repository 混在同一包。
+- **跨切面代码按种类归位：** 响应信封 + DTO 在 `dto/`，异常处理器与自定义异常在 `exception/`，校验器在 `validation/`，枚举在 `enums/`。
 - **文件聚焦：** 通常 200–400 行，上限 800；方法 <50 行；嵌套 <4 层（全局编码风格）。
 
-## 角色规则（每个功能内强制）
+## 分层规则（强制）
 
-按功能分包不放松分层——它在**每个功能包内按角色**强制分层。依赖向内：controller → service → 实体，service → repository → 实体。绝不反向。
+依赖向内：`controller → service → repository → domain`。绝不反向。
 
-| 角色（后缀） | 可依赖 | 禁止 |
+| 层 | 可依赖 | 禁止 |
 |---|---|---|
-| `*Controller` | 本功能的 service、`common/web`（DTO + 信封） | 直接碰 repository/实体；持有业务逻辑；带 `@Transactional` |
-| `*Service` | 本功能的实体 + repository、**其他功能的 service**（非其 repository）、`common/` | 构建 HTTP 响应；知晓 `HttpServletRequest` |
-| `@Entity` | （不依赖 web/service） | import Spring Web、JPA 查询逻辑或 DTO |
-| `*Repository` | 本功能的实体 | 包含编排或映射 |
-| `common/*` | 不依赖任何具体功能 | 依赖任一单个功能包 |
-| `adapter/*` | 仅面向产品的接口 | 引用具体引擎或开外联网络客户端（Phase 2：为空） |
+| `controller/` | `service/`、`dto/` | 直接碰 repository/实体；持有业务逻辑；带 `@Transactional` |
+| `service/` | `domain/`、`repository/`、`dto` 映射、其他 service | 构建 HTTP 响应；知晓 `HttpServletRequest` |
+| `domain/`（实体） | `enums/` | import Spring Web、JPA 查询逻辑或 DTO |
+| `repository/` | `domain/` | 包含编排或映射 |
+| `dto/` `exception/` `validation/` | 仅框架 + `domain`/`enums` | 持有业务逻辑 |
+| `adapter/` | 仅面向产品的接口 | 引用具体引擎或开外联网络客户端（Phase 2：为空） |
 
-- **跨功能访问只走 service→service。** 一个功能绝不深入另一功能的 repository 或实体内部——它调用那个功能的 service。这就是耦合边界。
 - **Controller 轻薄：** 解析 → `@Valid` → 委派给 service → 包进信封。无 `@Transactional`，无查询。
 - **Service 拥有事务与映射：** `@Transactional` 在此；派生值（如批次 metrics）在此产生，绝不存储。不滥用 `@Transactional`（阿里 P3C）——只标注跨 ≥2 语句变更的具体 service 方法；只读读取用 `@Transactional(readOnly = true)` 或不用。类级全包事务损害吞吐并隐藏边界。
 - **绝不把 JPA 实体**经 HTTP 序列化——始终映射为 DTO。
 
 ## 命名
 
-- 包：小写、单数功能/领域名（`space`、`batch`、`file`、`review`、`common`、`adapter`）。
+- 包：小写、单数角色名（`controller`、`service`、`repository`、`domain`、`dto`、`enums`、`exception`、`validation`、`adapter`）。
 - 类：`PascalCase`；按角色加后缀——`*Controller`、`*Service`、`*Repository`、`*Request`、`*Response`、`*Mapper`。
 - 枚举及其值**对 `FileStatus` 与 `frontend/src/types.ts` 完全一致**（相同字符串）。`ReviewStatus` 有意遵循更宽的 REQ-PROD-030 集合、与前端类型分叉——不得收敛（见 `metadata-api-data-model.md`）。
 - 方法：动词短语（`createSpace`、`findByBatchIdAndStatus`、`computeMetrics`）。
@@ -121,7 +106,7 @@ backend/
 ## DTO、实体与映射
 
 - **请求/响应 DTO 是 Java `record`**，带 Bean Validation 注解。实体是 JPA `@Entity` 类。二者是不同类型——绝不跨边界共用一个类。
-- 每个功能拥有自己的 `*Mapper`（如 `space/SpaceMapper.java`）。mapper 保持纯净并做单元测试。
+- 映射放 `dto/mapping/`（如 `SpaceMapper`）。mapper 保持纯净并做单元测试。
 - 暴露 `camelCase` JSON；持久化 `snake_case` 列。mapper 桥接大小写。
 - **Typed query 对象（阿里 P3C）：** 任何 2+ 过滤条件的读取用 typed `*Query` record——绝不用松散类型的 `Map<String,Object>`。如文件列表过滤变为 `record FileQuery(String batchId, FileStatus status, int page, int size)`。
 
@@ -245,8 +230,8 @@ spring:
 
 三层，随层变为真实而全部必需（`DEVELOPMENT_STANDARDS.md` § Testing；全局 80% 底线）：
 
-- **单元（每功能）：** service、mapper、`MetricsCalculator` 派生、action→status 映射、`REVIEW_REQUIRED` 默认不变量、`@RelativePath` 校验器。快速，尽量不启 Spring 上下文。
-- **契约（每功能 controller）：** `@WebMvcTest(XController.class)` + mock service（`@MockitoBean`）——快、仅 web 层。断言状态码、信封形态、分页 `meta`、`400` 字段级校验、`404`、用户安全错误体（无堆栈/SQL/secret/绝对路径）。
+- **单元（`service/`）：** service、mapper、`MetricsCalculator` 派生、action→status 映射、`REVIEW_REQUIRED` 默认不变量、`@RelativePath` 校验器。快速，尽量不启 Spring 上下文。
+- **契约（`controller/`）：** `@WebMvcTest(XController.class)` + mock service（`@MockitoBean`）——快、仅 web 层。断言状态码、信封形态、分页 `meta`、`400` 字段级校验、`404`、用户安全错误体（无堆栈/SQL/secret/绝对路径）。
 - **集成（`integration/`）：** `@SpringBootTest(webEnvironment = RANDOM_PORT)` + Testcontainers PostgreSQL——端到端真实 bean：repository CRUD + 分页 + 过滤、Flyway `V1`+`V2` 干净应用、`ddl-auto=validate` 通过、种子行匹配前端基线预期。集成测试命名 `*IT`。
 
 选择能证明行为的最窄层：controller 逻辑用 `@WebMvcTest`，repository 查询用 `@DataJpaTest`，仅当全链路接线重要时用 `@SpringBootTest`。用 **AssertJ** fluent 断言（`assertThat(...)`）提升可读性。
@@ -271,7 +256,7 @@ class MigrationValidationIT {
 
 ## 代码质量检查清单（提交前）
 
-- [ ] **按功能分包 + 角色**：功能包自包含；controller→service→实体方向成立；跨功能走 service→service；controller 轻薄；无实体经 HTTP 序列化。
+- [ ] **分层**：`controller → service → repository → domain`；每包一种角色；controller 轻薄；无实体经 HTTP 序列化。
 - [ ] **信封**：每个端点返回 `ApiEnvelope`；列表含 `PageMeta`。
 - [ ] **校验**：所有 DTO `@Valid`；路径相对 + 穿越检查；非法输入 → 400 含 fields。
 - [ ] **错误/secret**：响应或日志无堆栈/SQL/secret/主机名/绝对路径；datasource 来自配置，无字面量。

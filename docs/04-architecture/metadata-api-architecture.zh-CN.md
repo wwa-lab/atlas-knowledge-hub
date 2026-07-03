@@ -19,9 +19,10 @@ metadata 服务是 Atlas 的**控制平面**：一个 Spring Boot 应用，在 P
 ┌───────────────┴──────────────────────────────────────────────┐
 │ metadata-api (Spring Boot) —— 本切片                          │
 │                                                                │
-│  按功能分包：space/ batch/ file/ review/ wiki/ graph/         │
-│    每个 = controller + service + 实体 + repository + mapper    │
-│  common/    信封、错误处理器、校验器、共享枚举                │
+│  controller/  轻薄 controller + 校验                          │
+│  service/     application service（编排、映射）               │
+│  domain/ repository/ enums/  实体 + 数据访问                   │
+│  dto/ exception/ validation/  信封、处理器、校验器            │
 │  db/        Flyway migration（schema + 种子）                 │
 │  adapter/   保留 SEAM —— 本切片为空（Phase 3）               │
 └───────────────▲──────────────────────────────────────────────┘
@@ -31,10 +32,10 @@ metadata 服务是 Atlas 的**控制平面**：一个 Spring Boot 应用，在 P
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **功能包**（`space/`、`batch/`、`file/`、`review/`）各自拥有其 controller、service、实体、repository、mapper。功能内保持角色依赖方向：controller → service → 实体，service → repository。controller 无业务逻辑（REQ-MA-008）。跨功能访问只走 service→service。
-- **`common/`** 拥有 HTTP 跨切面：`ApiEnvelope`、`ErrorBody`、`PageMeta`、`GlobalExceptionHandler`（失败 → 用户安全信封）、`@RelativePath` 校验器，以及跨功能枚举（`FileStatus`、`ReviewStatus`、`SourceKind`、`SourceType`）。功能内枚举（`SpaceType`、`IndexStrategy`、`SpaceStatus`）留在各自功能。
-- **批次 metrics** 在 `batch/MetricsCalculator` 由 file item 计算（派生，不存储），经 `FileService` 读取文件状态。
-- **不变量**（如生成内容绝不默认 `APPROVED`）落在拥有它的实体/service 上；产品逻辑依赖 repository 接口，而非 JDBC 细节。
+- **`controller/`** 拥有 HTTP：请求 DTO 校验、响应信封组装、委派给 service。controller 无业务逻辑（REQ-MA-008）。
+- **`service/`** 拥有编排与实体↔DTO 映射。`MetricsCalculator` 在此由 file item 计算批次 metrics（派生，不存储）。依赖方向：`controller → service → repository → domain`。
+- **`domain/` + `enums/`** 拥有实体、枚举集合（`FileStatus`、`ReviewStatus`、`SourceKind`、`SourceType`、`SpaceType`、`IndexStrategy`、`SpaceStatus`、`GraphNodeType`、`GraphEdgeType`），以及不变量（如生成内容绝不默认 `APPROVED`）。
+- **`repository/`** 经 Spring Data JPA 拥有数据访问；产品逻辑依赖 repository 接口，而非 JDBC 细节。**`dto/` / `exception/` / `validation/`** 拥有信封、`GlobalExceptionHandler` 与 `@RelativePath` 校验器。
 - **db/** 拥有带版本 Flyway migration。`ddl-auto=validate` —— 共享环境无运行时 schema 变更。
 - **adapter/** 是保留的空包。本切片任何处都不引用 converter/parser/model/vector/storage 引擎（REQ-MA-013）。
 

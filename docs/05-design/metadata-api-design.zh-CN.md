@@ -6,33 +6,26 @@
 
 ## 模块布局（Maven / Spring Boot）
 
-按功能分包（见 `docs/BACKEND_CODING_STANDARD.md` § 文件与包组织）：每个能力是自包含的包；跨切面代码放 `common/`。
+按层分包 —— 常规 Spring Boot（见 `docs/BACKEND_CODING_STANDARD.md` § 文件与包组织）：按技术角色分组。
 
 ```
 backend/                         # 本切片从占位提升为可构建
   pom.xml
   src/main/java/com/atlas/metadata/
     MetadataApiApplication.java
-    space/                       # Knowledge Space 功能
-      SpaceController.java  SpaceService.java  Space.java  SpaceRepository.java
-      SpaceMapper.java  SpaceType.java  IndexStrategy.java  SpaceStatus.java  dto/
-    batch/                       # Batch 功能
-      BatchController.java  BatchService.java  MetricsCalculator.java   # 派生 metrics
-      Batch.java  BatchRepository.java  BatchMapper.java  dto/
-    file/                        # File item + source chunk 功能
-      FileController.java  FileService.java  FileItem.java  SourceChunk.java
-      FileItemRepository.java  SourceChunkRepository.java  FileMapper.java  dto/
-    review/                      # Review record 功能
-      ReviewController.java  ReviewService.java  ReviewRecord.java
-      ReviewRecordRepository.java  ReviewAction.java  dto/
-    wiki/                        # 仅实体 + repository（本切片无端点）
-      WikiPage.java  WikiPageRepository.java
-    graph/                       # 仅实体（本切片无端点）
-      GraphNode.java  GraphEdge.java  GraphNodeType.java  GraphEdgeType.java
-    common/                      # 跨切面，2+ 功能共享
-      web/ (ApiEnvelope、ErrorBody、PageMeta、GlobalExceptionHandler)
-      validation/ (@RelativePath 校验器)
-      enums/ (FileStatus、ReviewStatus、SourceKind、SourceType)   # 跨功能
+    controller/                  # SpaceController, BatchController, FileController, ReviewController
+    service/                     # SpaceService, BatchService, FileService, ReviewService
+      MetricsCalculator.java     # 由 file item 派生 BatchMetrics
+    repository/                  # SpaceRepository, BatchRepository, FileItemRepository,
+                                 #   SourceChunkRepository, ReviewRecordRepository
+    domain/                      # Space, Batch, FileItem, SourceChunk, ReviewRecord,
+                                 #   WikiPage, GraphNode, GraphEdge  (JPA 实体)
+    enums/                       # FileStatus, ReviewStatus, ReviewAction, SourceKind, SourceType,
+                                 #   SpaceType, IndexStrategy, SpaceStatus, GraphNodeType, GraphEdgeType
+    dto/                         # *Request / *Response record, ApiEnvelope, ErrorBody, PageMeta
+      mapping/                   # 实体 <-> DTO 映射
+    exception/                   # GlobalExceptionHandler, NotFoundException, ConflictException
+    validation/                  # @RelativePath 校验器
     adapter/                     # 保留、为空（Phase 3 seam）—— 仅 package-info.java
   src/main/resources/
     application.yml              # 配置驱动 datasource（无字面量）
@@ -40,33 +33,34 @@ backend/                         # 本切片从占位提升为可构建
       V1__init_schema.sql
       V2__seed_mock_metadata.sql
   src/test/java/com/atlas/metadata/
-    space/ batch/ file/ review/  # 测试镜像功能包
-    integration/                 # Testcontainers PostgreSQL：跨功能 + migration 校验
+    controller/ (契约测试，@WebMvcTest)
+    service/    (单元测试：MetricsCalculator、不变量、mapper)
+    integration/ (Testcontainers PostgreSQL：repository + migration 校验)
 ```
 
 既有 `backend/README.md` 占位被取代；按 Phase 2 纪律，本切片是 `backend/` 变为可构建之处。
 
-## 角色契约（每个功能内）
+## 层契约
 
-按功能分包保持角色依赖方向不变：controller → service → 实体，service → repository。跨功能访问只走 service→service（绝不进入另一功能的 repository/实体）。
+依赖方向：`controller → service → repository → domain`；controller → dto。绝不反向。
 
-### Controller（`*Controller`）
-- 每功能一个 controller；轻薄——解析、校验（`@Valid`）、委派给功能 service、包进 `common/web` 信封。
+### controller/
+- 每资源一个 controller；轻薄——解析、校验（`@Valid`）、委派给 service、包进信封。
 - 绝不直接序列化 JPA 实体；controller 只返回 DTO。
-- `common/web/GlobalExceptionHandler`（`@RestControllerAdvice`）把异常映射为 `{400,404,409,500}` 用户安全信封。
+- `exception/GlobalExceptionHandler`（`@RestControllerAdvice`）把异常映射为 `{400,404,409,500}` 用户安全信封。
 - 分页经 `page`/`size` 查询参数（有界默认 size，如 20；上限 200）。
 
-### Service（`*Service`）
-- 拥有事务（`@Transactional`）、编排、实体↔DTO 映射（经功能 `*Mapper`）。
-- `batch/MetricsCalculator` 由批次的 file item 计算 `BatchMetrics`——metrics 的**唯一**产生处（无存储计数器）。它经 `FileService` 读取文件状态，而非直接用 `file/` 的 repository。
+### service/
+- 拥有事务（`@Transactional`）、编排、实体↔DTO 映射（经 `dto/mapping`）。
+- `MetricsCalculator` 由批次的 file item 计算 `BatchMetrics`——metrics 的**唯一**产生处（无存储计数器）。
 - 强制不变量：默认 `review_status=REVIEW_REQUIRED`；只有 `ReviewService` 经动作推进；创建时绝不设 `APPROVED`。
 
-### 实体 + 枚举
-- JPA 实体（与其功能包共置）精确镜像数据模型表。`FileStatus` 值与 `frontend/src/types.ts` 完全相同字符串；`ReviewStatus` 有意遵循更宽的 REQ-PROD-030 集合，**不**匹配更窄的前端 `ReviewStatus`（见数据模型"与前端类型的关系"）。不得将其收敛为前端类型。
-- 实体持有不变量辅助（如 `FileStatus.isGenerated()`），不涉及 DB 查询或 HTTP。跨功能枚举放 `common/enums`。
+### domain/ + enums/
+- JPA 实体精确镜像数据模型表。`FileStatus` 值与 `frontend/src/types.ts` 完全相同字符串；`ReviewStatus` 有意遵循更宽的 REQ-PROD-030 集合，**不**匹配更窄的前端 `ReviewStatus`（见数据模型"与前端类型的关系"）。不得将其收敛为前端类型。
+- 实体持有不变量辅助（如 `FileStatus.isGenerated()`），不涉及 DB 查询或 HTTP；枚举放 `enums/`。
 
-### Repository（`*Repository`）
-- 功能包内的 Spring Data JPA 接口；分页/过滤读取的自定义查询（`findByBatchIdAndStatus`、`findBySpaceId`、时间顺序 `findByTargetTypeAndTargetIdOrderByCreatedAt`）。
+### repository/
+- Spring Data JPA 接口；分页/过滤读取的自定义查询（`findByBatchIdAndStatus`、`findBySpaceId`、时间顺序 `findByTargetTypeAndTargetIdOrderByCreatedAt`）。
 
 ### adapter/（保留）
 - `package-info.java` 记录 seam；**无任何类引用任何引擎**。以测试断言其为空，防未来意外耦合。

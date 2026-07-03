@@ -6,33 +6,26 @@ Draft. Phase 2. Slice `metadata-api`. Derived from `docs/04-architecture/metadat
 
 ## Module Layout (Maven / Spring Boot)
 
-Package-by-feature (see `docs/BACKEND_CODING_STANDARD.md` § File & Package Organization): each capability is a self-contained package; cross-cutting code lives in `common/`.
+Package-by-layer — conventional Spring Boot (see `docs/BACKEND_CODING_STANDARD.md` § File & Package Organization): classes grouped by technical role.
 
 ```
 backend/                         # promoted from placeholder in this slice
   pom.xml
   src/main/java/com/atlas/metadata/
     MetadataApiApplication.java
-    space/                       # Knowledge Space feature
-      SpaceController.java  SpaceService.java  Space.java  SpaceRepository.java
-      SpaceMapper.java  SpaceType.java  IndexStrategy.java  SpaceStatus.java  dto/
-    batch/                       # Batch feature
-      BatchController.java  BatchService.java  MetricsCalculator.java   # derives metrics
-      Batch.java  BatchRepository.java  BatchMapper.java  dto/
-    file/                        # File item + source chunk feature
-      FileController.java  FileService.java  FileItem.java  SourceChunk.java
-      FileItemRepository.java  SourceChunkRepository.java  FileMapper.java  dto/
-    review/                      # Review record feature
-      ReviewController.java  ReviewService.java  ReviewRecord.java
-      ReviewRecordRepository.java  ReviewAction.java  dto/
-    wiki/                        # entity + repository only (no endpoint this slice)
-      WikiPage.java  WikiPageRepository.java
-    graph/                       # entities only (no endpoint this slice)
-      GraphNode.java  GraphEdge.java  GraphNodeType.java  GraphEdgeType.java
-    common/                      # cross-cutting, shared by 2+ features
-      web/ (ApiEnvelope, ErrorBody, PageMeta, GlobalExceptionHandler)
-      validation/ (@RelativePath validator)
-      enums/ (FileStatus, ReviewStatus, SourceKind, SourceType)   # cross-feature
+    controller/                  # SpaceController, BatchController, FileController, ReviewController
+    service/                     # SpaceService, BatchService, FileService, ReviewService
+      MetricsCalculator.java     # derives BatchMetrics from file items
+    repository/                  # SpaceRepository, BatchRepository, FileItemRepository,
+                                 #   SourceChunkRepository, ReviewRecordRepository
+    domain/                      # Space, Batch, FileItem, SourceChunk, ReviewRecord,
+                                 #   WikiPage, GraphNode, GraphEdge  (JPA entities)
+    enums/                       # FileStatus, ReviewStatus, ReviewAction, SourceKind, SourceType,
+                                 #   SpaceType, IndexStrategy, SpaceStatus, GraphNodeType, GraphEdgeType
+    dto/                         # *Request / *Response records, ApiEnvelope, ErrorBody, PageMeta
+      mapping/                   # entity <-> DTO mappers
+    exception/                   # GlobalExceptionHandler, NotFoundException, ConflictException
+    validation/                  # @RelativePath validator
     adapter/                     # RESERVED, EMPTY (Phase 3 seam) — package-info.java only
   src/main/resources/
     application.yml              # config-driven datasource (no literals)
@@ -40,33 +33,34 @@ backend/                         # promoted from placeholder in this slice
       V1__init_schema.sql
       V2__seed_mock_metadata.sql
   src/test/java/com/atlas/metadata/
-    space/ batch/ file/ review/  # tests mirror the feature package
-    integration/                 # Testcontainers PostgreSQL: cross-feature + migration validation
+    controller/ (contract tests, @WebMvcTest)
+    service/    (unit tests: MetricsCalculator, invariants, mappers)
+    integration/ (Testcontainers PostgreSQL: repositories + migration validation)
 ```
 
 The pre-existing `backend/README.md` placeholder is superseded; this slice is where `backend/` becomes buildable, per Phase 2 discipline.
 
-## Role Contracts (within each feature)
+## Layer Contracts
 
-Package-by-feature keeps the role dependency direction intact: controller → service → entity, service → repository. Cross-feature access is service→service only (never into another feature's repository/entity).
+Dependency direction: `controller → service → repository → domain`; controller → dto. Never the reverse.
 
-### Controllers (`*Controller`)
-- One controller per feature; thin — parse, validate (`@Valid`), delegate to the feature service, wrap in the `common/web` envelope.
+### controller/
+- One controller per resource; thin — parse, validate (`@Valid`), delegate to a service, wrap in the envelope.
 - No JPA entity is ever serialized directly; controllers return DTOs only.
-- `common/web/GlobalExceptionHandler` (`@RestControllerAdvice`) maps exceptions → `{400,404,409,500}` user-safe envelopes.
+- `exception/GlobalExceptionHandler` (`@RestControllerAdvice`) maps exceptions → `{400,404,409,500}` user-safe envelopes.
 - Pagination via `page`/`size` query params (bounded default size, e.g. 20; max 200).
 
-### Services (`*Service`)
-- Own transactions (`@Transactional`), orchestration, and entity↔DTO mapping (via the feature `*Mapper`).
-- `batch/MetricsCalculator` computes `BatchMetrics` from a batch's file items — the *only* place metrics are produced (no stored counter). It reads file status via `FileService`, not `file/`'s repository directly.
+### service/
+- Own transactions (`@Transactional`), orchestration, and entity↔DTO mapping (via `dto/mapping`).
+- `MetricsCalculator` computes `BatchMetrics` from a batch's file items — the *only* place metrics are produced (no stored counter).
 - Enforce invariants: default `review_status=REVIEW_REQUIRED`; only `ReviewService` advances it via an action; never set `APPROVED` on create.
 
-### Entities + enums
-- JPA entities (co-located in their feature package) mirror the data model tables exactly. `FileStatus` values are identical strings to `frontend/src/types.ts`; `ReviewStatus` intentionally follows the wider REQ-PROD-030 set and does **not** match the narrower FE `ReviewStatus` (see data model "Relationship To FE Types"). Do not collapse it to the FE type.
-- Entities hold invariant helpers (e.g. `FileStatus.isGenerated()`), not DB-query or HTTP concerns. Cross-feature enums live in `common/enums`.
+### domain/ + enums/
+- JPA entities mirror the data model tables exactly. `FileStatus` values are identical strings to `frontend/src/types.ts`; `ReviewStatus` intentionally follows the wider REQ-PROD-030 set and does **not** match the narrower FE `ReviewStatus` (see data model "Relationship To FE Types"). Do not collapse it to the FE type.
+- Entities hold invariant helpers (e.g. `FileStatus.isGenerated()`), not DB-query or HTTP concerns; enums live in `enums/`.
 
-### Repositories (`*Repository`)
-- Spring Data JPA interfaces in their feature package; custom queries for paged/filter reads (`findByBatchIdAndStatus`, `findBySpaceId`, chronological `findByTargetTypeAndTargetIdOrderByCreatedAt`).
+### repository/
+- Spring Data JPA interfaces; custom queries for paged/filter reads (`findByBatchIdAndStatus`, `findBySpaceId`, chronological `findByTargetTypeAndTargetIdOrderByCreatedAt`).
 
 ### adapter/ (reserved)
 - `package-info.java` documenting the seam; **no class references any engine**. Presence is asserted-empty by a test so future accidental coupling is caught.

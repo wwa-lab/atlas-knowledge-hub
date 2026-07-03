@@ -21,80 +21,65 @@ Rules here are cross-checked against, and cite where they came from: the [Google
 
 ## File & Package Organization
 
-**Package-by-feature.** Each business capability (space, batch, file, review) is a self-contained package holding its own controller, service, entity, repository, mapper, and DTOs. Code shared by 2+ features lives in `common/`. This keeps a feature's change surface local and coupling between features low — adding a capability means adding a package, not editing five layer folders (`DEVELOPMENT_STANDARDS.md` § Backend).
+**Package-by-layer** — the conventional Spring Boot structure. Group classes by technical role; keep API/controller, application/service, repository, domain/entity, and migration responsibilities separate (`DEVELOPMENT_STANDARDS.md` § Backend).
 
 ```
 backend/
 ├── pom.xml
 ├── src/main/java/com/atlas/metadata/
 │   ├── MetadataApiApplication.java
-│   ├── space/                  # Knowledge Space feature — self-contained
-│   │   ├── SpaceController.java
-│   │   ├── SpaceService.java
-│   │   ├── Space.java              # @Entity
-│   │   ├── SpaceRepository.java
-│   │   ├── SpaceMapper.java
-│   │   ├── SpaceType.java  IndexStrategy.java  SpaceStatus.java   # feature-local enums
-│   │   └── dto/                    # SpaceRequest, SpaceResponse
-│   ├── batch/                  # Batch feature
-│   │   ├── BatchController.java  BatchService.java
-│   │   ├── MetricsCalculator.java  # derives metrics from file items
-│   │   ├── Batch.java  BatchRepository.java  BatchMapper.java
-│   │   └── dto/
-│   ├── file/                   # File item + source chunk feature
-│   │   ├── FileController.java  FileService.java
-│   │   ├── FileItem.java  SourceChunk.java
-│   │   ├── FileItemRepository.java  SourceChunkRepository.java  FileMapper.java
-│   │   └── dto/
-│   ├── review/                 # Review record feature
-│   │   ├── ReviewController.java  ReviewService.java
-│   │   ├── ReviewRecord.java  ReviewRecordRepository.java  ReviewAction.java
-│   │   └── dto/
-│   ├── wiki/                   # WikiPage — entity + repository only (no endpoint this slice)
-│   │   └── WikiPage.java  WikiPageRepository.java
-│   ├── graph/                  # GraphNode/GraphEdge — entities only (no endpoint this slice)
-│   │   └── GraphNode.java  GraphEdge.java
-│   ├── common/                 # cross-cutting, shared by 2+ features (NOT a junk drawer)
-│   │   ├── web/                    # ApiEnvelope, ErrorBody, PageMeta, GlobalExceptionHandler
-│   │   ├── validation/             # @RelativePath validator
-│   │   └── enums/                  # cross-feature enums: FileStatus, ReviewStatus, SourceKind, SourceType
+│   ├── controller/             # thin controllers — one per resource
+│   │   ├── SpaceController.java   BatchController.java
+│   │   └── FileController.java    ReviewController.java
+│   ├── service/                # application services: orchestration, mapping, derived values
+│   │   ├── SpaceService.java   BatchService.java  FileService.java  ReviewService.java
+│   │   └── MetricsCalculator.java  # derives batch metrics from file items
+│   ├── repository/             # Spring Data JPA repositories
+│   │   ├── SpaceRepository.java   BatchRepository.java  FileItemRepository.java
+│   │   └── SourceChunkRepository.java  ReviewRecordRepository.java
+│   ├── domain/                 # JPA entities + invariants
+│   │   ├── Space.java  Batch.java  FileItem.java  SourceChunk.java
+│   │   └── ReviewRecord.java  WikiPage.java  GraphNode.java  GraphEdge.java
+│   ├── enums/                  # FileStatus, ReviewStatus, ReviewAction, SourceKind, SourceType,
+│   │                           #   SpaceType, IndexStrategy, SpaceStatus, GraphNodeType, GraphEdgeType
+│   ├── dto/                    # *Request / *Response records, ApiEnvelope, ErrorBody, PageMeta
+│   │   └── mapping/            # entity <-> DTO mappers
+│   ├── exception/              # GlobalExceptionHandler, NotFoundException, ConflictException
+│   ├── validation/             # @RelativePath validator
 │   └── adapter/                # RESERVED SEAM — empty until Phase 3 (package-info.java only)
 ├── src/main/resources/
 │   ├── application.yml         # config-driven; no literal secrets
 │   └── db/migration/           # Flyway V<n>__<desc>.sql
 └── src/test/java/com/atlas/metadata/
-    ├── space/  batch/  file/  review/   # tests mirror the feature package
-    └── integration/            # Testcontainers PostgreSQL: cross-feature + migration validation
+    ├── controller/             # contract tests (@WebMvcTest)
+    ├── service/                # unit tests (services, mappers, MetricsCalculator, validators)
+    └── integration/            # Testcontainers PostgreSQL: repositories + migration validation
 ```
 
-- **Package-by-feature, not by layer.** No top-level `controllers/`, `services/`, or `models/` dump. A feature's controller, service, entity, repository, mapper, and DTOs sit together.
-- **`common/` holds only genuinely shared code** (envelope, exception handler, validators, cross-feature enums). If something is used by exactly one feature, it lives in that feature — keep `common/` from becoming a catch-all.
-- **Enum placement:** an enum used by one feature stays with it (`SpaceType` in `space/`); an enum crossing features goes to `common/enums` (`FileStatus` — used by `file/` and `batch/`; `ReviewStatus` — used by `file/`, `review/`, `wiki/`, `graph/`).
-- **Cross-feature calls go service → service**, never controller → another controller, and never service → another feature's repository. This is what keeps features decoupled.
-- **Tests mirror the feature package**; cross-feature and migration tests live under `integration/`.
+- **Package-by-layer, one role per package.** Controllers in `controller/`, services in `service/`, entities in `domain/`, and so on. Do not mix a controller and a repository in the same package.
+- **Cross-cutting code by kind:** the response envelope + DTOs in `dto/`, the exception handler and custom exceptions in `exception/`, validators in `validation/`, enums in `enums/`.
 - **Keep files focused:** 200–400 lines typical, 800 max; methods <50 lines; nesting <4 levels (global coding style).
 
-## Role Rules (enforced within each feature)
+## Layering Rules (enforced)
 
-Package-by-feature does not relax layering — it enforces it **by role inside each feature package**. Dependencies point inward: controller → service → entity, and service → repository → entity. Never the reverse.
+Dependencies point inward: `controller → service → repository → domain`. Never the reverse.
 
-| Role (suffix) | May depend on | Must NOT |
+| Layer | May depend on | Must NOT |
 |---|---|---|
-| `*Controller` | its own feature's service, `common/web` (DTOs + envelope) | touch repositories or entities directly; hold business logic; be `@Transactional` |
-| `*Service` | its feature's entities + repository, **other features' services** (not their repositories), `common/` | build HTTP responses; know about `HttpServletRequest` |
-| `@Entity` | (nothing web/service) | import Spring Web, JPA-query logic, or DTOs |
-| `*Repository` | its feature's entity | contain orchestration or mapping |
-| `common/*` | nothing feature-specific | depend on any single feature package |
-| `adapter/*` | product-facing interfaces only | reference a concrete engine or open a network client (Phase 2: empty) |
+| `controller/` | `service/`, `dto/` | touch repositories or entities directly; hold business logic; be `@Transactional` |
+| `service/` | `domain/`, `repository/`, `dto` mapping, other services | build HTTP responses; know about `HttpServletRequest` |
+| `domain/` (entities) | `enums/` | import Spring Web, JPA-query logic, or DTOs |
+| `repository/` | `domain/` | contain orchestration or mapping |
+| `dto/` `exception/` `validation/` | framework + `domain`/`enums` only | hold business logic |
+| `adapter/` | product-facing interfaces only | reference a concrete engine or open a network client (Phase 2: empty) |
 
-- **Cross-feature access is service→service only.** A feature never reaches into another feature's repository or entity internals — it calls that feature's service. This is the coupling boundary.
 - **Controllers are thin:** parse → `@Valid` → delegate to a service → wrap in the envelope. No `@Transactional`, no queries.
 - **Services own transactions and mapping:** `@Transactional` lives here; derived values (e.g. batch metrics) are produced here, never stored. Do not over-apply `@Transactional` (Alibaba P3C) — annotate the specific service methods that mutate across ≥2 statements; read-only reads use `@Transactional(readOnly = true)` or none. Blanket class-level transactions hurt throughput and hide boundaries.
 - **Never serialize a JPA entity** over HTTP — always map to a DTO.
 
 ## Naming
 
-- Packages: lowercase, singular feature/domain nouns (`space`, `batch`, `file`, `review`, `common`, `adapter`).
+- Packages: lowercase, singular role nouns (`controller`, `service`, `repository`, `domain`, `dto`, `enums`, `exception`, `validation`, `adapter`).
 - Classes: `PascalCase`; suffix by role — `*Controller`, `*Service`, `*Repository`, `*Request`, `*Response`, `*Mapper`.
 - Enums and their values match `frontend/src/types.ts` **exactly for `FileStatus`** (identical strings). `ReviewStatus` intentionally follows the wider REQ-PROD-030 set and diverges from the FE type — do not collapse it (see `metadata-api-data-model.md`).
 - Methods: verb phrases (`createSpace`, `findByBatchIdAndStatus`, `computeMetrics`).
@@ -121,7 +106,7 @@ Package-by-feature does not relax layering — it enforces it **by role inside e
 ## DTOs, Entities & Mapping
 
 - **Request/response DTOs are Java `record`s** with Bean Validation annotations. Entities are JPA `@Entity` classes. They are separate types — never share one class across the boundary.
-- Each feature owns its `*Mapper` (e.g. `space/SpaceMapper.java`). Keep mappers pure and unit-tested.
+- Mappers live in `dto/mapping/` (e.g. `SpaceMapper`). Keep them pure and unit-tested.
 - Expose `camelCase` JSON; persist `snake_case` columns. The mapper bridges casing.
 - **Typed query objects (Alibaba P3C):** for any read with 2+ filter conditions, use a typed `*Query` record — never a `Map<String,Object>` of loosely-typed filters. E.g. file-list filters become `record FileQuery(String batchId, FileStatus status, int page, int size)`.
 
@@ -245,8 +230,8 @@ spring:
 
 Three tiers, all required as the layer becomes real (`DEVELOPMENT_STANDARDS.md` § Testing; global 80% minimum):
 
-- **Unit (per feature):** services, mappers, `MetricsCalculator` derivation, action→status mapping, the `REVIEW_REQUIRED` default invariant, `@RelativePath` validator. Fast, no Spring context where avoidable.
-- **Contract (per feature controller):** `@WebMvcTest(XController.class)` with the service mocked (`@MockitoBean`) — fast, web-layer-only. Assert status codes, envelope shape, pagination `meta`, `400` field-level validation, `404`, and user-safe error bodies (no stack/SQL/secret/absolute path).
+- **Unit (`service/`):** services, mappers, `MetricsCalculator` derivation, action→status mapping, the `REVIEW_REQUIRED` default invariant, `@RelativePath` validator. Fast, no Spring context where avoidable.
+- **Contract (`controller/`):** `@WebMvcTest(XController.class)` with the service mocked (`@MockitoBean`) — fast, web-layer-only. Assert status codes, envelope shape, pagination `meta`, `400` field-level validation, `404`, and user-safe error bodies (no stack/SQL/secret/absolute path).
 - **Integration (`integration/`):** `@SpringBootTest(webEnvironment = RANDOM_PORT)` + Testcontainers PostgreSQL — real beans end to end: repository CRUD + paging + filter, Flyway `V1`+`V2` apply cleanly, `ddl-auto=validate` passes, seed rows match FE-baseline expectations. Name integration tests `*IT`.
 
 Pick the narrowest tier that proves the behavior: `@WebMvcTest` for controller logic, `@DataJpaTest` for repository queries, `@SpringBootTest` only when the full wiring matters. Use **AssertJ** fluent assertions (`assertThat(...)`) for readability.
@@ -271,7 +256,7 @@ class MigrationValidationIT {
 
 ## Code Quality Checklist (Before Commit)
 
-- [ ] **Package-by-feature + roles**: feature packages self-contained; controller→service→entity direction holds; cross-feature via service→service; controllers thin; no entity serialized over HTTP.
+- [ ] **Layering**: `controller → service → repository → domain`; one role per package; controllers thin; no entity serialized over HTTP.
 - [ ] **Envelope**: every endpoint returns `ApiEnvelope`; lists include `PageMeta`.
 - [ ] **Validation**: all DTOs `@Valid`; paths relative + traversal-checked; invalid input → 400 with fields.
 - [ ] **Errors/secrets**: no stack/SQL/secret/hostname/absolute path in responses or logs; datasource from config, no literals.

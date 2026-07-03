@@ -19,9 +19,10 @@ The metadata service is the Atlas **control plane**: a Spring Boot application t
 ┌───────────────┴──────────────────────────────────────────────┐
 │ metadata-api (Spring Boot) — THIS SLICE                       │
 │                                                                │
-│  package-by-feature: space/ batch/ file/ review/ wiki/ graph/ │
-│    each = controller + service + entity + repository + mapper  │
-│  common/    envelope, error handler, validators, shared enums │
+│  controller/  thin controllers + validation                   │
+│  service/     application services (orchestration, mapping)    │
+│  domain/ repository/ enums/  entities + data access            │
+│  dto/ exception/ validation/  envelope, handler, validators    │
 │  db/        Flyway migrations (schema + seed)                  │
 │  adapter/   RESERVED SEAM — empty in this slice (Phase 3)      │
 └───────────────▲──────────────────────────────────────────────┘
@@ -31,10 +32,10 @@ The metadata service is the Atlas **control plane**: a Spring Boot application t
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **Feature packages** (`space/`, `batch/`, `file/`, `review/`) each own their controller, service, entity, repository, and mapper. Inside a feature the role dependency direction holds: controller → service → entity, service → repository. No business logic in controllers (REQ-MA-008). Cross-feature access is service→service only.
-- **`common/`** owns HTTP cross-cutting: `ApiEnvelope`, `ErrorBody`, `PageMeta`, the `GlobalExceptionHandler` (failures → user-safe envelopes), the `@RelativePath` validator, and cross-feature enums (`FileStatus`, `ReviewStatus`, `SourceKind`, `SourceType`). Feature-local enums (`SpaceType`, `IndexStrategy`, `SpaceStatus`) stay with their feature.
-- **Batch metrics** are computed in `batch/MetricsCalculator` from file items (derived, not stored), reading file status via `FileService`.
-- **Invariants** (e.g. generated content is never `APPROVED` by default) live on the entities/services that own them; product logic depends on repository interfaces, not JDBC details.
+- **`controller/`** owns HTTP: request DTO validation, response envelope assembly, delegation to services. No business logic in controllers (REQ-MA-008).
+- **`service/`** owns orchestration and entity↔DTO mapping. `MetricsCalculator` computes batch metrics from file items here (derived, not stored). Dependency direction: `controller → service → repository → domain`.
+- **`domain/` + `enums/`** own entities, the enum set (`FileStatus`, `ReviewStatus`, `SourceKind`, `SourceType`, `SpaceType`, `IndexStrategy`, `SpaceStatus`, `GraphNodeType`, `GraphEdgeType`), and invariants (e.g. generated content is never `APPROVED` by default).
+- **`repository/`** owns data access via Spring Data JPA; product logic depends on repository interfaces, not JDBC details. **`dto/` / `exception/` / `validation/`** own the envelope, the `GlobalExceptionHandler`, and the `@RelativePath` validator.
 - **db/** owns versioned Flyway migrations. `ddl-auto=validate` — no runtime schema mutation for shared environments.
 - **adapter/** is a reserved, empty package. No converter/parser/model/vector/storage engine is referenced anywhere in this slice (REQ-MA-013).
 
