@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft. Derived through `design-to-tasks`. Do not implement until this SDD is accepted.
+Implemented. Derived through `design-to-tasks`, accepted for implementation, and completed with verification evidence below.
 
 ## Verification Row
 

@@ -43,10 +43,10 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | 3（适配器） | `converter-adapter` | `trinity-office` Office→PDF 置于 converter 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-CA-001→010；mock-engine 已验证；真实 runtime contract 延后） |
 | 3（适配器） | `parser-adapter` | `document-normalize` PDF→Markdown/图片 置于 parser 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-PA-001→010；mock-engine 已验证；真实 runtime contract 延后） |
 | 3（适配器） | `storage-adapter` | S3 兼容对象存储置于 storage 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-SA-001→010；`mvn verify` 已通过，使用 mock storage） |
-| 3（适配器） | `vector-adapter` | pgvector/向量库置于 vector 接口之后 | 适配器，禁止直连 | 🔒 需 Phase 2 |
+| 3（适配器） | `vector-adapter` | pgvector/向量库置于 vector 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-VA-001→010；mock-engine 已验证；真实 vector DB 执行延后） |
 | 3（适配器） | `model-adapter` | LLM/embedding 供应商置于 model 接口之后，secret 脱敏 | 适配器，禁止直连 | ✅ 已实现 |
-| 4（加固） | `review-publish` | SME 审核状态机 + 已批准 Markdown 发布到 Wiki | 全栈 | 🔒 需 Phase 3 |
-| 4（加固） | `knowledge-graph` | 从已批准页面抽取节点/边 + 可解释可视化 | 全栈 | 🔒 需 Phase 3 |
+| 4（加固） | `review-publish` | SME 审核状态机 + 已批准 Markdown 发布到 Wiki | 全栈 | ✅ 已实现（T-REVIEW-PUBLISH-001→009；production auth/RBAC 延后） |
+| 4（加固） | `knowledge-graph` | 从已批准页面抽取节点/边 + 可解释可视化 | 全栈 | ✅ 已实现（T-KG-001→013；production graph layout/engine 延后） |
 | 4（加固） | `ask-rag` | 基于已批准内容、带溯源、审核感知的 Ask | 全栈 | ✅ 已实现 |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。

@@ -2,7 +2,7 @@
 
 ## 状态
 
-草稿。已为 Phase 4 hardening 生成完整双语 SDD 集。
+已实现。已为 Phase 4 hardening 生成完整双语 SDD 集，并完成实现验证。最后更新：2026-07-03。
 
 ## 切片契约
 
