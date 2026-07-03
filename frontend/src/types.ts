@@ -41,7 +41,8 @@ export type FileStatus =
   | 'FAILED'
   | 'UNSUPPORTED'
 
-export type ReviewStatus = 'REVIEW_REQUIRED' | 'APPROVED' | 'REJECTED'
+export type ReviewStatus =
+  'REVIEW_REQUIRED' | 'APPROVED' | 'NEED_FIX' | 'OCR_REQUIRED' | 'PUBLISHED'
 export type SourceKind = 'folder' | 'zip'
 export type SourceType = 'pptx' | 'docx' | 'pdf' | 'xlsx' | 'image' | 'unsupported'
 export type UploadFlowState =
@@ -145,7 +146,43 @@ export interface WikiSection {
   title: string
   body: string
   confidence: 'High' | 'Medium' | 'Low'
-  reviewStatus: 'Approved' | 'Review Required'
+  reviewStatus: 'Approved' | 'Review Required' | 'Published'
+  sourceTrace?: string
+}
+
+export type ReviewQueueType =
+  | 'PARSER_FAILURE'
+  | 'OCR_REQUIRED'
+  | 'LOW_CONFIDENCE'
+  | 'MISSING_SOURCE_TRACE'
+  | 'LLM_GENERATED_REVIEW_REQUIRED'
+  | 'READY_TO_PUBLISH'
+
+export interface ReviewQueueItem {
+  type: ReviewQueueType
+  count: number
+  publishBlocked: boolean
+  representativeItems: ReviewQueueRepresentativeItem[]
+}
+
+export interface ReviewQueueRepresentativeItem {
+  fileId: string
+  status: FileStatus
+  reviewStatus: ReviewStatus
+  confidence: number | null
+  hasSourceTrace: boolean
+}
+
+export interface WikiPageMetadata {
+  id: string
+  spaceId: string
+  title: string
+  markdownPath: string
+  sourceDocumentIds: string[]
+  confidence: number
+  reviewStatus: Extract<ReviewStatus, 'PUBLISHED'>
+  owner: string
+  lastUpdated: string
 }
 
 export interface GraphNode {
@@ -155,6 +192,111 @@ export interface GraphNode {
   x: number
   y: number
   detail: string
+}
+
+export type ApiGraphNodeType =
+  'KNOWLEDGE_SPACE' | 'DOCUMENT' | 'WIKI_PAGE' | 'CONCEPT' | 'ENTITY' | 'SOURCE_CHUNK'
+
+export type ApiGraphEdgeType =
+  | 'CONTAINS'
+  | 'DERIVED_FROM'
+  | 'MENTIONS'
+  | 'DEFINES'
+  | 'RELATED_TO'
+  | 'BELONGS_TO'
+  | 'USES'
+  | 'DEPENDS_ON'
+  | 'REVIEWED_BY'
+
+export type ApiReviewStatus =
+  'REVIEW_REQUIRED' | 'APPROVED' | 'NEED_FIX' | 'OCR_REQUIRED' | 'PUBLISHED'
+
+export interface ApiGraphNode {
+  id: string
+  label: string
+  type: ApiGraphNodeType
+  reviewStatus: ApiReviewStatus
+  confidence: number | null
+  evidenceCount: number
+}
+
+export interface ApiGraphEdge {
+  id: string
+  sourceNodeId: string
+  targetNodeId: string
+  type: ApiGraphEdgeType
+  reviewStatus: ApiReviewStatus
+  confidence: number | null
+  evidenceCount: number
+}
+
+export interface ApiGraphEvidenceReference {
+  sourceChunkId: string
+  sourceFile: string
+  page?: number
+  section?: string
+  confidence: number | null
+  reviewStatus: ApiReviewStatus
+}
+
+export interface ApiGraphView {
+  spaceId: string
+  nodes: ApiGraphNode[]
+  edges: ApiGraphEdge[]
+  counts: Record<string, number>
+}
+
+export interface ApiGraphNodeDetail {
+  node: ApiGraphNode
+  adjacentNodes: ApiGraphNode[]
+  adjacentEdges: ApiGraphEdge[]
+  evidenceReferences: ApiGraphEvidenceReference[]
+}
+
+export interface ApiEnvelope<T> {
+  success: boolean
+  data: T | null
+  error: { code: string; message: string } | null
+  meta: unknown
+}
+
+export type AskRunStatus =
+  | 'REQUESTED'
+  | 'RETRIEVING'
+  | 'GENERATING'
+  | 'SUCCEEDED'
+  | 'NO_EVIDENCE'
+  | 'PARTIAL_FAILED'
+  | 'FAILED'
+export type AskReviewPolicy = 'APPROVED_ONLY' | 'INCLUDE_REVIEW_REQUIRED'
+
+export interface ApiAskEvidence {
+  evidenceId: string
+  sourceChunkId: string
+  fileItemId: string
+  sourceFile: string
+  page?: number
+  section?: string
+  reviewStatus: ApiReviewStatus
+  confidence: number | null
+  vectorItemKey: string
+  score: number | null
+}
+
+export interface ApiAskRun {
+  runId: string
+  spaceId: string
+  question: string
+  status: AskRunStatus
+  reviewPolicy: AskReviewPolicy
+  mode: 'mock' | 'configured'
+  requestedBy: string
+  answer: string | null
+  answerConfidence: number | null
+  answerReviewStatus: Extract<ApiReviewStatus, 'REVIEW_REQUIRED'>
+  modelRunId: string | null
+  safeMessage: string | null
+  evidence: ApiAskEvidence[]
 }
 
 export interface AskSource {

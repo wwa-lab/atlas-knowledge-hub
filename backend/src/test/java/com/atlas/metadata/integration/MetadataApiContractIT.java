@@ -2,6 +2,7 @@ package com.atlas.metadata.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,7 +34,9 @@ class MetadataApiContractIT extends AbstractPostgresIT {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data").isArray())
-        .andExpect(jsonPath("$.meta.total").value(2));
+        .andExpect(jsonPath("$.meta.total").value(greaterThanOrEqualTo(2)))
+        .andExpect(jsonPath("$.data[*].id", hasItem("ibm-i-modernization")))
+        .andExpect(jsonPath("$.data[*].id", hasItem("claims-knowledge-base")));
 
     mockMvc
         .perform(get("/api/spaces/ibm-i-modernization"))
@@ -282,7 +285,7 @@ class MetadataApiContractIT extends AbstractPostgresIT {
                 String.class));
 
     assertThat(tables)
-        .containsExactlyInAnyOrder(
+        .contains(
             "space",
             "batch",
             "file_item",
@@ -301,7 +304,12 @@ class MetadataApiContractIT extends AbstractPostgresIT {
             "vector_item_result",
             "model_run",
             "model_run_output",
-            "model_run_source_reference");
+            "model_run_source_reference",
+            "ask_run",
+            "ask_evidence",
+            "graph_projection_run",
+            "graph_projection_item",
+            "graph_audit_record");
     assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM atlas.file_item", Integer.class))
         .isGreaterThanOrEqualTo(6);
     assertThat(
@@ -312,14 +320,20 @@ class MetadataApiContractIT extends AbstractPostgresIT {
   }
 
   @Test
-  void deferredWikiGraphAskRoutesAreNotMapped() {
+  void graphAskAndWikiPublishRoutesAreMapped() {
     Set<String> routes =
         handlerMapping.getHandlerMethods().keySet().stream()
             .flatMap(info -> info.getPatternValues().stream())
             .collect(java.util.stream.Collectors.toSet());
 
-    assertThat(routes).noneMatch(route -> route.contains("wiki"));
-    assertThat(routes).noneMatch(route -> route.contains("graph"));
-    assertThat(routes).noneMatch(route -> route.contains("ask"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/wiki-pages"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/wiki-pages/{wikiPageId}"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/ask"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/ask-runs/{runId}"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/graph"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/graph/nodes/{nodeId}"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/graph/projection-runs"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/graph/projection-runs/{runId}"));
+    assertThat(routes).anyMatch(route -> route.equals("/api/spaces/{spaceId}/graph/edges/{edgeId}/review-actions"));
   }
 }

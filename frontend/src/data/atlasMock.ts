@@ -1,4 +1,5 @@
 import type {
+  ApiAskRun,
   AskSource,
   BatchMetric,
   GraphNode,
@@ -6,7 +7,9 @@ import type {
   ModelCategory,
   ModelConfig,
   ProgressItem,
+  ReviewQueueItem,
   SourceFile,
+  WikiPageMetadata,
   WikiSection
 } from '@/types'
 
@@ -64,21 +67,136 @@ export const wikiSections: WikiSection[] = [
     title: 'Space Overview',
     body: 'IBM i Modernization normalizes discovery documents, RPG scan output, and migration notes into LM Wiki pages. Every generated conclusion keeps source_trace, confidence, and review_status visible.',
     confidence: 'High',
-    reviewStatus: 'Approved'
+    reviewStatus: 'Published',
+    sourceTrace: 'Discovery/BRD/BRD.docx page 12 chunk-file-001-p12-b02'
   },
   {
     id: 'trace',
     title: 'Source Trace',
     body: 'Source Trace links each Wiki section, graph edge, and Ask answer back to source files, pages, or chunks so SMEs can verify evidence before publication.',
     confidence: 'Medium',
-    reviewStatus: 'Review Required'
+    reviewStatus: 'Review Required',
+    sourceTrace: 'Discovery/Data/inventory.xlsx page 3 chunk-file-005-p03-b01'
   },
   {
     id: 'adapters',
     title: 'Adapter Boundary',
     body: 'trinity-office and document-normalize appear as internal capabilities behind converter and parser adapters. Product UI never depends on a single engine implementation.',
     confidence: 'High',
-    reviewStatus: 'Approved'
+    reviewStatus: 'Published',
+    sourceTrace: 'Discovery/BRD/BRD.docx page 12 chunk-file-001-p12-b02'
+  }
+]
+
+export const reviewQueues: ReviewQueueItem[] = [
+  {
+    type: 'PARSER_FAILURE',
+    count: 186,
+    publishBlocked: true,
+    representativeItems: [
+      {
+        fileId: 'file-parser-failed-001',
+        status: 'PDF_CONVERT_FAILED',
+        reviewStatus: 'REVIEW_REQUIRED',
+        confidence: 0.12,
+        hasSourceTrace: false
+      }
+    ]
+  },
+  {
+    type: 'OCR_REQUIRED',
+    count: 412,
+    publishBlocked: true,
+    representativeItems: [
+      {
+        fileId: 'file-ocr-001',
+        status: 'OCR_REQUIRED',
+        reviewStatus: 'OCR_REQUIRED',
+        confidence: 0.41,
+        hasSourceTrace: false
+      }
+    ]
+  },
+  {
+    type: 'LOW_CONFIDENCE',
+    count: 729,
+    publishBlocked: true,
+    representativeItems: [
+      {
+        fileId: 'file-low-confidence-001',
+        status: 'LOW_CONFIDENCE',
+        reviewStatus: 'REVIEW_REQUIRED',
+        confidence: 0.54,
+        hasSourceTrace: true
+      }
+    ]
+  },
+  {
+    type: 'MISSING_SOURCE_TRACE',
+    count: 94,
+    publishBlocked: true,
+    representativeItems: [
+      {
+        fileId: 'file-missing-trace-001',
+        status: 'MARKDOWN_GENERATED',
+        reviewStatus: 'APPROVED',
+        confidence: 0.88,
+        hasSourceTrace: false
+      }
+    ]
+  },
+  {
+    type: 'LLM_GENERATED_REVIEW_REQUIRED',
+    count: 1038,
+    publishBlocked: true,
+    representativeItems: [
+      {
+        fileId: 'file-llm-review-001',
+        status: 'REVIEW_REQUIRED',
+        reviewStatus: 'REVIEW_REQUIRED',
+        confidence: 0.77,
+        hasSourceTrace: true
+      }
+    ]
+  },
+  {
+    type: 'READY_TO_PUBLISH',
+    count: 12579,
+    publishBlocked: false,
+    representativeItems: [
+      {
+        fileId: 'file-ready-001',
+        status: 'MARKDOWN_GENERATED',
+        reviewStatus: 'APPROVED',
+        confidence: 0.96,
+        hasSourceTrace: true
+      }
+    ]
+  }
+]
+
+export const publishedWikiPages: WikiPageMetadata[] = [
+  {
+    id: 'wiki-file-001',
+    spaceId: 'ibm-i',
+    title: 'BRD Generated Flow',
+    markdownPath: 'generated/md/BRD.md',
+    sourceDocumentIds: ['file-001'],
+    confidence: 0.82,
+    reviewStatus: 'PUBLISHED',
+    owner: 'sme-team',
+    lastUpdated: '2026-07-03T00:00:00Z'
+  },
+  {
+    id: 'wiki-file-003',
+    spaceId: 'ibm-i',
+    title: 'Migration Boundary',
+    markdownPath: 'generated/md/Migration_Boundary.md',
+    sourceDocumentIds: ['file-003'],
+    confidence: 0.96,
+    reviewStatus: 'PUBLISHED',
+    owner: 'sme-team',
+    lastUpdated: '2026-07-03T00:00:00Z'
   }
 ]
 
@@ -129,6 +247,36 @@ export const askSources: AskSource[] = [
   { title: 'BRD_Methodology.pdf', page: 'page 12', confidence: 'Medium' },
   { title: 'source_trace_manifest.json', page: 'chunk 8', confidence: 'High' }
 ]
+
+export const trustedAskRun: ApiAskRun = {
+  runId: 'ask-run-mock-001',
+  spaceId: 'ibm-i-modernization',
+  question: 'Explain what Source Trace means in the modernization workflow.',
+  status: 'SUCCEEDED',
+  reviewPolicy: 'INCLUDE_REVIEW_REQUIRED',
+  mode: 'mock',
+  requestedBy: 'frontend-demo',
+  answer:
+    'Source Trace keeps every generated answer tied to source files, pages, and chunks for SME review.',
+  answerConfidence: 0.82,
+  answerReviewStatus: 'REVIEW_REQUIRED',
+  modelRunId: 'model-run-mock-001',
+  safeMessage: 'Mock trusted ask completed.',
+  evidence: [
+    {
+      evidenceId: 'ask-ev-mock-001',
+      sourceChunkId: 'chunk-file-001-p12-b02',
+      fileItemId: 'file-001',
+      sourceFile: 'BRD_Methodology.pdf',
+      page: 12,
+      section: 'Source Trace',
+      reviewStatus: 'APPROVED',
+      confidence: 0.93,
+      vectorItemKey: 'ibm-i-modernization/chunk-file-001-p12-b02',
+      score: 0.88
+    }
+  ]
+}
 
 export const modelConfigs: ModelConfig[] = [
   {
@@ -191,4 +339,30 @@ export function countGraphNodesByType(): Record<GraphNode['type'], number> {
       'Review Required': 0
     }
   )
+}
+
+export function getReviewQueues(): ReviewQueueItem[] {
+  return reviewQueues.map(queue => ({
+    ...queue,
+    representativeItems: queue.representativeItems.map(item => ({ ...item }))
+  }))
+}
+
+export function getPublishReadyCount(): number {
+  return reviewQueues.find(queue => queue.type === 'READY_TO_PUBLISH')?.count ?? 0
+}
+
+export function getPublishedWikiPages(spaceId: string): WikiPageMetadata[] {
+  return publishedWikiPages
+    .filter(page => page.spaceId === spaceId)
+    .map(page => ({
+      ...page,
+      sourceDocumentIds: [...page.sourceDocumentIds]
+    }))
+}
+
+export function countBlockedReviewItems(): number {
+  return reviewQueues
+    .filter(queue => queue.publishBlocked)
+    .reduce((total, queue) => total + queue.count, 0)
 }

@@ -3679,10 +3679,15 @@
         queue: ["BRD_Methodology.pdf / page 12", "Program_Flow.pdf / page 4", "API_List.pdf / page 8"]
       },
       ask: {
+        status: "SUCCEEDED",
         question: "Explain what Source Trace means in the modernization workflow.",
         answer: "Source Trace 指 Atlas 在现代化流程中保留的证据链。每个 Wiki 段落、图谱关系和 Ask 答案都应能回到源文件、页码或 chunk。这样 SME 可以在 Review 阶段核对出处，交付团队也能判断某个结论是否来自确定性解析、人工审核，还是需要进一步修复。",
-        references: ["Source: BRD_Methodology.pdf / page 12", "Source: Legacy_Spec_Factory_Guide.pdf / page 8"],
-        confidence: "medium"
+        references: ["Source: BRD_Methodology.pdf / page 12 · APPROVED", "Source: Legacy_Spec_Factory_Guide.pdf / page 8 · REVIEW_REQUIRED"],
+        confidence: "medium",
+        answerReviewStatus: "REVIEW_REQUIRED",
+        noEvidenceMessage: "No eligible approved evidence was found for the current filters.",
+        safeErrorMessage: "Ask failed safely. Retry after adapter health is restored.",
+        loadingMessage: "Retrieving approved evidence..."
       },
       models: [
         {
@@ -4144,7 +4149,8 @@
         ["docs", text.tabs.docs],
         ["review", text.tabs.review],
         ["wiki", text.tabs.wiki],
-        ["graph", text.tabs.graph]
+        ["graph", text.tabs.graph],
+        ["ask", text.tabs.ask]
       ];
       spaceView.innerHTML = `
         <div class="crumbs">${text.breadcrumbHome} <span>/</span> <strong>IBM i Modernization</strong></div>
@@ -4173,6 +4179,7 @@
         <section class="tab-view ${activeTab === "wiki" ? "active" : ""}" id="tab-wiki">${renderWiki()}</section>
         <section class="tab-view ${activeTab === "graph" ? "active" : ""}" id="tab-graph">${renderGraph()}</section>
         <section class="tab-view ${activeTab === "review" ? "active" : ""}" id="tab-review">${renderReview()}</section>
+        <section class="tab-view ${activeTab === "ask" ? "active" : ""}" id="tab-ask">${renderAsk()}</section>
       `;
       renderGraphSvg();
     }
@@ -5060,6 +5067,10 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
             <header>
               <h2>${isZh ? "索引" : "Index"}</h2>
               <p><span class="badge medium">${isZh ? "分类目录" : "Category Index"}</span></p>
+              <div class="source-row" data-testid="published-wiki-metadata" style="margin-top:12px;">
+                <span>${isZh ? "发布状态" : "Publish status"}</span>
+                <strong><span class="badge healthy">PUBLISHED</span> · conf 0.96 · source_trace: Discovery/BRD/BRD.docx page 12 chunk-file-001-p12-b02</strong>
+              </div>
             </header>
             <section class="wiki-section">
               <h3>Wiki Index</h3>
@@ -5125,19 +5136,19 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
       const text = copy();
       const isZh = uiState.lang === "zh-CN";
       const qualityCards = [
-        [isZh ? "批量文档" : "Batch documents", "14,000", isZh ? "当前包规模" : "current package"],
-        [isZh ? "解析失败" : "Parse failed", "186", isZh ? "需要重试或删除" : "retry or remove"],
-        [isZh ? "OCR required" : "OCR required", "412", isZh ? "扫描/图片优先处理" : "scanned/image priority"],
-        [isZh ? "Low confidence" : "Low confidence", "729", isZh ? "进入 SME 抽检" : "SME sampling queue"],
-        [isZh ? "Missing source_trace" : "Missing source_trace", "94", isZh ? "禁止发布" : "publish blocked"],
-        [isZh ? "Ready to publish" : "Ready to publish", "12,579", isZh ? "可进入 Wiki/Graph/Ask" : "eligible for Wiki/Graph/Ask"]
+        [isZh ? "批量文档" : "Batch documents", "14,000", isZh ? "当前包规模" : "current package", "batch-documents"],
+        [isZh ? "解析失败" : "Parse failed", "186", isZh ? "需要重试或删除" : "retry or remove", "parser-failure"],
+        [isZh ? "OCR required" : "OCR required", "412", isZh ? "扫描/图片优先处理" : "scanned/image priority", "ocr-required"],
+        [isZh ? "Low confidence" : "Low confidence", "729", isZh ? "进入 SME 抽检" : "SME sampling queue", "low-confidence"],
+        [isZh ? "Missing source_trace" : "Missing source_trace", "94", isZh ? "禁止发布" : "publish blocked", "missing-source-trace"],
+        [isZh ? "Ready to publish" : "Ready to publish", "12,579", isZh ? "可进入 Wiki/Graph/Ask" : "eligible for Wiki/Graph/Ask", "ready-to-publish"]
       ];
       const reviewQueues = [
-        [isZh ? "解析失败" : "Parse failures", "PDF_CONVERT_FAILED / FAILED", "186", "failed"],
-        [isZh ? "缺少 source_trace" : "Missing source_trace", "TRACE_BLOCKED", "94", "review"],
-        [isZh ? "低置信度段落" : "Low-confidence chunks", "LOW_CONFIDENCE", "729", "review"],
-        [isZh ? "OCR 待处理" : "OCR required", "OCR_REQUIRED", "412", "ocr"],
-        [isZh ? "LLM 生成待审" : "LLM generated", "REVIEW_REQUIRED", "1,038", "review"]
+        [isZh ? "解析失败" : "Parse failures", "PDF_CONVERT_FAILED / FAILED", "186", "failed", "PARSER_FAILURE"],
+        [isZh ? "缺少 source_trace" : "Missing source_trace", "TRACE_BLOCKED", "94", "review", "MISSING_SOURCE_TRACE"],
+        [isZh ? "低置信度段落" : "Low-confidence chunks", "LOW_CONFIDENCE", "729", "review", "LOW_CONFIDENCE"],
+        [isZh ? "OCR 待处理" : "OCR required", "OCR_REQUIRED", "412", "ocr", "OCR_REQUIRED"],
+        [isZh ? "LLM 生成待审" : "LLM generated", "REVIEW_REQUIRED", "1,038", "review", "LLM_GENERATED_REVIEW_REQUIRED"]
       ];
       return `
         <section class="panel">
@@ -5151,16 +5162,16 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
               <button class="btn">${isZh ? "处理高优先级" : "Work Priority Queue"}</button>
             </div>
           </div>
-          <div class="metric-grid">
-            ${qualityCards.map(([label, value, note]) => `<div class="metric"><strong>${value}</strong><span>${label}</span><span class="doc-muted">${note}</span></div>`).join("")}
+          <div class="metric-grid" data-testid="review-publish-summary">
+            ${qualityCards.map(([label, value, note, key]) => `<div class="metric" data-review-queue="${key}"><strong>${value}</strong><span>${label}</span><span class="doc-muted">${note}</span></div>`).join("")}
           </div>
         </section>
         <div class="doc-manager" style="margin-top:16px;">
           <aside class="doc-category">
             <h2>${isZh ? "质量队列" : "Quality Queues"}</h2>
             <ul class="index-list">
-              ${reviewQueues.map(([label, status, count, badge], index) => `
-                <li><button class="${index === 0 ? "active" : ""}" type="button"><strong>${label}</strong><span class="badge ${badge}" style="float:right;">${count}</span><span style="display:block;margin-top:7px;color:var(--muted);">${status}</span></button></li>
+              ${reviewQueues.map(([label, status, count, badge, queueType], index) => `
+                <li><button class="${index === 0 ? "active" : ""}" type="button" data-review-queue-type="${queueType}"><strong>${label}</strong><span class="badge ${badge}" style="float:right;">${count}</span><span style="display:block;margin-top:7px;color:var(--muted);">${status}</span></button></li>
               `).join("")}
             </ul>
           </aside>
@@ -5179,15 +5190,16 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
                 [isZh ? "从程序单到程序链：千万行源码流程分析" : "Program Card To Program Chain", "PDF_CONVERT_FAILED", "上传", "1", "失败", isZh ? "重新解析" : "Retry"],
                 [isZh ? "API_List.xlsx 第 8 页表格识别" : "API_List.xlsx page 8 table extraction", "OCR_REQUIRED", "上传", "17", "待处理", "OCR"],
                 [isZh ? "BRD_Methodology.pdf source_trace 缺失" : "BRD_Methodology.pdf missing source_trace", "TRACE_BLOCKED", "Parser", "6", "Blocked", isZh ? "修复 trace" : "Repair trace"],
-                [isZh ? "LLM 生成摘要待 SME 审核" : "LLM summaries pending SME review", "REVIEW_REQUIRED", "Wiki", "42", "Review", isZh ? "开始审核" : "Review"]
+                [isZh ? "LLM 生成摘要待 SME 审核" : "LLM summaries pending SME review", "REVIEW_REQUIRED", "Wiki", "42", "Review", isZh ? "开始审核" : "Review"],
+                [isZh ? "BRD 生成流程已通过审核" : "BRD Generated Flow approved", "READY_TO_PUBLISH", "Wiki", "1", "APPROVED", isZh ? "发布" : "Publish"]
               ].map(([name, type, source, count, status, action]) => `
-                <div class="doc-row">
+                <div class="doc-row" data-testid="${type === "READY_TO_PUBLISH" ? "ready-publish-row" : "review-blocked-row"}">
                   <span class="doc-check"></span>
                   <div class="doc-file"><span class="doc-file-icon">□</span><span><strong>${name}</strong><span>${isZh ? "不会发布到 Wiki/Graph/Ask，直到问题关闭。" : "Blocked from Wiki/Graph/Ask until resolved."}</span></span></div>
                   <span class="doc-muted">${type}</span>
                   <span class="doc-muted">${source}</span>
                   <span class="doc-muted">${count}</span>
-                  <span><span class="badge ${status === "失败" || status === "Blocked" ? "failed" : "review"}">${status}</span></span>
+                  <span><span class="badge ${status === "失败" || status === "Blocked" ? "failed" : status === "APPROVED" ? "approved" : "review"}">${status}</span></span>
                   <span><button class="btn secondary" type="button">${action}</button></span>
                 </div>
               `).join("")}
@@ -5202,7 +5214,7 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
       const text = copy();
       const isZh = uiState.lang === "zh-CN";
       return `
-        <div class="ask-grid">
+        <div class="ask-grid" data-testid="trusted-ask">
           <section class="chat-panel">
             <div class="card-foot" style="margin-top:0;">
               <h3>${isZh ? "可信问答" : "Trusted Ask"}</h3>
@@ -5211,10 +5223,10 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
             <p style="color:var(--muted);line-height:1.6;">${isZh ? "Ask 不直接查询 14k 原始文档。它只使用已解析、已审核、可追溯、可发布的 Wiki / Graph / Evidence Bundle。" : "Ask does not query the 14k raw uploads directly. It only uses parsed, reviewed, source-traced, publishable Wiki / Graph / Evidence Bundle assets."}</p>
             <div style="margin-top:16px;">
               <div class="message user">${ask.question}</div>
-              <div class="message answer">
+              <div class="message answer" data-testid="ask-answer" data-status="${ask.status}">
                 ${ask.answer}
-                <ul class="references">${ask.references.map((ref) => `<li>${ref}</li>`).join("")}</ul>
-                <p><span class="badge medium">${text.confidence}: ${ask.confidence}</span></p>
+                <ul class="references" data-testid="ask-evidence">${ask.references.map((ref) => `<li>${ref}</li>`).join("")}</ul>
+                <p><span class="badge medium">${text.confidence}: ${ask.confidence}</span> <span class="badge review">${ask.answerReviewStatus}</span></p>
               </div>
             </div>
             <div class="ask-input-row">
@@ -5228,6 +5240,10 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
             <div class="source-row"><span>${isZh ? "已发布 Wiki pages" : text.approvedWikiPages}</span><strong>42</strong></div>
             <div class="source-row" style="margin-top:10px;"><span>${text.evidenceChunks}</span><strong>318</strong></div>
             <div class="source-row" style="margin-top:10px;"><span>${isZh ? "被门禁阻断" : "Blocked by gates"}</span><strong>1,421</strong></div>
+            <div class="doc-failure-note" data-testid="ask-loading">${ask.loadingMessage}</div>
+            <div class="doc-failure-note" data-testid="ask-review-warning">${isZh ? "包含 REVIEW_REQUIRED 证据时必须显式标记，生成答案仍需审核。" : "Review-required evidence must be explicit, and generated answers stay REVIEW_REQUIRED."}</div>
+            <div class="doc-failure-note" data-testid="ask-no-evidence">${ask.noEvidenceMessage}</div>
+            <div class="doc-failure-note" data-testid="ask-safe-error">${ask.safeErrorMessage}</div>
             <div class="doc-failure-note">${isZh ? "解析失败、缺少 source_trace、低置信且未审核的内容不会进入 Ask 索引。" : "Failed parses, missing source_trace, and low-confidence unreviewed content are excluded from the Ask index."}</div>
           </aside>
         </div>
@@ -5265,7 +5281,7 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
 
     function showSpace(tab = "wiki") {
       uiState.view = "space";
-      uiState.activeTab = tab === "ask" ? "wiki" : tab;
+      uiState.activeTab = tab;
       uiState.settingsOpen = false;
       uiState.createSpaceOpen = false;
       renderSpace(uiState.activeTab);

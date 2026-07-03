@@ -46,6 +46,48 @@ Status:
 
 ## Lessons
 
+### LL-20260703-008 Queue Response Shape Must Be Contract-Tested
+
+ID: LL-20260703-008
+Date: 2026-07-03
+Slice: review-publish
+Source: Code-against-design review.
+Expectation: `GET /api/spaces/{spaceId}/review-queues` must return publish-blocking queue counts and representative items so Processing Center users can triage blocked work without opening every file.
+Observed: The implementation returned queue counts/categories only. API guide examples and tests also omitted representative item shape, so the mismatch stayed green.
+Root cause: The API contract test asserted category presence but not the full response shape promised by the spec.
+Decision: Review queue responses now include bounded safe representative item metadata and contract tests assert representative item fields.
+Durable updates: Updated `ReviewQueueItemResponse`, added `ReviewQueueRepresentativeResponse`, updated `ReviewPublishService`, backend API/service tests, frontend mock types/tests, `docs/05-design/review-publish-design.md`, `docs/05-design/review-publish-design.zh-CN.md`, `docs/05-design/contracts/review-publish-API_IMPLEMENTATION_GUIDE.md`, `docs/05-design/contracts/review-publish-API_IMPLEMENTATION_GUIDE.zh-CN.md`, `docs/06-tasks/review-publish-tasks.md`, and `docs/06-tasks/review-publish-tasks.zh-CN.md`.
+New verification: `cd backend && mvn test -Dtest='ReviewPublishServiceTest,ReviewPublishApiContractIT'` asserts representative item shape; `cd frontend && npm run test -- --run` asserts frontend queue mocks include and clone representative items.
+Status: Applied.
+
+### LL-20260703-007 Frontend Acceptance Must Target The Real Slice Surface
+
+ID: LL-20260703-007
+Date: 2026-07-03
+Slice: knowledge-graph
+Source: Code-against-design review.
+Expectation: Spec S5, T-KG-010, and T-KG-011 require the Knowledge Space Graph tab itself to become API-backed, preserve search/filter/selection/evidence interactions, and have E2E coverage for Graph tab behavior and error states.
+Observed: The implementation added an API-backed host-level graph hardening panel while the iframe Graph tab remained prototype/mock-only. Existing E2E opened the Graph tab and checked the SVG, but did not verify API-backed Graph tab search/filter, selected evidence detail, unauthorized state, or empty state.
+Root cause: Verification accepted an adjacent shell-level panel and a smoke check as evidence for the actual Graph tab surface.
+Decision: Treat adjacent host panels as transitional aids only. A slice frontend task is complete only when tests exercise the actual user-facing surface named in the spec/design.
+Durable updates: Updated `frontend/src/App.vue`, `frontend/src/styles.css`, `frontend/src/App.test.ts`, `frontend/tests/e2e/knowledge-graph.spec.ts`, `docs/05-design/knowledge-graph-design.md`, `docs/05-design/knowledge-graph-design.zh-CN.md`, `docs/06-tasks/knowledge-graph-tasks.md`, `docs/06-tasks/knowledge-graph-tasks.zh-CN.md`, and knowledge-graph traceability so the real `[data-tab="graph"]` surface is API-backed and tested.
+New verification: `frontend/tests/e2e/knowledge-graph.spec.ts` now asserts API-backed data, search/filter, node and edge selection, evidence detail, unauthorized state, and empty state inside `[data-tab="graph"]`; host-level panels or smoke-only prototype SVG checks are not sufficient evidence.
+Status: Applied.
+
+### LL-20260703-006 Ask Review Policy And No-Evidence Behavior Need Contract Assertions
+
+ID: LL-20260703-006
+Date: 2026-07-03
+Slice: ask-rag
+Source: Code-against-design review.
+Expectation: `APPROVED_ONLY` Ask runs must not surface review-required evidence, even if a downstream retrieval service or mock returns it, and `NO_EVIDENCE` responses must include a safe no-answer message while skipping model generation.
+Observed: The initial AskService relied on VectorService filtering and returned `answer=null` for `NO_EVIDENCE`; tests did not assert the defensive policy boundary or the no-answer text required by the API guide.
+Root cause: Verification focused on vector policy propagation and model-call skipping, but missed the response payload contract and a defense-in-depth check at the Ask orchestration boundary.
+Decision: AskService now defensively filters returned evidence by Ask review policy and completes no-evidence runs with a safe no-answer message.
+Durable updates: Updated `docs/06-tasks/ask-rag-tasks.md`, `docs/06-tasks/ask-rag-tasks.zh-CN.md`, `AskServiceTest`, and `AskApiContractIT` to enforce the policy and no-evidence response contract.
+New verification: `cd backend && mvn -Dtest=AskServiceTest,AskSummaryCalculatorTest test` and `cd backend && mvn -Dit.test=AskApiContractIT verify` now assert the corrected behavior.
+Status: Applied.
+
 ### LL-20260703-004 Status Mapping Acceptance Needs Direct Test Evidence
 
 ID: LL-20260703-004

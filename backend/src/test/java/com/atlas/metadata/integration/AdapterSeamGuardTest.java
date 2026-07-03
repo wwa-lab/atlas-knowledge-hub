@@ -123,7 +123,20 @@ class AdapterSeamGuardTest {
                 .resolve("docs/05-design/contracts/vector-adapter-API_IMPLEMENTATION_GUIDE.md")
                 .normalize(),
             BACKEND.getParent().resolve("docs/06-tasks/vector-adapter-tasks.md").normalize(),
-            BACKEND.getParent().resolve("docs/00-context/vector-adapter-traceability.md").normalize());
+            BACKEND.getParent().resolve("docs/00-context/vector-adapter-traceability.md").normalize(),
+            BACKEND.getParent().resolve("docs/01-requirements/ask-rag-requirements.md").normalize(),
+            BACKEND.getParent().resolve("docs/02-user-stories/ask-rag-stories.md").normalize(),
+            BACKEND.getParent().resolve("docs/03-spec/ask-rag-spec.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/ask-rag-architecture.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/ask-rag-data-flow.md").normalize(),
+            BACKEND.getParent().resolve("docs/04-architecture/ask-rag-data-model.md").normalize(),
+            BACKEND.getParent().resolve("docs/05-design/ask-rag-design.md").normalize(),
+            BACKEND
+                .getParent()
+                .resolve("docs/05-design/contracts/ask-rag-API_IMPLEMENTATION_GUIDE.md")
+                .normalize(),
+            BACKEND.getParent().resolve("docs/06-tasks/ask-rag-tasks.md").normalize(),
+            BACKEND.getParent().resolve("docs/00-context/ask-rag-traceability.md").normalize());
     String source =
         String.join(
             "\n",

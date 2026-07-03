@@ -1,0 +1,18 @@
+package com.atlas.metadata.dto;
+
+import com.atlas.metadata.enums.ReviewStatus;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+/** Published Wiki page metadata response. */
+public record WikiPageResponse(
+    String id,
+    String spaceId,
+    String title,
+    String markdownPath,
+    List<String> sourceDocumentIds,
+    BigDecimal confidence,
+    ReviewStatus reviewStatus,
+    String owner,
+    OffsetDateTime lastUpdated) {}

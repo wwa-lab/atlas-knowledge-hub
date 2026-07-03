@@ -47,7 +47,7 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 | 3 (adapter) | `model-adapter` | LLM/embedding provider behind model interface, secret-masked | Adapter, no direct call | ✅ implemented |
 | 4 (hardening) | `review-publish` | SME review state machine + approved-Markdown publish to Wiki | Full stack | 🔒 needs Phase 3 |
 | 4 (hardening) | `knowledge-graph` | Node/edge extraction from approved pages + inspectable viz | Full stack | 🔒 needs Phase 3 |
-| 4 (hardening) | `ask-rag` | Source-grounded, review-aware Ask over approved content | Full stack | 🔒 needs Phase 3 |
+| 4 (hardening) | `ask-rag` | Source-grounded, review-aware Ask over approved content | Full stack | ✅ implemented |
 
 Slice boundaries are guidance, not law: split a slice if its task list would exceed a reviewable single implementation pass, and record the split in traceability. Adapter slices in Phase 3 can each be an independent generate-all unit so contracts stay small.
 

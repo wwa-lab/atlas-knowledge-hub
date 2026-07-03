@@ -58,6 +58,8 @@ Atlas uses staged development standards so Phase 0 can stay lightweight while la
 
 See `DEVELOPMENT_STANDARDS.md` for the full standard covering goal-driven SDD, coding, frontend, backend, API, database, adapter, security, testing, review, Git, and CI expectations.
 
+New contributors can start with `docs/getting-started.md` for a step-by-step onboarding guide.
+
 Reusable acceptance findings are captured in `docs/00-context/lessons-learned.md` and should update the rule, spec, checklist, or test that prevents recurrence.
 
 ## Repository Structure

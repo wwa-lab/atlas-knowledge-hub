@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-/** Deferred wiki page metadata table entity; no endpoint in this slice. */
+/** Published Wiki page metadata preserving source trace, confidence, and review state. */
 @Entity
 @Table(name = "wiki_page", schema = "atlas")
 public class WikiPage {
@@ -48,4 +48,80 @@ public class WikiPage {
   private OffsetDateTime lastUpdated;
 
   protected WikiPage() {}
+
+  /** Creates published Wiki metadata from an approved Markdown file. */
+  public static WikiPage publish(
+      String id,
+      String spaceId,
+      String title,
+      String markdownPath,
+      String[] sourceDocumentIds,
+      BigDecimal confidence,
+      String owner,
+      OffsetDateTime lastUpdated) {
+    WikiPage page = new WikiPage();
+    page.id = id;
+    page.spaceId = spaceId;
+    page.title = title;
+    page.markdownPath = markdownPath;
+    page.sourceDocumentIds = sourceDocumentIds == null ? new String[0] : sourceDocumentIds.clone();
+    page.confidence = confidence;
+    page.reviewStatus = ReviewStatus.PUBLISHED;
+    page.owner = owner;
+    page.lastUpdated = lastUpdated;
+    return page;
+  }
+
+  /** Updates published metadata while preserving the stable page id. */
+  public void republish(
+      String title,
+      String markdownPath,
+      String[] sourceDocumentIds,
+      BigDecimal confidence,
+      String owner,
+      OffsetDateTime lastUpdated) {
+    this.title = title;
+    this.markdownPath = markdownPath;
+    this.sourceDocumentIds = sourceDocumentIds == null ? new String[0] : sourceDocumentIds.clone();
+    this.confidence = confidence;
+    this.reviewStatus = ReviewStatus.PUBLISHED;
+    this.owner = owner;
+    this.lastUpdated = lastUpdated;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getSpaceId() {
+    return spaceId;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getMarkdownPath() {
+    return markdownPath;
+  }
+
+  public String[] getSourceDocumentIds() {
+    return sourceDocumentIds == null ? new String[0] : sourceDocumentIds.clone();
+  }
+
+  public BigDecimal getConfidence() {
+    return confidence;
+  }
+
+  public ReviewStatus getReviewStatus() {
+    return reviewStatus;
+  }
+
+  public String getOwner() {
+    return owner;
+  }
+
+  public OffsetDateTime getLastUpdated() {
+    return lastUpdated;
+  }
 }
