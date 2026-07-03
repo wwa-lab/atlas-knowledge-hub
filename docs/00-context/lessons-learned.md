@@ -74,9 +74,9 @@ Durable updates: Updated `VectorService` index eligibility and added `VectorServ
 New verification: `cd backend && mvn -Dtest=VectorServiceTest test` now asserts both default skip and explicit inclusion behavior for index runs.
 Status: Applied.
 
-### LL-20260703-004 Adapter Evidence Validity Must Cover Missing Scores
+### LL-20260703-005 Adapter Evidence Validity Must Cover Missing Scores
 
-ID: LL-20260703-004
+ID: LL-20260703-005
 Date: 2026-07-03
 Slice: vector-adapter
 Source: Code-against-design review.
