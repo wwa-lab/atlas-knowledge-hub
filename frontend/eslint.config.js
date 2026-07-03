@@ -6,7 +6,7 @@ import prettier from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['node_modules', 'dist', 'coverage', 'test-results', '.turbo']
+    ignores: ['node_modules', 'dist', 'coverage', 'test-results', 'playwright-report', '.turbo']
   },
   js.configs.recommended,
   ...ts.configs.recommended,

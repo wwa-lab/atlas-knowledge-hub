@@ -90,3 +90,20 @@ open prototypes/index.html
 No install step, build system, server, CDN, React, or Vue is required.
 
 Only use mock data in this repository. Do not commit real company documents, screenshots, credentials, logs, or confidential content.
+
+## Automated Acceptance
+
+Run the mock knowledge-loop E2E from the repository root:
+
+```bash
+npm run setup
+npm run e2e:loop:mock
+```
+
+Configured company/local integration mode starts from `configs/atlas.company.example.env` and runs with:
+
+```bash
+npm run e2e:loop:configured
+```
+
+See `docs/07-acceptance/knowledge-loop-e2e.md` for the full acceptance design.

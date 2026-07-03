@@ -33,6 +33,9 @@ venv/
 samples/input/*
 samples/output/*
 !samples/input/.gitkeep
+!samples/input/e2e/
+!samples/input/e2e/.gitkeep
+!samples/input/e2e/README.md
 !samples/output/.gitkeep
 
 # Local agent/editor settings

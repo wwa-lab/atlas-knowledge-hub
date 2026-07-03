@@ -1,1 +1,11 @@
-{}
+{
+  "name": "atlas-knowledge-hub",
+  "private": true,
+  "scripts": {
+    "setup": "npm --prefix frontend ci",
+    "check:config": "bash scripts/e2e/check-required-config.sh",
+    "e2e:loop": "bash scripts/e2e/run-knowledge-loop.sh mock",
+    "e2e:loop:mock": "bash scripts/e2e/run-knowledge-loop.sh mock",
+    "e2e:loop:configured": "bash scripts/e2e/run-knowledge-loop.sh configured"
+  }
+}

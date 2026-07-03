@@ -1,0 +1,25 @@
+# Mock adapter profile for external development and automated E2E.
+# This file contains no secrets and should remain safe to commit.
+
+mode: mock
+storage:
+  provider: local
+  outputRoot: samples/output/e2e
+database:
+  provider: mock
+converter:
+  provider: mock-trinity-office
+parser:
+  provider: mock-document-normalize
+vector:
+  provider: mock-vector
+model:
+  provider: mock-model
+  capabilities:
+    - chat
+    - embedding
+    - rerank
+knowledgePolicy:
+  askReviewPolicy: approved-only
+  graphReviewPolicy: approved-only
+  requireCitations: true

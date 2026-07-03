@@ -1,0 +1,27 @@
+# Configured adapter profile template.
+# Keep real credentials out of this file. Use environment variables or an approved secret manager.
+
+mode: configured
+storage:
+  provider: local
+  outputRootEnv: ATLAS_SAMPLE_OUTPUT
+database:
+  provider: postgres
+  urlEnv: ATLAS_DATABASE_URL
+converter:
+  provider: trinity-office
+  runtimeEnv: ATLAS_CONVERTER_RUNTIME
+parser:
+  provider: document-normalize
+  runtimeEnv: ATLAS_PARSER_RUNTIME
+vector:
+  provider: pgvector
+  databaseUrlEnv: ATLAS_DATABASE_URL
+model:
+  providerEnv: ATLAS_MODEL_PROVIDER
+  endpointEnv: ATLAS_MODEL_ENDPOINT
+  apiKeyEnv: ATLAS_MODEL_API_KEY
+knowledgePolicy:
+  askReviewPolicy: approved-only
+  graphReviewPolicy: approved-only
+  requireCitations: true
