@@ -2,14 +2,14 @@
 
 ## 状态
 
-SDD 已生成（尚未实现）。Phase 2（后端 metadata API 与持久化）。切片 `metadata-api`。
+已实现。Phase 2（后端 metadata API 与持久化）。切片 `metadata-api`。
 
 当前状态：
 
 - 完整双语 SDD 产物集已完成（EN + `.zh-CN.md`）。
 - **已包含 API guide**（Phase 2 后端切片——必需，REQ-PROD-073）。
-- 本轮未实现产品代码（按要求仅 SDD）。
-- `docs/00-context/slice-roadmap.md` 中切片状态：🔒 → 现**可接受**（数据模型 + API guide 已撰写，等待人工接受 gate 后再实现）。
+- 已在 `backend/` 实现 T-MA-001→013；T-MA-014 仍延后为 FE 切换任务。
+- `docs/00-context/slice-roadmap.md` 中切片状态：✅ 已实现。
 
 ## 切片
 
@@ -75,17 +75,20 @@ SDD 已生成（尚未实现）。Phase 2（后端 metadata API 与持久化）�
 - **不触碰：** 前端运行时代码——从 `frontend/src/data/atlasMock.ts` 切换到 API 为延后后续（T-MA-014）。
 - **对齐而非重定义：** `docs/04-architecture/knowledge-space-data-model.md`、`docs/batch-processing-design.md` 及 `frontend/src/types.ts` 枚举值。
 
-## 验证证据计划
+## 验证证据
 
-按 `docs/00-context/slice-roadmap.md` 的 Phase 2 API 行（实现期执行，T-MA-013）：
+按 `docs/00-context/slice-roadmap.md` 的 Phase 2 API 行（实现期已执行，T-MA-013）：
 
-- `cd backend && mvn verify` —— 编译 + Flyway 迁移校验 + 单元 + 契约 + 集成（Testcontainers PostgreSQL）。
-- `mvn -q flyway:migrate` —— 显式迁移检查。
-- `git diff --check`。
-- 新依赖 / 无外部网络扫描（仅新增 JDBC datasource）。
-- 对 `backend/src` 与 migration 的 secret / 私有路径 / 真实数据扫描。
+- `cd backend && mvn verify` —— **通过**（2026-07-03）。证据：7 个单元/静态测试 + 7 个集成测试通过；Flyway 在 PostgreSQL 16.14 上应用 `V1__init_schema.sql` 与 `V2__seed_mock_metadata.sql`；Spring 上下文启动期间 Hibernate `ddl-auto=validate` 通过。
+- PostgreSQL 集成说明：本地 Docker Desktop 与 Testcontainers 的 Docker Java client 握手失败，因此已提交的集成测试 harness 在未提供 `ATLAS_TEST_DB_URL` 时通过 Docker CLI 启动同一个 `postgres:16-alpine` 测试库。测试仍运行在真实 PostgreSQL 上，也可通过 `ATLAS_TEST_DB_*` 使用外部 datasource。
+- `git diff --check` —— **通过**。
+- 新依赖 / 无外部网络扫描 —— **产品代码通过**。发现项仅限 `pom.xml` 中 Maven schema URL；无产品 HTTP client、引擎 import 或出站网络 adapter。
+- secret / 私有路径 / 真实数据扫描 —— **清理后通过**。运行期测试 DB secret 在内存中生成；backend 源码与 seed migration 中未提交明文凭据、私有绝对路径或真实公司数据。
 
-本 SDD 生成轮未运行产品代码；以上为计划，非证据。
+延后工作：
+
+- T-MA-014 FE 切换仍不在本切片范围内，作为后续任务跟踪。
+- `wiki_page`、`graph_node`、`graph_edge` 表已迁移并种子化，但本切片未映射 wiki/graph/ask 端点。
 
 ## 使用的子技能（生成轮）
 

@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: atlas-metadata-api
+  datasource:
+    url: ${ATLAS_DB_URL}
+    username: ${ATLAS_DB_USERNAME}
+    password: ${ATLAS_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ${ATLAS_DB_SCHEMA:atlas}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: ${ATLAS_DB_SCHEMA:atlas}
+    default-schema: ${ATLAS_DB_SCHEMA:atlas}
+    create-schemas: true
+    validate-on-migrate: true
+    out-of-order: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+logging:
+  level:
+    org.springframework.test.context.support.AnnotationConfigContextLoaderUtils: ERROR
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
