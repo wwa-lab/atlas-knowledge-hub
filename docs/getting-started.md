@@ -40,9 +40,11 @@ Atlas Knowledge Hub 是一个内部知识产品，不是单个文档转换脚本
 8. `docs/knowledge-graph-design.md`：轻量知识图谱设计。
 9. `docs/07-acceptance/knowledge-loop-e2e.md`：自动化验收闭环。
 
-如果你只想快速上手，先读 `README.md`、`PROJECT_RULES.md`、`docs/00-context/slice-roadmap.md` 和这份指南。
+如果你只想快速上手，先读 `README.md`、`PROJECT_RULES.md`、`docs/00-context/slice-roadmap.md` 和这份指南。需要按命令把项目跑起来时，看 `docs/local-runbook.md`；如果你在 VS Code 里操作，直接看中文版 `docs/local-runbook.zh-CN.md`。
 
 ## 3. 本地环境准备
+
+更完整的本地运行步骤见 `docs/local-runbook.md`。VS Code 中文操作手册见 `docs/local-runbook.zh-CN.md`。
 
 仓库根目录：
 

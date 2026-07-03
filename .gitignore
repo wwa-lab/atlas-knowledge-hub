@@ -14,6 +14,7 @@ temp/
 
 # Dependencies and build output
 node_modules/
+backend/target/
 dist/
 build/
 .next/

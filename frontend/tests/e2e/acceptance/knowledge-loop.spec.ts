@@ -37,8 +37,31 @@ test("automated mock knowledge loop runs without manual clicks", async ({ page }
   await report.locator("[data-report-close]").first().click();
   await expect(prototype.locator("#uploadView")).not.toHaveClass(/active/);
 
+  await prototype.locator('[data-tab="review"]').click();
+  await expect(prototype.getByTestId("review-publish-summary")).toContainText("Ready to publish");
+  await expect(prototype.locator('[data-review-queue="missing-source-trace"]')).toContainText(
+    /publish blocked|禁止发布/
+  );
+  await expect(prototype.locator('[data-review-queue-type="MISSING_SOURCE_TRACE"]')).toBeVisible();
+  await expect(prototype.getByTestId("ready-publish-row")).toContainText("APPROVED");
+  await expect(prototype.getByTestId("review-blocked-row").first()).toContainText(
+    /Blocked from Wiki\/Graph\/Ask|不会发布到 Wiki\/Graph\/Ask/
+  );
+
+  await prototype.locator('[data-tab="wiki"]').click();
+  await expect(prototype.getByTestId("published-wiki-metadata")).toContainText("PUBLISHED");
+  await expect(prototype.getByTestId("published-wiki-metadata")).toContainText("source_trace");
+
   await prototype.locator('[data-tab="graph"]').click();
   await expect(prototype.locator(".graph-svg")).toBeVisible();
+
+  await prototype.locator('[data-tab="ask"]').click();
+  await expect(prototype.getByTestId("trusted-ask")).toBeVisible();
+  await expect(prototype.getByTestId("ask-answer")).toHaveAttribute("data-status", "SUCCEEDED");
+  await expect(prototype.getByTestId("ask-evidence")).toContainText("REVIEW_REQUIRED");
+  await expect(prototype.getByTestId("ask-review-warning")).toContainText("REVIEW_REQUIRED");
+  await expect(prototype.getByTestId("ask-no-evidence")).toContainText("No eligible approved evidence");
+  await expect(prototype.getByTestId("ask-safe-error")).toContainText("failed safely");
 
   await prototype.locator('[data-nav-key="chat"]').click();
   await expect(prototype.locator('[data-chat-kb="IBM i Modernization"]')).toBeVisible();

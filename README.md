@@ -59,6 +59,8 @@ Atlas uses staged development standards so Phase 0 can stay lightweight while la
 See `DEVELOPMENT_STANDARDS.md` for the full standard covering goal-driven SDD, coding, frontend, backend, API, database, adapter, security, testing, review, Git, and CI expectations.
 
 New contributors can start with `docs/getting-started.md` for a step-by-step onboarding guide.
+Use `docs/local-runbook.md` when you need command-by-command local startup and verification steps.
+Chinese VS Code users can use `docs/local-runbook.zh-CN.md`.
 
 Reusable acceptance findings are captured in `docs/00-context/lessons-learned.md` and should update the rule, spec, checklist, or test that prevents recurrence.
 
@@ -99,6 +101,18 @@ Run the mock knowledge-loop E2E from the repository root:
 
 ```bash
 npm run setup
+npm run e2e:first-layer
+```
+
+Run the local full-stack second-layer E2E with Docker PostgreSQL, Spring Boot, frontend, graph, publish, vector, and Ask checks:
+
+```bash
+npm run e2e:second-layer
+```
+
+For the smaller mock knowledge-loop-only path:
+
+```bash
 npm run e2e:loop:mock
 ```
 

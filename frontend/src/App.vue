@@ -13,7 +13,8 @@ import type {
 
 const prototypeSrc = '/atlas-prototype.html'
 const spaceId = 'ibm-i-modernization'
-const graphEndpoint = `/api/spaces/${spaceId}/graph`
+const atlasApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
+const graphEndpoint = apiUrl(`/api/spaces/${spaceId}/graph`)
 const graphHeaders = {
   'X-Atlas-User': 'frontend-demo',
   'X-Atlas-Role': 'VIEWER'
@@ -208,6 +209,18 @@ function atlasFetch(
   init?: { headers: Record<string, string> }
 ): Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }> {
   return globalThis.fetch(input, init)
+}
+
+function apiUrl(path: string) {
+  return atlasApiBaseUrl ? `${atlasApiBaseUrl}${path}` : path
+}
+
+function normalizeApiBaseUrl(value?: string) {
+  const normalized = value?.trim()
+  if (!normalized) {
+    return ''
+  }
+  return normalized.replace(/\/+$/, '')
 }
 
 function matchesNodeFilters(node: ApiGraphNode) {
