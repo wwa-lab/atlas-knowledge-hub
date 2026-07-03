@@ -67,16 +67,16 @@ diff frontend/public/atlas-prototype.html prototypes/index.html   # 须为空
 
 | ID | 状态 | 证据 |
 |---|---|---|
-| T-FU-001 | 待办 | — |
-| T-FU-002 | 待办 | — |
-| T-FU-003 | 待办 | — |
-| T-FU-004 | 待办 | — |
-| T-FU-005 | 待办 | — |
-| T-FU-006 | 待办 | — |
-| T-FU-007 | 待办 | — |
-| T-FU-008 | 待办 | — |
-| T-FU-009 | 待办 | — |
-| T-FU-010 | 待办 | — |
+| T-FU-001 | 完成 | `frontend/src/types.ts`；`cd frontend && npm run typecheck` 通过。 |
+| T-FU-002 | 完成 | `frontend/public/atlas-prototype.html` 内联 seeded provider；`frontend/src/folderUploadPrototype.test.ts`；`cd frontend && npm run test` 通过。 |
+| T-FU-003 | 完成 | `Upload Folder` / `Upload ZIP` 打开 `data-testid="upload-review"`，未新增网络调用；`cd frontend && npm run e2e` 通过。 |
+| T-FU-004 | 完成 | 清单行通过 `data-testid="inventory-row"` 渲染路径/类型/大小/confidence/review status；`cd frontend && npm run e2e` 通过。 |
+| T-FU-005 | 完成 | 不支持分组渲染 `UNSUPPORTED` 行并补齐状态映射；`cd frontend && npm run e2e` 通过。 |
+| T-FU-006 | 完成 | 文件树由清单路径构建，含状态徽章与截断提示支持；`cd frontend && npm run e2e` 通过。 |
+| T-FU-007 | 完成 | `Create Batch` 创建派生指标与四阶段进度；`cd frontend && npm run e2e` 通过。 |
+| T-FU-008 | 完成 | `View Report` 打开六个报告分区并显示 `source_trace:` 行；`cd frontend && npm run e2e` 通过。 |
+| T-FU-009 | 完成 | 上传状态/渲染 helper 已实现无文件、全不支持、Cancel、截断提示处理；`cd frontend && npm run test` 与 `cd frontend && npm run e2e` 通过。 |
+| T-FU-010 | 完成 | 已加入 EN/zh 文案键；重渲染/主题/语言切换保留状态；`cd frontend && npm run build` 通过。 |
 | T-FU-011 | 推迟（可选） | 本切片未排期提取。 |
-| T-FU-012 | 待办 | — |
-| T-FU-013 | 待办 | — |
+| T-FU-012 | 完成 | 已同步 `prototypes/index.html`；`diff frontend/public/atlas-prototype.html prototypes/index.html` 为空。溯源已记录省略 API guide 与适配器中立未来。 |
+| T-FU-013 | 完成 | `frontend/tests/e2e/folder-upload.spec.ts`；`cd frontend && npm run e2e` 通过。 |

@@ -67,16 +67,16 @@ If a task cannot be met against `docs/03-spec/folder-upload-spec.md` as written,
 
 | ID | Status | Evidence |
 |---|---|---|
-| T-FU-001 | Pending | — |
-| T-FU-002 | Pending | — |
-| T-FU-003 | Pending | — |
-| T-FU-004 | Pending | — |
-| T-FU-005 | Pending | — |
-| T-FU-006 | Pending | — |
-| T-FU-007 | Pending | — |
-| T-FU-008 | Pending | — |
-| T-FU-009 | Pending | — |
-| T-FU-010 | Pending | — |
+| T-FU-001 | Done | `frontend/src/types.ts`; `cd frontend && npm run typecheck` passed. |
+| T-FU-002 | Done | Inline seeded provider in `frontend/public/atlas-prototype.html`; `frontend/src/folderUploadPrototype.test.ts`; `cd frontend && npm run test` passed. |
+| T-FU-003 | Done | `Upload Folder` / `Upload ZIP` open `data-testid="upload-review"` with no network calls added; `cd frontend && npm run e2e` passed. |
+| T-FU-004 | Done | Inventory rows render path/type/size/confidence/review status with `data-testid="inventory-row"`; `cd frontend && npm run e2e` passed. |
+| T-FU-005 | Done | Unsupported group renders `UNSUPPORTED` rows and expanded status mappings; `cd frontend && npm run e2e` passed. |
+| T-FU-006 | Done | File tree is built from inventory paths with status badges and cap note support; `cd frontend && npm run e2e` passed. |
+| T-FU-007 | Done | `Create Batch` creates derived metrics and four progress stages; `cd frontend && npm run e2e` passed. |
+| T-FU-008 | Done | `View Report` opens six report sections with `source_trace:` lines; `cd frontend && npm run e2e` passed. |
+| T-FU-009 | Done | Empty/all-unsupported/cancel/truncation handling implemented in the upload state/render helpers; `cd frontend && npm run test` and `cd frontend && npm run e2e` passed. |
+| T-FU-010 | Done | EN/zh copy keys added; render state survives re-render/theme/language changes; `cd frontend && npm run build` passed. |
 | T-FU-011 | Deferred (optional) | Extraction not scheduled in this slice. |
-| T-FU-012 | Pending | — |
-| T-FU-013 | Pending | — |
+| T-FU-012 | Done | `prototypes/index.html` synced; `diff frontend/public/atlas-prototype.html prototypes/index.html` is empty. Traceability already records the omitted API guide and adapter-neutral future. |
+| T-FU-013 | Done | `frontend/tests/e2e/folder-upload.spec.ts`; `cd frontend && npm run e2e` passed. |

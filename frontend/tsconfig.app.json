@@ -8,6 +8,6 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client", "vitest/globals", "vitest/jsdom"]
+    "types": ["node", "vite/client", "vitest/globals", "vitest/jsdom"]
   }
 }

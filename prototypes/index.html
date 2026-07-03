@@ -281,6 +281,15 @@
       box-shadow: none;
     }
 
+    .btn:disabled,
+    .btn:disabled:hover {
+      cursor: not-allowed;
+      opacity: 0.55;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border-color: var(--line);
+    }
+
     .dialog-hero {
       position: relative;
       display: grid;
@@ -570,6 +579,115 @@
     .settings-close:hover {
       color: var(--ink);
       background: var(--panel-soft);
+    }
+
+    .upload-window {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: min(1040px, calc(100vw - 48px));
+      max-height: min(760px, calc(100vh - 48px));
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .upload-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 26px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .upload-head h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .upload-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .upload-body {
+      display: grid;
+      gap: 16px;
+      min-height: 0;
+      padding: 18px 26px;
+      overflow: auto;
+    }
+
+    .upload-section h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .inventory-list,
+    .report-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .inventory-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 78px 82px auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .inventory-row.unsupported {
+      background: color-mix(in srgb, var(--panel-soft) 86%, #944844);
+    }
+
+    .inventory-meta,
+    .help-line,
+    .empty-note,
+    .tree-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .upload-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 26px 20px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .report-entry {
+      display: grid;
+      gap: 7px;
+      padding: 11px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .report-entry-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .report-entry-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
     }
 
     .create-space-modal {
@@ -1637,6 +1755,14 @@
       margin-top: 14px;
     }
 
+    .file-folder {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
     .file-row,
     .queue-row,
     .concept-row,
@@ -1657,6 +1783,18 @@
       overflow-wrap: anywhere;
       color: var(--ink);
       font-size: 13px;
+    }
+
+    .file-depth-1 {
+      margin-left: 12px;
+    }
+
+    .file-depth-2 {
+      margin-left: 24px;
+    }
+
+    .file-depth-3 {
+      margin-left: 36px;
     }
 
     .wiki-layout {
@@ -2410,10 +2548,13 @@
     </main>
     <section class="settings-modal" id="settingsView" aria-modal="true" role="dialog"></section>
     <section class="create-space-modal" id="createSpaceView" aria-modal="true" role="dialog"></section>
+    <section class="settings-modal" id="uploadView" aria-modal="true" role="dialog"></section>
   </div>
 
   <script>
     // Local preview data
+    const UPLOAD_DISPLAY_CAP = 500;
+
     const uiState = {
       lang: localStorage.getItem("atlas-lang") || "zh-CN",
       theme: localStorage.getItem("atlas-theme") || "day",
@@ -2425,7 +2566,11 @@
       selectedKnowledgeType: "document",
       selectedIndexStrategy: "rag",
       settingsPanel: "members",
-      selectedModelId: "deepseek-flash"
+      selectedModelId: "deepseek-flash",
+      uploadFlowState: "IDLE",
+      pendingInventory: null,
+      activeBatch: null,
+      activeReport: null
     };
 
     const i18n = {
@@ -2469,6 +2614,40 @@
         backHome: "返回知识库",
         uploadFolder: "上传文件夹",
         uploadZip: "上传 ZIP",
+        uploadReviewTitle: "上传审核",
+        sourceFolder: "文件夹",
+        sourceZip: "ZIP",
+        detectedFiles: "检测到的文件",
+        supportedCount: "支持",
+        unsupportedCount: "不支持",
+        createBatch: "创建批次",
+        createBatchDisabledHelp: "至少需要 1 个受支持文件才能创建批次。",
+        viewReport: "查看报告",
+        reportTitle: "批次报告",
+        reportInventory: "文件清单",
+        reportUnsupported: "不支持的文件",
+        reportFailures: "转换失败",
+        reportLowConfidence: "低置信度",
+        reportReviewRequired: "需要审核",
+        reportApproved: "已批准/已发布",
+        emptyNoFiles: "此包中未发现文件。",
+        emptyNoSupported: "没有可处理的受支持文件。",
+        showingFirstN: "当前显示前 {shown} 项，共 {total} 项。",
+        supported: "支持",
+        unsupported: "不支持",
+        unsupportedReason: "不支持的文件类型",
+        packageName: "来源包",
+        ownerLabel: "负责人",
+        uploadedAt: "上传时间",
+        totalFiles: "文件总数",
+        pdfConverted: "PDF 已转换",
+        markdownGenerated: "Markdown 已生成",
+        failed: "失败",
+        unsupportedMetric: "不支持",
+        progressUploaded: "上传入库",
+        progressPdf: "Office 转 PDF",
+        progressMarkdown: "PDF 转 Markdown",
+        progressReview: "SME Review",
         tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
         batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
         fileTree: "文件树与解析状态",
@@ -2651,6 +2830,40 @@
         backHome: "Back",
         uploadFolder: "Upload Folder",
         uploadZip: "Upload ZIP",
+        uploadReviewTitle: "Upload Review",
+        sourceFolder: "Folder",
+        sourceZip: "ZIP",
+        detectedFiles: "Detected files",
+        supportedCount: "supported",
+        unsupportedCount: "unsupported",
+        createBatch: "Create Batch",
+        createBatchDisabledHelp: "At least one supported file is required to create a batch.",
+        viewReport: "View Report",
+        reportTitle: "Batch Report",
+        reportInventory: "Inventory",
+        reportUnsupported: "Unsupported",
+        reportFailures: "Conversion Failures",
+        reportLowConfidence: "Low Confidence",
+        reportReviewRequired: "Review Required",
+        reportApproved: "Approved / Published",
+        emptyNoFiles: "No files found in this package.",
+        emptyNoSupported: "No supported files to process.",
+        showingFirstN: "Showing first {shown} of {total}.",
+        supported: "Supported",
+        unsupported: "Unsupported",
+        unsupportedReason: "Unsupported file type",
+        packageName: "Source package",
+        ownerLabel: "Owner",
+        uploadedAt: "Uploaded at",
+        totalFiles: "Total files",
+        pdfConverted: "PDF converted",
+        markdownGenerated: "Markdown generated",
+        failed: "Failed",
+        unsupportedMetric: "Unsupported",
+        progressUploaded: "Uploaded",
+        progressPdf: "Office to PDF",
+        progressMarkdown: "PDF to Markdown",
+        progressReview: "SME Review",
         tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
         batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
         fileTree: "File Tree And Parsing Status",
@@ -3144,12 +3357,151 @@
       "Healthy": "healthy",
       "Review Required": "review",
       "Parsing": "parsing",
+      "NEW": "medium",
+      "UPLOADED": "medium",
       "PDF_CONVERTED": "approved",
+      "PDF_CONVERT_FAILED": "failed",
       "MARKDOWN_GENERATED": "healthy",
       "OCR_REQUIRED": "ocr",
+      "LOW_CONFIDENCE": "review",
       "REVIEW_REQUIRED": "review",
-      "FAILED": "failed"
+      "APPROVED": "approved",
+      "PUBLISHED": "healthy",
+      "FAILED": "failed",
+      "UNSUPPORTED": "failed"
     };
+
+    const uploadSeedFiles = [
+      { path: "/Discovery/Architecture/Target_Architecture.pptx", sourceType: "pptx", sizeLabel: "1.2 MB", supported: true, confidence: 0.86, targetStatus: "PDF_CONVERTED" },
+      { path: "/Discovery/BRD/BRD_Methodology.docx", sourceType: "docx", sizeLabel: "480 KB", supported: true, confidence: 0.9, targetStatus: "MARKDOWN_GENERATED" },
+      { path: "/Discovery/Interface/API_List.xlsx", sourceType: "xlsx", sizeLabel: "780 KB", supported: true, confidence: 0.78, targetStatus: "LOW_CONFIDENCE" },
+      { path: "/Discovery/Reports/RPG_Scan_Result.pdf", sourceType: "pdf", sizeLabel: "3.4 MB", supported: true, confidence: 0.82, targetStatus: "REVIEW_REQUIRED" },
+      { path: "/Discovery/Screens/Green_Screen_Flow.png", sourceType: "image", sizeLabel: "920 KB", supported: true, confidence: 0.64, targetStatus: "OCR_REQUIRED" },
+      { path: "/Discovery/Runbooks/Nightly_Batch.docx", sourceType: "docx", sizeLabel: "350 KB", supported: true, confidence: 0.58, targetStatus: "PDF_CONVERT_FAILED", errors: ["Mock conversion guard failed"] },
+      { path: "/Discovery/Reviewed/Approved_Scope.pdf", sourceType: "pdf", sizeLabel: "610 KB", supported: true, confidence: 0.93, targetStatus: "APPROVED", reviewStatus: "APPROVED" },
+      { path: "/Discovery/Published/Migration_Boundary.pdf", sourceType: "pdf", sizeLabel: "720 KB", supported: true, confidence: 0.96, targetStatus: "PUBLISHED", reviewStatus: "APPROVED" },
+      { path: "/Discovery/raw/notes.zzz", sourceType: "unsupported", sizeLabel: "12 KB", supported: false, confidence: 0, reason: "unsupported type" },
+      { path: "/Discovery/raw/legacy-export.bin", sourceType: "unsupported", sizeLabel: "2.1 MB", supported: false, confidence: 0, reason: "binary export" }
+    ];
+
+    function sourceFileName(path) {
+      return path.split("/").filter(Boolean).pop() || path;
+    }
+
+    function createSourceTrace(file, index, batchId = "pending") {
+      const page = file.supported ? (index % 6) + 1 : undefined;
+      return {
+        sourceFile: sourceFileName(file.path),
+        sourcePath: file.path,
+        page,
+        chunkId: page ? `${batchId}:file-${String(index + 1).padStart(3, "0")}:page-${String(page).padStart(3, "0")}:block-01` : `${batchId}:file-${String(index + 1).padStart(3, "0")}:unsupported`
+      };
+    }
+
+    function reviewStatusFor(file) {
+      if (file.reviewStatus) return file.reviewStatus;
+      if (!file.supported) return "REJECTED";
+      return "REVIEW_REQUIRED";
+    }
+
+    function reportEntryFromFile(file, index, batchId = "pending") {
+      const status = file.status || file.targetStatus || (file.supported ? "NEW" : "UNSUPPORTED");
+      return {
+        path: file.path,
+        status,
+        confidence: file.confidence,
+        reviewStatus: reviewStatusFor(file),
+        sourceTrace: file.sourceTrace || createSourceTrace(file, index, batchId),
+        note: file.reason || (file.errors ? file.errors[0] : "")
+      };
+    }
+
+    function deriveBatchMetrics(fileItems) {
+      const pdfStatuses = ["PDF_CONVERTED", "MARKDOWN_GENERATED", "LOW_CONFIDENCE", "REVIEW_REQUIRED", "OCR_REQUIRED", "APPROVED", "PUBLISHED"];
+      const markdownStatuses = ["MARKDOWN_GENERATED", "LOW_CONFIDENCE", "REVIEW_REQUIRED", "OCR_REQUIRED", "APPROVED", "PUBLISHED"];
+      return {
+        totalFiles: fileItems.length,
+        pdfConverted: fileItems.filter((item) => pdfStatuses.includes(item.status)).length,
+        markdownGenerated: fileItems.filter((item) => markdownStatuses.includes(item.status)).length,
+        reviewRequired: fileItems.filter((item) => item.reviewStatus === "REVIEW_REQUIRED").length,
+        failed: fileItems.filter((item) => ["PDF_CONVERT_FAILED", "FAILED"].includes(item.status)).length,
+        unsupported: fileItems.filter((item) => item.status === "UNSUPPORTED").length
+      };
+    }
+
+    function createFolderUploadProvider() {
+      return {
+        async createInventory(sourceKind) {
+          const packageName = sourceKind === "zip" ? "2026-06 IBM i Discovery.zip" : "2026-06 IBM i Discovery Folder";
+          const files = uploadSeedFiles.slice(0, UPLOAD_DISPLAY_CAP).map((file) => ({
+            path: file.path,
+            sourceType: file.sourceType,
+            sizeLabel: file.sizeLabel,
+            supported: file.supported,
+            confidence: file.confidence,
+            reviewStatus: reviewStatusFor(file),
+            reason: file.reason,
+            targetStatus: file.targetStatus,
+            errors: file.errors
+          }));
+          const detectedCount = uploadSeedFiles.length;
+          return {
+            sourceKind,
+            packageName,
+            files,
+            detectedCount,
+            supportedCount: files.filter((file) => file.supported).length,
+            unsupportedCount: files.filter((file) => !file.supported).length,
+            truncated: detectedCount > files.length,
+            displayCap: UPLOAD_DISPLAY_CAP
+          };
+        },
+        async createBatch(inventory) {
+          const batchId = `mock-${inventory.sourceKind}-20260702`;
+          const fileItems = inventory.files.map((file, index) => ({
+            path: file.path,
+            sourceType: file.sourceType,
+            status: file.supported ? file.targetStatus : "UNSUPPORTED",
+            confidence: file.confidence,
+            reviewStatus: reviewStatusFor(file),
+            sourceTrace: createSourceTrace(file, index, batchId),
+            errors: file.errors
+          }));
+          return {
+            id: batchId,
+            name: inventory.packageName,
+            sourceKind: inventory.sourceKind,
+            uploadedAt: "2026-07-02 09:30",
+            owner: "Modernization CoE",
+            fileItems,
+            metrics: deriveBatchMetrics(fileItems),
+            progress: [
+              { key: "progressUploaded", value: 100 },
+              { key: "progressPdf", value: 75 },
+              { key: "progressMarkdown", value: 63 },
+              { key: "progressReview", value: 25 }
+            ],
+            truncated: inventory.truncated,
+            displayCap: inventory.displayCap,
+            detectedCount: inventory.detectedCount
+          };
+        },
+        async buildReport(batch) {
+          const entries = batch.fileItems.map((file, index) => reportEntryFromFile(file, index, batch.id));
+          return {
+            batchId: batch.id,
+            inventory: entries,
+            unsupported: entries.filter((entry) => entry.status === "UNSUPPORTED"),
+            conversionFailures: entries.filter((entry) => ["PDF_CONVERT_FAILED", "FAILED"].includes(entry.status)),
+            lowConfidence: entries.filter((entry) => entry.status === "LOW_CONFIDENCE" || entry.confidence < 0.7),
+            reviewRequired: entries.filter((entry) => entry.reviewStatus === "REVIEW_REQUIRED"),
+            approvedPublished: entries.filter((entry) => ["APPROVED", "PUBLISHED"].includes(entry.status))
+          };
+        }
+      };
+    }
+
+    const folderUploadProvider = createFolderUploadProvider();
 
     const graphColor = {
       "Wiki Page": "var(--blue)",
@@ -3163,8 +3515,11 @@
     const spaceView = document.querySelector("#spaceView");
     const settingsView = document.querySelector("#settingsView");
     const createSpaceView = document.querySelector("#createSpaceView");
+    const uploadView = document.querySelector("#uploadView");
     const sideNav = document.querySelector("#sideNav");
     const sideFooterText = document.querySelector("#sideFooterText");
+
+    window.__atlasFolderUploadProvider = folderUploadProvider;
 
     function copy() {
       return i18n[uiState.lang];
@@ -3289,8 +3644,8 @@
             </div>
             <div class="button-row">
               <button class="btn secondary" id="backHome">${text.backHome}</button>
-              <button class="btn">${text.uploadFolder}</button>
-              <button class="btn secondary">${text.uploadZip}</button>
+              <button class="btn" data-upload-kind="folder">${text.uploadFolder}</button>
+              <button class="btn secondary" data-upload-kind="zip">${text.uploadZip}</button>
             </div>
           </div>
         </section>
@@ -3710,32 +4065,234 @@
       `);
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatConfidence(value) {
+      return Number(value || 0).toFixed(2);
+    }
+
+    function sourceTraceLine(trace) {
+      const page = trace.page ? ` / page ${trace.page}` : "";
+      return `source_trace: ${trace.sourcePath}${page}; chunk_id: ${trace.chunkId}; review_status:`;
+    }
+
+    function activeBatch() {
+      if (uiState.activeBatch) return uiState.activeBatch;
+      return {
+        name: appData.batch.name,
+        owner: "Modernization CoE",
+        uploadedAt: "2026-06-28 18:40",
+        metrics: {
+          totalFiles: appData.batch.totalFiles,
+          pdfConverted: appData.batch.pdfConverted,
+          markdownGenerated: appData.batch.markdownGenerated,
+          reviewRequired: appData.batch.reviewRequired,
+          failed: appData.batch.failed,
+          unsupported: 0
+        },
+        progress: appData.batch.progress,
+        fileItems: appData.batch.files.map((file, index) => ({
+          ...file,
+          sourceType: "pdf",
+          confidence: 0.78,
+          reviewStatus: file.status === "FAILED" ? "REJECTED" : "REVIEW_REQUIRED",
+          sourceTrace: createSourceTrace({ path: file.path, supported: true }, index, "baseline")
+        }))
+      };
+    }
+
+    function renderFileTree(files, options = {}) {
+      const rows = [];
+      const seenFolders = new Set();
+      const shownFiles = files.slice(0, options.displayCap || UPLOAD_DISPLAY_CAP);
+      shownFiles.forEach((file) => {
+        const parts = file.path.split("/").filter(Boolean);
+        const fileName = parts.pop() || file.path;
+        parts.forEach((folder, index) => {
+          const folderKey = parts.slice(0, index + 1).join("/");
+          if (!seenFolders.has(folderKey)) {
+            seenFolders.add(folderKey);
+            rows.push(`<div class="file-folder file-depth-${Math.min(index, 3)}">${escapeHtml(folderKey)}</div>`);
+          }
+        });
+        rows.push(`
+          <div class="file-row file-depth-${Math.min(parts.length, 3)}">
+            <span class="file-path">${escapeHtml(fileName)}</span>
+            <span class="badge ${statusClass[file.status]}">${file.status}</span>
+          </div>
+        `);
+      });
+      if (options.truncated) {
+        const text = copy();
+        rows.push(`<div class="tree-note">${text.showingFirstN.replace("{shown}", shownFiles.length).replace("{total}", options.detectedCount || files.length)}</div>`);
+      }
+      return rows.join("");
+    }
+
+    function renderInventoryRow(file, isUnsupported = false) {
+      const badgeText = isUnsupported ? "UNSUPPORTED" : copy().supported;
+      return `
+        <div class="inventory-row ${isUnsupported ? "unsupported" : ""}" data-testid="${isUnsupported ? "unsupported-row" : "inventory-row"}">
+          <span class="file-path">${escapeHtml(file.path)}</span>
+          <span>${escapeHtml(file.sourceType)}</span>
+          <span>${escapeHtml(file.sizeLabel)}</span>
+          <span class="badge ${isUnsupported ? statusClass.UNSUPPORTED : "approved"}">${badgeText}</span>
+          <span class="inventory-meta">conf ${formatConfidence(file.confidence)} · ${file.reviewStatus}</span>
+        </div>
+      `;
+    }
+
+    function renderUploadReview(inventory) {
+      const text = copy();
+      const supportedFiles = inventory.files.filter((file) => file.supported);
+      const unsupportedFiles = inventory.files.filter((file) => !file.supported);
+      const createDisabled = supportedFiles.length === 0;
+      const sourceLabel = inventory.sourceKind === "zip" ? text.sourceZip : text.sourceFolder;
+      return `
+        <div class="upload-window" data-testid="upload-review">
+          <header class="upload-head">
+            <div>
+              <h2>${text.uploadReviewTitle}</h2>
+              <p>${sourceLabel} · ${text.packageName}: ${escapeHtml(inventory.packageName)}</p>
+              <p>${text.detectedFiles}: ${inventory.detectedCount} · ${inventory.supportedCount} ${text.supportedCount} · ${inventory.unsupportedCount} ${text.unsupportedCount}</p>
+            </div>
+            <button class="settings-close" data-upload-cancel="true" type="button" aria-label="${text.cancel}">×</button>
+          </header>
+          <div class="upload-body">
+            <section class="upload-section">
+              <h3>${text.reportInventory}</h3>
+              ${inventory.files.length === 0 ? `<div class="empty-note">${text.emptyNoFiles}</div>` : ""}
+              <div class="inventory-list">${supportedFiles.map((file) => renderInventoryRow(file)).join("")}</div>
+              ${inventory.truncated ? `<div class="tree-note">${text.showingFirstN.replace("{shown}", inventory.files.length).replace("{total}", inventory.detectedCount)}</div>` : ""}
+            </section>
+            <section class="upload-section">
+              <h3>${text.reportUnsupported} (${unsupportedFiles.length})</h3>
+              ${unsupportedFiles.length === 0 ? `<div class="empty-note">0 ${text.unsupportedCount}</div>` : ""}
+              <div class="inventory-list">
+                ${unsupportedFiles.map((file) => `
+                  <div class="inventory-row unsupported" data-testid="unsupported-row">
+                    <span class="file-path">${escapeHtml(file.path)}</span>
+                    <span>${escapeHtml(file.sourceType)}</span>
+                    <span>${escapeHtml(file.sizeLabel)}</span>
+                    <span class="badge ${statusClass.UNSUPPORTED}">UNSUPPORTED</span>
+                    <span class="inventory-meta">${escapeHtml(file.reason || text.unsupportedReason)} · ${file.reviewStatus}</span>
+                  </div>
+                `).join("")}
+              </div>
+              ${createDisabled && inventory.files.length > 0 ? `<div class="help-line">${text.emptyNoSupported}</div>` : ""}
+            </section>
+          </div>
+          <footer class="upload-actions">
+            <button class="btn secondary" data-upload-cancel="true" type="button">${text.cancel}</button>
+            <button class="btn" data-upload-create="true" data-testid="create-batch" type="button" ${createDisabled ? "disabled" : ""} title="${createDisabled ? text.createBatchDisabledHelp : ""}">${text.createBatch}</button>
+            ${createDisabled ? `<span class="help-line">${text.createBatchDisabledHelp}</span>` : ""}
+          </footer>
+        </div>
+      `;
+    }
+
+    function renderReportSection(title, entries, testId = "") {
+      return `
+        <section class="upload-section" ${testId ? `data-testid="${testId}"` : ""}>
+          <h3>${title} (${entries.length})</h3>
+          <div class="report-list">
+            ${entries.length === 0 ? `<div class="empty-note">0</div>` : entries.map((entry) => `
+              <div class="report-entry">
+                <div class="report-entry-main">
+                  <span class="file-path">${escapeHtml(entry.path)}</span>
+                  <span class="report-entry-badges">
+                    <span class="badge ${statusClass[entry.status]}">${entry.status}</span>
+                    <span class="badge ${entry.reviewStatus === "APPROVED" ? "approved" : entry.reviewStatus === "REJECTED" ? "failed" : "review"}">${entry.reviewStatus}</span>
+                    <span class="badge medium">conf ${formatConfidence(entry.confidence)}</span>
+                  </span>
+                </div>
+                <div class="trace">${sourceTraceLine(entry.sourceTrace)} ${entry.reviewStatus}; confidence: ${formatConfidence(entry.confidence)}</div>
+                ${entry.note ? `<div class="help-line">${escapeHtml(entry.note)}</div>` : ""}
+              </div>
+            `).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderBatchReport(report) {
+      const text = copy();
+      return `
+        <div class="upload-window" data-testid="batch-report">
+          <header class="upload-head">
+            <div>
+              <h2>${text.reportTitle}</h2>
+              <p>${report.batchId}</p>
+            </div>
+            <button class="settings-close" data-report-close="true" type="button" aria-label="${text.cancel}">×</button>
+          </header>
+          <div class="upload-body">
+            ${renderReportSection(text.reportInventory, report.inventory)}
+            ${renderReportSection(text.reportUnsupported, report.unsupported)}
+            ${renderReportSection(text.reportFailures, report.conversionFailures)}
+            ${renderReportSection(text.reportLowConfidence, report.lowConfidence)}
+            ${renderReportSection(text.reportReviewRequired, report.reviewRequired)}
+            ${renderReportSection(text.reportApproved, report.approvedPublished)}
+          </div>
+          <footer class="upload-actions">
+            <button class="btn secondary" data-report-close="true" type="button">${text.cancel}</button>
+          </footer>
+        </div>
+      `;
+    }
+
+    function renderUploadSurface() {
+      if (!uploadView) return;
+      if (uiState.uploadFlowState === "INVENTORY_READY" || uiState.uploadFlowState === "INVENTORY_EMPTY") {
+        uploadView.innerHTML = renderUploadReview(uiState.pendingInventory);
+        uploadView.classList.add("active");
+        return;
+      }
+      if (uiState.uploadFlowState === "REPORT_OPEN" && uiState.activeReport) {
+        uploadView.innerHTML = renderBatchReport(uiState.activeReport);
+        uploadView.classList.add("active");
+        return;
+      }
+      uploadView.innerHTML = "";
+      uploadView.classList.remove("active");
+    }
+
     function renderDocs() {
-      const batch = appData.batch;
+      const batch = activeBatch();
       const text = copy();
       const metrics = [
-        ["Total files", batch.totalFiles],
-        ["PDF converted", batch.pdfConverted],
-        ["Markdown generated", batch.markdownGenerated],
-        ["Review required", batch.reviewRequired],
-        ["Failed", batch.failed]
+        [text.totalFiles, batch.metrics.totalFiles],
+        [text.pdfConverted, batch.metrics.pdfConverted],
+        [text.markdownGenerated, batch.metrics.markdownGenerated],
+        [text.reviewRequired, batch.metrics.reviewRequired],
+        [text.failed, batch.metrics.failed],
+        [text.unsupportedMetric, batch.metrics.unsupported]
       ];
       return `
         <div class="doc-grid">
           <section class="panel">
-            <h2>${batch.name}</h2>
+            <h2>${escapeHtml(batch.name)}</h2>
             <p style="color:var(--muted);line-height:1.55;">${text.batchHelp}</p>
-            <div class="button-row" style="justify-content:flex-start;">
-              <button class="btn">${text.uploadFolder}</button>
-              <button class="btn secondary">${text.uploadZip}</button>
+            <div class="source-row" style="margin-top:12px;"><span>${text.ownerLabel}</span><strong>${escapeHtml(batch.owner)}</strong></div>
+            <div class="source-row" style="margin-top:8px;"><span>${text.uploadedAt}</span><strong>${escapeHtml(batch.uploadedAt)}</strong></div>
+            <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
+              <button class="btn" data-upload-kind="folder" data-testid="upload-folder" type="button">${text.uploadFolder}</button>
+              <button class="btn secondary" data-upload-kind="zip" data-testid="upload-zip" type="button">${text.uploadZip}</button>
+              ${uiState.activeBatch ? `<button class="btn secondary" data-view-report="true" data-testid="view-report" type="button">${text.viewReport}</button>` : ""}
             </div>
-            <div class="metric-grid">
+            <div class="metric-grid" data-testid="batch-metrics">
               ${metrics.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join("")}
             </div>
-            <div class="progress-list">
+            <div class="progress-list" data-testid="batch-progress">
               ${batch.progress.map((item) => `
                 <div>
-                  <div class="progress-head"><span>${item.label}</span><span>${item.value}%</span></div>
+                  <div class="progress-head"><span>${text[item.key] || item.label}</span><span>${item.value}%</span></div>
                   <div class="progress"><span style="width:${item.value}%"></span></div>
                 </div>
               `).join("")}
@@ -3743,13 +4300,8 @@
           </section>
           <section class="panel">
             <h2>${text.fileTree}</h2>
-            <div class="file-tree">
-              ${batch.files.map((file) => `
-                <div class="file-row">
-                  <span class="file-path">${file.path}</span>
-                  <span class="badge ${statusClass[file.status]}">${file.status}</span>
-                </div>
-              `).join("")}
+            <div class="file-tree" data-testid="file-tree">
+              ${renderFileTree(batch.fileItems, { truncated: batch.truncated, displayCap: batch.displayCap, detectedCount: batch.detectedCount })}
             </div>
           </section>
         </div>
@@ -3962,6 +4514,50 @@
       renderNav();
     }
 
+    async function openUpload(sourceKind) {
+      uiState.activeTab = "docs";
+      uiState.activeReport = null;
+      const inventory = await folderUploadProvider.createInventory(sourceKind);
+      uiState.pendingInventory = inventory;
+      uiState.uploadFlowState = inventory.supportedCount > 0 ? "INVENTORY_READY" : "INVENTORY_EMPTY";
+      if (uiState.view === "space") {
+        renderSpace("docs");
+      }
+      renderUploadSurface();
+    }
+
+    function cancelUpload() {
+      uiState.pendingInventory = null;
+      uiState.activeReport = null;
+      uiState.uploadFlowState = uiState.activeBatch ? "BATCH_CREATED" : "IDLE";
+      renderUploadSurface();
+    }
+
+    async function createBatchFromInventory() {
+      const inventory = uiState.pendingInventory;
+      if (!inventory || inventory.supportedCount === 0) return;
+      uiState.activeBatch = await folderUploadProvider.createBatch(inventory);
+      uiState.pendingInventory = null;
+      uiState.activeReport = null;
+      uiState.uploadFlowState = "BATCH_CREATED";
+      renderUploadSurface();
+      renderSpace("docs");
+    }
+
+    async function openBatchReport() {
+      const batch = uiState.activeBatch;
+      if (!batch) return;
+      uiState.activeReport = await folderUploadProvider.buildReport(batch);
+      uiState.uploadFlowState = "REPORT_OPEN";
+      renderUploadSurface();
+    }
+
+    function closeBatchReport() {
+      uiState.activeReport = null;
+      uiState.uploadFlowState = uiState.activeBatch ? "BATCH_CREATED" : "IDLE";
+      renderUploadSurface();
+    }
+
     function setTab(tab) {
       uiState.activeTab = tab;
       document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
@@ -3989,6 +4585,7 @@
       if (uiState.createSpaceOpen) {
         showCreateSpace();
       }
+      renderUploadSurface();
     }
 
     function legendItems() {
@@ -4036,7 +4633,7 @@
     }
 
     function bindEvents() {
-      document.addEventListener("click", (event) => {
+      document.addEventListener("click", async (event) => {
         const spaceCard = event.target.closest("[data-space]");
         if (spaceCard && spaceCard.dataset.space === "IBM i Modernization") {
           showSpace("wiki");
@@ -4070,6 +4667,36 @@
         const createSpaceButton = event.target.closest("[data-create-space]");
         if (createSpaceButton) {
           showCreateSpace();
+        }
+
+        const uploadButton = event.target.closest("[data-upload-kind]");
+        if (uploadButton) {
+          await openUpload(uploadButton.dataset.uploadKind);
+        }
+
+        if (event.target.id === "uploadView") {
+          if (uiState.uploadFlowState === "REPORT_OPEN") closeBatchReport();
+          else cancelUpload();
+        }
+
+        const uploadCancel = event.target.closest("[data-upload-cancel]");
+        if (uploadCancel) {
+          cancelUpload();
+        }
+
+        const uploadCreate = event.target.closest("[data-upload-create]");
+        if (uploadCreate) {
+          await createBatchFromInventory();
+        }
+
+        const viewReport = event.target.closest("[data-view-report]");
+        if (viewReport) {
+          await openBatchReport();
+        }
+
+        const reportClose = event.target.closest("[data-report-close]");
+        if (reportClose) {
+          closeBatchReport();
         }
 
         if (event.target.id === "closeSettings" || event.target.id === "settingsView") {
@@ -4168,6 +4795,14 @@
       });
 
       document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && (uiState.uploadFlowState === "INVENTORY_READY" || uiState.uploadFlowState === "INVENTORY_EMPTY")) {
+          cancelUpload();
+          return;
+        }
+        if (event.key === "Escape" && uiState.uploadFlowState === "REPORT_OPEN") {
+          closeBatchReport();
+          return;
+        }
         if (event.key === "Escape" && uiState.settingsOpen) {
           closeSettings();
         }
