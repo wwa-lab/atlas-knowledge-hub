@@ -166,6 +166,29 @@ class AskServiceTest {
   }
 
   @Test
+  void configuredAskRoutesModelRunToDeepSeekAdapter() {
+    AskService service = service();
+
+    service.createRun(
+        "space",
+        new CreateAskRequest(
+            "Which provider-backed evidence is approved?",
+            "delivery-lead",
+            AskReviewPolicy.APPROVED_ONLY,
+            5,
+            "configured",
+            null));
+
+    ArgumentCaptor<com.atlas.metadata.dto.CreateModelRunRequest> modelRequest =
+        ArgumentCaptor.forClass(com.atlas.metadata.dto.CreateModelRunRequest.class);
+    verify(modelService).createRun(modelRequest.capture());
+    assertThat(modelRequest.getValue().adapterKey()).isEqualTo("deepseek");
+    assertThat(modelRequest.getValue().modelKey()).isNull();
+    assertThat(modelRequest.getValue().mode()).isEqualTo("configured");
+    assertThat(modelRequest.getValue().safeMockInput()).contains("provider-backed evidence");
+  }
+
+  @Test
   void filteredNoEvidenceSkipsModelCall() {
     AskService service = service();
 

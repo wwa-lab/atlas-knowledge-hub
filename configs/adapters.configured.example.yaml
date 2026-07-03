@@ -21,6 +21,7 @@ model:
   providerEnv: ATLAS_MODEL_PROVIDER
   endpointEnv: ATLAS_MODEL_ENDPOINT
   apiKeyEnv: ATLAS_MODEL_API_KEY
+  modelNameEnv: ATLAS_MODEL_NAME
 knowledgePolicy:
   askReviewPolicy: approved-only
   graphReviewPolicy: approved-only

@@ -11,6 +11,7 @@
 | Mock E2E 闭环 | 本地第一层自动验收，不需要真实公司环境。 | Node.js/npm、Playwright 浏览器。 |
 | 后端测试 | API、adapter、Flyway、PostgreSQL 合约。 | Java 21、Maven、Docker Desktop。 |
 | 第二层 E2E | 本地浏览器 + Spring Boot API + PostgreSQL 全栈闭环。 | Node.js/npm、Java 21、Maven、Docker Desktop。 |
+| 第三层 E2E | Opt-in provider-backed Ask，通过 DeepSeek + ModelAdapter 验证真实 provider 调用，知识数据仍只用 mock/sample。 | Node.js/npm、Java 21、Maven、Docker Desktop、当前 shell 里的本地 DeepSeek API key。 |
 | 后端本地 API | Spring Boot API 连接你自己的 PostgreSQL。 | Java 21、Maven、本地 PostgreSQL 配置。 |
 
 最快看产品：打开静态原型。
@@ -18,6 +19,8 @@
 最推荐的第一层本地验收：运行 `npm run e2e:first-layer`。
 
 如果你要验证前端浏览器确实连到本地 Spring Boot API：运行 `npm run e2e:second-layer`。
+
+如果你要验证真实 DeepSeek-backed Ask 调用：只在本机已准备好批准使用的 DeepSeek key 时运行 `npm run e2e:third-layer`。
 
 ## 1. 在 VS Code 打开项目
 
@@ -277,11 +280,130 @@ ATLAS_E2E_POSTGRES_PORT=55433 ATLAS_E2E_BACKEND_PORT=18081 npm run e2e:second-la
 KEEP_ATLAS_E2E_STACK=1 npm run e2e:second-layer
 ```
 
-## 10. 在 VS Code 里启动后端 API
+## 10. 在 VS Code 里跑第三层 Provider-Backed E2E
+
+第三层用于验证：本地浏览器和 Spring Boot API 跑通后，Ask 会通过 backend `ModelAdapter` 调用 DeepSeek chat API。它是 opt-in，不进入默认 `npm --prefix frontend run e2e`、`npm run e2e:first-layer` 或 `npm run e2e:second-layer`。
+
+安全边界：
+
+- 仍然只使用 mock/sample knowledge data。
+- 不使用真实公司文档。
+- 不要把真实 key 写进 frontend 代码、Playwright spec、文档、截图、trace、报告或 git。
+- `.env` 和 shell 里的真实 key 都是本地敏感配置，不要提交。
+
+### 10.1 在 VS Code integrated terminal 里设置 DeepSeek 环境变量
+
+打开：
+
+```text
+Terminal -> New Terminal
+```
+
+确认当前目录是仓库根目录，然后设置环境变量：
+
+```bash
+export ATLAS_MODEL_PROVIDER=deepseek
+export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_NAME=deepseek-chat
+```
+
+说明：
+
+- `ATLAS_MODEL_API_KEY` 只能来自当前 shell/env。
+- 关闭这个 terminal 后，变量会失效，需要重新设置。
+- 不要在共享录屏、截图或 issue 里显示真实 key。
+
+你可以只检查是否已设置，不要打印 key 内容：
+
+```bash
+if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then echo "ATLAS_MODEL_API_KEY is set"; else echo "ATLAS_MODEL_API_KEY is missing"; fi
+```
+
+### 10.2 一键运行 third-layer
+
+在同一个 VS Code terminal 里运行：
+
+```bash
+npm run e2e:third-layer
+```
+
+这个命令会自动完成：
+
+1. 如果缺少 `ATLAS_MODEL_API_KEY`，在启动 Docker/Spring Boot 前清晰失败。
+2. 启动临时 Docker PostgreSQL，默认端口 `55434`。
+3. 启动 Spring Boot API，默认端口 `18082`。
+4. 构建 frontend，并指向本地 API。
+5. 通过 API 准备 approved sample evidence、发布 Wiki、建立 graph/vector evidence。
+6. 用 `mode=configured` 发起 Ask，让 DeepSeek 只在 ModelAdapter 后被调用。
+7. 验证 answer 成功、有 evidence/citation/source trace，并确认页面不是 fallback mock graph。
+8. 扫描生成 artifact，防止明显 key、Bearer token、私有路径泄漏。
+9. 默认清理临时 backend process 和 PostgreSQL 容器。
+
+预期输出包含：
+
+```text
+Third-layer provider-backed E2E complete.
+```
+
+### 10.3 查看报告和日志
+
+报告位置：
+
+```text
+frontend/playwright-report/index.html
+frontend/test-results/e2e-junit.xml
+samples/output/e2e/third-layer-backend.log
+```
+
+在 VS Code 文件树中右键：
+
+```text
+frontend/playwright-report/index.html
+```
+
+选择在浏览器中打开。
+
+后端日志可以直接在 VS Code 里打开：
+
+```text
+samples/output/e2e/third-layer-backend.log
+```
+
+如果日志里出现 provider 429、5xx 或网络错误，这属于本地/provider 条件阻塞；adapter 应返回脱敏错误，不应保存 raw provider response。
+
+### 10.4 端口覆盖和清理
+
+如果端口冲突：
+
+```bash
+ATLAS_E2E_POSTGRES_PORT=55435 ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-layer
+```
+
+如果你想保留临时容器排查：
+
+```bash
+KEEP_ATLAS_E2E_STACK=1 npm run e2e:third-layer
+```
+
+排查完手动清理：
+
+```bash
+docker rm -f atlas-e2e-third-postgres
+```
+
+清理生成报告：
+
+```bash
+rm -rf frontend/playwright-report frontend/test-results
+rm -rf samples/output/e2e
+```
+
+## 11. 在 VS Code 里启动后端 API
 
 只有当你想手动调用 Spring Boot API 时才需要这一步。
 
-### 10.1 用 Docker 准备本地 PostgreSQL（推荐）
+### 11.1 用 Docker 准备本地 PostgreSQL（推荐）
 
 确认 Docker Desktop 已启动，然后在 VS Code 终端运行：
 
@@ -322,7 +444,7 @@ docker rm -f atlas-postgres
 
 删除后再运行前面的 `docker run` 命令，会得到一个全新的空数据库。
 
-### 10.2 如果你已经安装了本机 PostgreSQL
+### 11.2 如果你已经安装了本机 PostgreSQL
 
 如果你不用 Docker，而是已经有本机 PostgreSQL，可以用 `psql` 创建本地开发库：
 
@@ -335,7 +457,7 @@ psql -d atlas_knowledge_hub -c "GRANT ALL PRIVILEGES ON DATABASE atlas_knowledge
 
 如果 `createuser atlas_user` 提示用户已存在，可以跳过这一行。
 
-### 10.3 配置后端环境变量
+### 11.3 配置后端环境变量
 
 准备好 PostgreSQL 后，在同一个 VS Code 终端设置环境变量：
 
@@ -348,7 +470,7 @@ export ATLAS_DB_SCHEMA='atlas'
 
 这些变量只对当前终端有效。关闭终端后需要重新设置。
 
-### 10.4 启动后端
+### 11.4 启动后端
 
 启动后端：
 
@@ -375,7 +497,7 @@ backend/src/main/resources/db/migration/
 - 不要把真实密码写进文档、截图或 commit。
 - 不要在共享终端里 `echo "$ATLAS_DB_PASSWORD"`。
 
-### 10.5 验证数据库里已经建表
+### 11.5 验证数据库里已经建表
 
 如果使用 Docker 容器：
 
@@ -398,7 +520,7 @@ docker exec -it atlas-postgres psql -U atlas_user -d atlas_knowledge_hub
 
 如果能看到 `atlas` schema 和若干表，说明 Flyway migration 已经执行。
 
-## 11. Configured 模式
+## 12. Configured 模式
 
 Configured 模式用于本地/公司集成环境，不是默认开发路径。
 
@@ -431,7 +553,7 @@ npm run e2e:loop:configured
 - 不要把真实 API key 粘进 issue、文档、截图、前端代码。
 - DeepSeek/Copilot/provider 测试应该是 opt-in，不应该进入默认 CI。
 
-## 12. VS Code 推荐开几个终端
+## 13. VS Code 推荐开几个终端
 
 建议开 3 个 VS Code terminal：
 
@@ -449,6 +571,7 @@ Terminal 2: backend API
 Terminal 3: tests / git
   npm run e2e:first-layer
   npm run e2e:second-layer
+  npm run e2e:third-layer  # only after exporting ATLAS_MODEL_API_KEY
   npm --prefix frontend run e2e
   mvn -f backend/pom.xml verify
   git status --short
@@ -456,7 +579,7 @@ Terminal 3: tests / git
 
 如果只是跑 mock E2E，不需要开 backend API terminal。
 
-## 13. 清理本地生成文件
+## 14. 清理本地生成文件
 
 安全清理命令：
 
@@ -464,6 +587,7 @@ Terminal 3: tests / git
 rm -rf frontend/playwright-report frontend/test-results
 rm -rf samples/output/e2e
 rm -rf backend/target
+docker rm -f atlas-e2e-third-postgres 2>/dev/null || true
 ```
 
 不要删除：
@@ -475,7 +599,7 @@ frontend/src/
 prototypes/
 ```
 
-## 14. 常见问题
+## 15. 常见问题
 
 ### `npm run setup` 失败
 
@@ -510,6 +634,8 @@ npm run e2e
 - `4173`：Vite preview / Playwright webServer。
 - `55432`：第二层 E2E 临时 PostgreSQL。
 - `18080`：第二层 E2E 临时 Spring Boot API。
+- `55434`：第三层 E2E 临时 PostgreSQL。
+- `18082`：第三层 E2E 临时 Spring Boot API。
 
 检查：
 
@@ -518,6 +644,8 @@ lsof -i :5173
 lsof -i :4173
 lsof -i :55432
 lsof -i :18080
+lsof -i :55434
+lsof -i :18082
 ```
 
 关闭对应进程后重试。
@@ -527,6 +655,31 @@ lsof -i :18080
 ```bash
 ATLAS_E2E_POSTGRES_PORT=55433 ATLAS_E2E_BACKEND_PORT=18081 npm run e2e:second-layer
 ```
+
+如果是第三层端口冲突：
+
+```bash
+ATLAS_E2E_POSTGRES_PORT=55435 ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-layer
+```
+
+### 第三层提示缺少 `ATLAS_MODEL_API_KEY`
+
+这表示 third-layer 没有拿到本地 DeepSeek key。它会在启动 Docker 和 Spring Boot 前退出。
+
+在同一个 VS Code terminal 里设置后重试：
+
+```bash
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+npm run e2e:third-layer
+```
+
+不要把真实 key 写进 frontend 源码、Playwright spec、文档、截图、trace、报告或 git。
+
+### 第三层 provider 返回 429、5xx 或网络错误
+
+这通常是本地网络、provider quota 或 provider 可用性问题。确认 key 和网络都被批准用于本地测试后再重试。
+
+不要把 provider 原始响应复制进 issue、文档或 commit。
 
 ### 后端测试找不到 Docker
 
@@ -568,13 +721,14 @@ frontend/test-results/
 samples/output/
 ```
 
-## 15. 判断本地已经跑通的最小标准
+## 16. 判断本地已经跑通的最小标准
 
 在 VS Code 终端里跑：
 
 ```bash
 npm run e2e:first-layer
 npm run e2e:second-layer
+if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then npm run e2e:third-layer; fi
 mvn -f backend/pom.xml verify
 git diff --check
 git status --short
@@ -584,6 +738,7 @@ git status --short
 
 - 第一层 E2E 通过。
 - 第二层 E2E 通过。
+- 如果本地有 `ATLAS_MODEL_API_KEY`，第三层 E2E 通过；如果没有，要记录 third-layer 因缺少本地 key 未运行。
 - Backend verify 通过。
 - 没有 whitespace 错误。
 - 没有意外生成文件、真实密钥或真实公司数据进入 git。

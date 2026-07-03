@@ -232,15 +232,18 @@ public class AskService {
                         item.getSourceChunkId(),
                         safeLabel(item)))
             .toList();
+    boolean configuredMode = "configured".equals(validated.mode());
     return new CreateModelRunRequest(
-        null,
-        "deepseek-flash",
+        configuredMode ? "deepseek" : null,
+        configuredMode ? null : "deepseek-flash",
         ModelOperation.CHAT,
         "trusted-ask",
         validated.requestedBy(),
         validated.mode(),
         "ask-context:" + run.getId(),
-        "Answer the trusted ask question using only the referenced Atlas evidence.",
+        "Question: "
+            + validated.question()
+            + "\nAnswer the trusted ask question using only the referenced Atlas evidence.",
         references);
   }
 

@@ -97,6 +97,12 @@ Only use mock data in this repository. Do not commit real company documents, scr
 
 ## Automated Acceptance
 
+Atlas has three acceptance layers:
+
+- `first-layer`: deterministic local/mock gate, no provider calls.
+- `second-layer`: deterministic local full-stack gate with Docker PostgreSQL and Spring Boot, still no provider calls.
+- `third-layer`: opt-in provider-backed gate for DeepSeek Ask through the backend ModelAdapter, using mock/sample knowledge data only.
+
 Run the mock knowledge-loop E2E from the repository root:
 
 ```bash
@@ -109,6 +115,18 @@ Run the local full-stack second-layer E2E with Docker PostgreSQL, Spring Boot, f
 ```bash
 npm run e2e:second-layer
 ```
+
+Run the opt-in provider-backed third-layer E2E only when a local approved DeepSeek key is already available in the shell environment:
+
+```bash
+export ATLAS_MODEL_PROVIDER=deepseek
+export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_NAME=deepseek-chat
+npm run e2e:third-layer
+```
+
+Do not commit `.env` files, shell history exports, real API keys, provider logs, screenshots, or company data.
 
 For the smaller mock knowledge-loop-only path:
 

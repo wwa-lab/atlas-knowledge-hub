@@ -26,6 +26,16 @@ npm run e2e:first-layer
 npm run e2e:second-layer
 ```
 
+Provider-backed third-layer only:
+
+```bash
+export ATLAS_MODEL_PROVIDER=deepseek
+export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_NAME=deepseek-chat
+npm run e2e:third-layer
+```
+
 Mock knowledge-loop only:
 
 ```bash
@@ -105,8 +115,61 @@ Second-layer generated logs and reports:
 - `frontend/playwright-report/index.html`
 - `frontend/test-results/e2e-junit.xml`
 
+## Third-Layer Gate
+
+`npm run e2e:third-layer` is the opt-in provider-backed local gate. It requires `ATLAS_MODEL_API_KEY` before it starts services and defaults to DeepSeek through the ModelAdapter boundary.
+
+It is intentionally not part of the default frontend E2E command. These commands remain provider-free:
+
+```bash
+npm --prefix frontend run e2e
+npm run e2e:first-layer
+npm run e2e:second-layer
+```
+
+It runs:
+
+1. Required provider configuration preflight.
+2. Temporary Docker PostgreSQL startup on `127.0.0.1:55434` by default.
+3. Spring Boot API startup on `127.0.0.1:18082` by default.
+4. Frontend build with `VITE_ATLAS_API_BASE_URL` set to the local API.
+5. Playwright third-layer flow:
+   - create trusted sample evidence through the API;
+   - approve and publish the file to Wiki;
+   - project graph nodes and evidence;
+   - index vector evidence;
+   - ask with `mode=configured` so DeepSeek is invoked only through ModelAdapter;
+   - verify answer success, evidence, citation/source trace, and live graph connectivity rather than fallback mock graph data.
+6. Artifact scan for obvious credentials, private paths, and bearer-token leakage.
+7. Diff whitespace hygiene check.
+
+Useful overrides:
+
+```bash
+ATLAS_E2E_POSTGRES_PORT=55435 npm run e2e:third-layer
+ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-layer
+ATLAS_MODEL_ENDPOINT=https://api.deepseek.com npm run e2e:third-layer
+ATLAS_MODEL_NAME=deepseek-chat npm run e2e:third-layer
+KEEP_ATLAS_E2E_STACK=1 npm run e2e:third-layer
+```
+
+Third-layer generated logs and reports:
+
+- `samples/output/e2e/third-layer-backend.log`
+- `frontend/playwright-report/index.html`
+- `frontend/test-results/e2e-junit.xml`
+
+Skip or expected-failure conditions:
+
+- If `ATLAS_MODEL_API_KEY` is missing, the script exits before starting Docker or Spring Boot with a clear opt-in message.
+- If Docker Desktop is not running, PostgreSQL startup fails and no provider request is made.
+- If the provider network call fails, returns 429, or returns a 5xx response, the backend sanitizes the provider error and the test fails without storing raw provider responses.
+- If provider quota, latency, or endpoint availability is unstable, rerun only after confirming the key and network are approved for local testing.
+- Do not paste real keys into Playwright specs, frontend code, docs, screenshots, traces, reports, or git history.
+- Do not use real company documents; the third-layer flow seeds only mock/sample evidence.
+
 ## Out Of Scope
 
 First-layer and second-layer E2E are not configured/company-provider E2E. They do not use real company documents, real credentials, external cloud calls, DeepSeek/Copilot/provider APIs, production auth/RBAC, real object storage, real vector databases, real model providers, or real external databases.
 
-Configured integration should continue to use `npm run e2e:loop:configured` and approved local/company configuration when provider-backed E2E is intentionally in scope.
+Third-layer E2E is still mock/sample-data-only. It does not use real company documents, production auth/RBAC, real object storage, or a real external vector database. It is provider-backed only for the Ask model call behind ModelAdapter. Configured integration can continue to use `npm run e2e:loop:configured` and approved local/company configuration when broader provider-backed coverage is intentionally in scope.

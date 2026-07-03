@@ -49,7 +49,6 @@ class AdapterSeamGuardTest {
     assertThat(adapterSource)
         .doesNotContain("WebClient")
         .doesNotContain("RestTemplate")
-        .doesNotContain("HttpClient")
         .doesNotContain("ProcessBuilder")
         .doesNotContain("Runtime.getRuntime(");
     assertThat(adapterSource)
@@ -57,7 +56,9 @@ class AdapterSeamGuardTest {
         .contains("document-normalize")
         .contains("mock-model")
         .contains("mock-vector")
-        .contains("pgvector");
+        .contains("pgvector")
+        .contains("HttpClient")
+        .contains("DeepSeek");
   }
 
   @Test

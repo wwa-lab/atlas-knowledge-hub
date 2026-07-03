@@ -48,6 +48,7 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 | 4 (hardening) | `review-publish` | SME review state machine + approved-Markdown publish to Wiki | Full stack | ✅ implemented (T-REVIEW-PUBLISH-001→009; production auth/RBAC deferred) |
 | 4 (hardening) | `knowledge-graph` | Node/edge extraction from approved pages + inspectable viz | Full stack | ✅ implemented (T-KG-001→013; production graph layout/engine deferred) |
 | 4 (hardening) | `ask-rag` | Source-grounded, review-aware Ask over approved content | Full stack | ✅ implemented |
+| 4+ (acceptance) | `provider-backed-e2e` | Opt-in local third-layer E2E with DeepSeek-backed Ask through ModelAdapter, live API graph/publish/vector flow, and mock/sample data only | Acceptance + model adapter | ✅ implemented (provider run requires local `ATLAS_MODEL_API_KEY`) |
 
 Slice boundaries are guidance, not law: split a slice if its task list would exceed a reviewable single implementation pass, and record the split in traceability. Adapter slices in Phase 3 can each be an independent generate-all unit so contracts stay small.
 

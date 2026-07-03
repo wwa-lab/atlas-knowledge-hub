@@ -11,9 +11,10 @@ This runbook is the hands-on path for running Atlas Knowledge Hub locally. It is
 | Mock E2E loop | Local first-layer acceptance with mock/sample data. | Node.js/npm and Playwright browsers from frontend install. |
 | Backend tests | API, adapter, Flyway, PostgreSQL contract behavior. | Java 21, Maven, Docker for Testcontainers. |
 | Second-layer E2E | Local full-stack browser plus API plus PostgreSQL loop. | Node.js/npm, Java 21, Maven, Docker Desktop. |
+| Third-layer E2E | Opt-in provider-backed Ask loop through DeepSeek and ModelAdapter, still using mock/sample knowledge data. | Node.js/npm, Java 21, Maven, Docker Desktop, local DeepSeek API key in shell env. |
 | Backend local API | Spring Boot API against your own PostgreSQL. | Java 21, Maven, PostgreSQL config. |
 
-The fastest path is the static prototype. The safest first verification path is `npm run e2e:first-layer`; use `npm run e2e:second-layer` when you want to prove the local browser is wired to the live Spring Boot API.
+The fastest path is the static prototype. The safest first verification path is `npm run e2e:first-layer`; use `npm run e2e:second-layer` when you want to prove the local browser is wired to the live Spring Boot API. Use `npm run e2e:third-layer` only when you intentionally want one real DeepSeek-backed Ask call from the backend adapter.
 
 ## 1. Prerequisites
 
@@ -210,7 +211,74 @@ KEEP_ATLAS_E2E_STACK=1 npm run e2e:second-layer
 
 By default the script removes the temporary Docker PostgreSQL container when it exits.
 
-## 9. Run Backend API Locally
+## 9. Run Third-Layer Provider-Backed E2E
+
+Use this when you want one local command that starts PostgreSQL, starts Spring Boot, builds the frontend, and verifies a real DeepSeek-backed Ask journey through the backend ModelAdapter.
+
+Third-layer is opt-in and not part of default frontend E2E, first-layer, or second-layer. It still uses mock/sample knowledge data only.
+
+From the repository root, export provider configuration in the current shell:
+
+```bash
+export ATLAS_MODEL_PROVIDER=deepseek
+export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_NAME=deepseek-chat
+```
+
+Then run:
+
+```bash
+npm run e2e:third-layer
+```
+
+Expected result:
+
+```text
+Third-layer provider-backed E2E complete.
+```
+
+Reports and logs:
+
+```text
+samples/output/e2e/third-layer-backend.log
+frontend/playwright-report/index.html
+frontend/test-results/e2e-junit.xml
+```
+
+What the command does:
+
+1. Fails before starting services if `ATLAS_MODEL_API_KEY` is missing.
+2. Starts a temporary Docker PostgreSQL container, default port `55434`.
+3. Starts Spring Boot API, default port `18082`.
+4. Builds the frontend against the local API.
+5. Seeds approved sample evidence, publishes Wiki, projects graph evidence, indexes vector evidence, and asks with `mode=configured`.
+6. Verifies answer success, evidence/citation/source trace, and live API-backed graph state.
+7. Scans generated provider-backed artifacts for obvious secrets and private paths.
+8. Cleans up the temporary backend process and PostgreSQL container by default.
+
+Useful overrides:
+
+```bash
+ATLAS_E2E_POSTGRES_PORT=55435 npm run e2e:third-layer
+ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-layer
+KEEP_ATLAS_E2E_STACK=1 npm run e2e:third-layer
+```
+
+Manual cleanup if you used `KEEP_ATLAS_E2E_STACK=1`:
+
+```bash
+docker rm -f atlas-e2e-third-postgres
+```
+
+Safety:
+
+- Do not commit `.env` files or shell exports containing real keys.
+- Do not paste real keys into frontend code, Playwright specs, docs, screenshots, traces, or reports.
+- Do not use real company documents; the test seeds only mock/sample evidence.
+- If the provider returns 429, 5xx, or a network error, the adapter sanitizes the failure and the E2E run should be treated as blocked by local/provider conditions.
+
+## 10. Run Backend API Locally
 
 Use this only when you want to manually call the Spring Boot API against a local PostgreSQL database.
 
@@ -237,7 +305,7 @@ Expected result:
 
 Do not commit the local password or database URL if it contains private information.
 
-## 10. Configured Mode
+## 11. Configured Mode
 
 Configured mode is for local/company integration after the required services exist.
 
@@ -270,7 +338,7 @@ Important:
 - Do not paste real keys into docs, issues, screenshots, or frontend source.
 - DeepSeek/Copilot/provider tests should be opt-in, not default.
 
-## 11. Clean Local Generated Output
+## 12. Clean Local Generated Output
 
 Safe cleanup:
 
@@ -278,11 +346,12 @@ Safe cleanup:
 rm -rf frontend/playwright-report frontend/test-results
 rm -rf samples/output/e2e
 rm -rf backend/target
+docker rm -f atlas-e2e-third-postgres 2>/dev/null || true
 ```
 
 Do not delete source directories or migrations.
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 ### `npm run setup` fails
 
@@ -330,6 +399,27 @@ ATLAS_E2E_POSTGRES_PORT=55433 ATLAS_E2E_BACKEND_PORT=18081 npm run e2e:second-la
 
 Or stop the conflicting local process before rerunning.
 
+### Third-layer E2E says `ATLAS_MODEL_API_KEY` is missing
+
+Set the key in the current shell and rerun:
+
+```bash
+export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+npm run e2e:third-layer
+```
+
+Do not add the key to frontend source, Playwright specs, committed docs, or git-tracked config.
+
+### Third-layer E2E says port 55434 or 18082 is busy
+
+Use another local port:
+
+```bash
+ATLAS_E2E_POSTGRES_PORT=55435 ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-layer
+```
+
+Or stop the conflicting local process before rerunning.
+
 ### Backend integration tests cannot find Docker
 
 Start Docker Desktop, then rerun:
@@ -370,13 +460,14 @@ frontend/test-results/
 samples/output/
 ```
 
-## 13. Before You Say Local Is Ready
+## 14. Before You Say Local Is Ready
 
 Run this minimum set:
 
 ```bash
 npm run e2e:first-layer
 npm run e2e:second-layer
+if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then npm run e2e:third-layer; fi
 mvn -f backend/pom.xml verify
 git diff --check
 git status --short
@@ -386,6 +477,7 @@ Expected:
 
 - E2E passes.
 - Backend verify passes.
+- Third-layer passes only when a local provider key is intentionally configured; otherwise record that it was skipped because `ATLAS_MODEL_API_KEY` was absent.
 - No whitespace errors.
 - No unexpected generated files or secrets are staged.
 
