@@ -37,8 +37,8 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 
 | Phase | Slice slug | Scope summary | Owner boundary | Status |
 |---|---|---|---|---|
-| 1 (FE) | `knowledge-space` | Vue 3 shell reproducing prototype: home, space shell, documents, wiki, graph, review, ask, settings — mock data only | FE only, no API | ✅ (T-KS-001→030) |
-| 1 (FE) | `folder-upload` | Folder/ZIP upload mock: file inventory, tree, batch creation, mock status/report | FE only, no API | 🔨 SDD ready (T-FU-001→013), impl pending |
+| 1 (FE) | `knowledge-space` | Vue 3 shell reproducing accepted IA: home library, global multi-Knowledge-Space chat, space shell, documents, processing center, wiki, graph, settings — mock data only | FE only, no API | ✅ (T-KS-001→031) |
+| 1 (FE) | `folder-upload` | Folder/ZIP upload mock: file inventory, tree, batch creation, mock status/report | FE only, no API | ✅ implemented (T-FU-001→013; T-FU-011 deferred optional) |
 | 2 (API) | `metadata-api` | Spring Boot metadata service: batch/file/space entities, PostgreSQL + Flyway, mock-free contract | Backend + DB | 🔒 needs data-model + API guide accepted |
 | 3 (adapter) | `converter-adapter` | `trinity-office` Office→PDF behind converter interface | Adapter, no direct call | 🔒 needs Phase 2 |
 | 3 (adapter) | `parser-adapter` | `document-normalize` PDF→Markdown/images behind parser interface | Adapter, no direct call | 🔒 needs Phase 2 |

@@ -1697,6 +1697,382 @@
       gap: 16px;
     }
 
+    .doc-manager {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .doc-category {
+      padding: 15px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .doc-category-head,
+    .doc-toolbar,
+    .doc-filter-row,
+    .doc-view-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .doc-category-head {
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .doc-category-head h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .doc-category-empty {
+      padding: 28px 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .doc-main {
+      min-width: 0;
+    }
+
+    .doc-toolbar {
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .doc-toolbar .search {
+      flex: 1 1 320px;
+      max-width: 520px;
+      margin: 0;
+      background: var(--panel-soft);
+    }
+
+    .doc-filter-row {
+      flex: 1 1 520px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .doc-filter {
+      min-height: 38px;
+      min-width: 150px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .doc-date-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .doc-date-row input {
+      width: 140px;
+      min-height: 36px;
+      padding: 0 11px;
+      color: var(--ink);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .doc-view-tools {
+      padding: 4px;
+      background: var(--panel-soft);
+      border-radius: var(--radius);
+    }
+
+    .doc-view-tools button {
+      min-width: 34px;
+      min-height: 34px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 18px;
+    }
+
+    .doc-view-tools button.active {
+      color: var(--primary-dark);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .doc-table {
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .doc-row {
+      display: grid;
+      grid-template-columns: 44px minmax(320px, 1.8fr) minmax(120px, 0.8fr) minmax(110px, 0.6fr) 90px 110px 150px;
+      gap: 12px;
+      align-items: center;
+      min-width: 1080px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .doc-row.header {
+      color: var(--muted);
+      background: var(--panel-soft);
+      font-weight: 800;
+    }
+
+    .doc-row:last-child {
+      border-bottom: 0;
+    }
+
+    .doc-row:not(.header) {
+      cursor: pointer;
+    }
+
+    .doc-row:not(.header):hover {
+      background: var(--panel-soft);
+    }
+
+    .doc-row.selected {
+      background: color-mix(in srgb, var(--primary-soft) 58%, var(--panel));
+    }
+
+    .doc-check {
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--panel);
+    }
+
+    .doc-check.checked {
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .doc-failure-note {
+      padding: 10px 12px;
+      margin-top: 10px;
+      color: #944844;
+      background: #fff1f0;
+      border: 1px solid #ffd2cf;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .doc-bulk-bar {
+      position: sticky;
+      bottom: 20px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(680px, calc(100% - 80px));
+      padding: 12px 14px;
+      margin: 18px auto 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .doc-danger {
+      color: #c83b3b;
+      background: #fff7f7;
+      border-color: #ffc9c9;
+    }
+
+    .doc-file {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .doc-file-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      color: var(--muted);
+      background: var(--panel-soft);
+      border-radius: var(--radius);
+      font-size: 20px;
+    }
+
+    .doc-file strong,
+    .doc-file span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .doc-file span,
+    .doc-muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .doc-detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 36;
+      display: none;
+      justify-content: flex-end;
+      background: rgba(14, 18, 16, 0.58);
+    }
+
+    .doc-detail-modal.active {
+      display: flex;
+    }
+
+    .doc-detail-drawer {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      width: min(860px, 58vw);
+      min-width: 680px;
+      height: 100%;
+      overflow: hidden;
+      background: var(--panel);
+      border-left: 1px solid var(--line);
+      box-shadow: -14px 0 42px rgba(0, 0, 0, 0.16);
+    }
+
+    .doc-detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 66px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .doc-detail-head h2 {
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      font-size: 20px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .doc-detail-actions {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .doc-detail-actions button {
+      min-width: 34px;
+      min-height: 34px;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 18px;
+    }
+
+    .doc-detail-actions button:hover {
+      background: var(--panel-soft);
+    }
+
+    .doc-detail-body {
+      min-height: 0;
+      padding: 24px 22px 34px;
+      overflow: auto;
+    }
+
+    .doc-detail-section {
+      margin-bottom: 24px;
+    }
+
+    .doc-detail-section h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .doc-summary-box,
+    .doc-preview-box,
+    .doc-error-box {
+      padding: 18px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .doc-error-box {
+      color: #944844;
+      background: #fff7f7;
+      border-color: #ffc9c9;
+      line-height: 1.6;
+    }
+
+    .doc-summary-box {
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    .doc-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .doc-section-head h3 {
+      margin: 0;
+    }
+
+    .doc-upload-time {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .doc-preview-box {
+      position: relative;
+      min-height: 520px;
+      padding: 36px 32px;
+      overflow: auto;
+      background: var(--panel);
+    }
+
+    .doc-preview-box pre {
+      margin: 0;
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .doc-expand-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+    }
+
     .panel {
       padding: 16px;
     }
@@ -1799,7 +2175,7 @@
 
     .wiki-layout {
       display: grid;
-      grid-template-columns: 260px minmax(0, 1fr) 300px;
+      grid-template-columns: 330px minmax(0, 1fr);
       gap: 16px;
     }
 
@@ -1940,28 +2316,120 @@
     }
 
     .graph-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 310px;
-      gap: 16px;
+      position: relative;
+      min-height: 720px;
     }
 
     .graph-canvas {
       position: relative;
-      min-height: 600px;
+      min-height: 720px;
       overflow: hidden;
-      background: var(--panel-soft);
+      background: var(--panel);
+      border: 0;
       box-shadow: none;
     }
 
     .graph-svg {
       display: block;
       width: 100%;
-      min-width: 880px;
-      height: 600px;
+      min-width: 980px;
+      height: 720px;
+    }
+
+    .graph-search {
+      position: absolute;
+      top: 22px;
+      left: 22px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: min(420px, calc(100% - 44px));
+      padding: 0 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .graph-search input {
+      width: 100%;
+      height: 42px;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      outline: none;
+    }
+
+    .graph-search span {
+      color: var(--muted);
+      font-size: 20px;
+    }
+
+    .graph-floating-panel {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      z-index: 2;
+      width: 218px;
+      padding: 16px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .graph-floating-panel .legend-list {
+      margin-top: 0;
+    }
+
+    .graph-control-list {
+      display: grid;
+      gap: 10px;
+      padding-top: 14px;
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .graph-control-list button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 7px 4px;
+      color: var(--muted);
+      text-align: left;
+      background: transparent;
+      border: 0;
+    }
+
+    .graph-overview {
+      padding-top: 14px;
+      margin-top: 14px;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      line-height: 1.5;
+    }
+
+    .graph-overview strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
     }
 
     .graph-node {
       cursor: pointer;
+    }
+
+    .graph-node.ghost {
+      cursor: default;
+      opacity: 0.28;
+    }
+
+    .graph-node.ghost .graph-label {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.55;
     }
 
     .graph-label {
@@ -1995,11 +2463,11 @@
     .legend-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 12px;
       padding: 9px 10px;
-      background: var(--panel-soft);
-      border: 1px solid var(--line);
+      background: transparent;
+      border: 0;
       border-radius: var(--radius);
     }
 
@@ -2549,6 +3017,7 @@
     <section class="settings-modal" id="settingsView" aria-modal="true" role="dialog"></section>
     <section class="create-space-modal" id="createSpaceView" aria-modal="true" role="dialog"></section>
     <section class="settings-modal" id="uploadView" aria-modal="true" role="dialog"></section>
+    <section class="doc-detail-modal" id="docDetailView" aria-modal="true" role="dialog"></section>
   </div>
 
   <script>
@@ -2567,6 +3036,7 @@
       selectedIndexStrategy: "rag",
       settingsPanel: "members",
       selectedModelId: "deepseek-flash",
+      selectedChatSpaces: ["English Learning Studio", "IBM i Modernization"],
       uploadFlowState: "IDLE",
       pendingInventory: null,
       activeBatch: null,
@@ -2595,7 +3065,7 @@
         newSpace: "新建知识库",
         dialogTitle: "Atlas，让你的知识触手可及",
         dialogSubtitle: "你可以这样问我",
-        dialogPlaceholder: "输入问题，将基于上方选中的知识库/文件回答",
+        dialogPlaceholder: "输入问题，将基于上方选中的知识库回答",
         quickAsk: "快速问答⌄",
         selectedKbTitle: "已选择知识库",
         send: "发送",
@@ -2648,7 +3118,7 @@
         progressPdf: "Office 转 PDF",
         progressMarkdown: "PDF 转 Markdown",
         progressReview: "SME Review",
-        tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "Review", ask: "Ask" },
+        tabs: { docs: "文档", wiki: "Wiki", graph: "图谱", review: "处理中心", ask: "可信问答" },
         batchHelp: "文件夹或 ZIP 上传后，Atlas 通过 converter adapter 和 parser adapter 批量生成 PDF、Markdown、source trace 与 review queue。",
         fileTree: "文件树与解析状态",
         wikiSearch: "搜索 Wiki 页面...",
@@ -2669,8 +3139,8 @@
         askTitle: "Ask IBM i Modernization",
         askPlaceholder: "Ask about IBM i Modernization...",
         confidence: "Confidence",
-        askPolicy: "可信回答策略",
-        askPolicyText: "Ask 只展示来自已审核或带有清晰 source_trace 的证据。Medium confidence 表示答案可用于探索，但仍建议打开来源页面核对。",
+        askPolicy: "可信问答策略",
+        askPolicyText: "可信问答只消费已发布、已审核或带有清晰 source_trace 的知识资产，不直接面向未解析或未审核的原始上传文档。",
         approvedWikiPages: "Approved Wiki pages",
         evidenceChunks: "Evidence chunks",
         reviewRequired: "Review required",
@@ -2811,7 +3281,7 @@
         newSpace: "New Space",
         dialogTitle: "Atlas, knowledge within reach",
         dialogSubtitle: "Try asking",
-        dialogPlaceholder: "Ask a question based on the selected knowledge base or file",
+        dialogPlaceholder: "Ask a question based on the selected knowledge spaces",
         quickAsk: "Quick Ask⌄",
         selectedKbTitle: "Selected knowledge base",
         send: "Send",
@@ -2864,7 +3334,7 @@
         progressPdf: "Office to PDF",
         progressMarkdown: "PDF to Markdown",
         progressReview: "SME Review",
-        tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Review", ask: "Ask" },
+        tabs: { docs: "Documents", wiki: "Wiki", graph: "Graph", review: "Processing Center", ask: "Trusted Ask" },
         batchHelp: "After folder or ZIP upload, Atlas uses converter and parser adapters to generate PDF, Markdown, source trace, and review queue artifacts.",
         fileTree: "File Tree And Parsing Status",
         wikiSearch: "Search Wiki pages...",
@@ -2886,7 +3356,7 @@
         askPlaceholder: "Ask about IBM i Modernization...",
         confidence: "Confidence",
         askPolicy: "Trusted Answer Policy",
-        askPolicyText: "Ask only shows evidence that is reviewed or has clear source_trace. Medium confidence means the answer is useful for exploration, but sources should still be checked.",
+        askPolicyText: "Trusted Ask only consumes published, reviewed, or clearly source-traced knowledge assets. It does not query unparsed or unreviewed raw uploads directly.",
         approvedWikiPages: "Approved Wiki pages",
         evidenceChunks: "Evidence chunks",
         reviewRequired: "Review required",
@@ -3516,6 +3986,7 @@
     const settingsView = document.querySelector("#settingsView");
     const createSpaceView = document.querySelector("#createSpaceView");
     const uploadView = document.querySelector("#uploadView");
+    const docDetailView = document.querySelector("#docDetailView");
     const sideNav = document.querySelector("#sideNav");
     const sideFooterText = document.querySelector("#sideFooterText");
 
@@ -3546,7 +4017,7 @@
       sideNav.innerHTML = `
         <div class="side-search"><span>⌕</span><span>${text.sideSearch}</span></div>
         ${text.nav.map((item, index) => `
-          <button class="${index === 0 && uiState.view === "home" ? "active" : ""}" data-nav="${item}" data-nav-key="${text.navKeys[index]}">
+          <button class="${uiState.view === "home" && text.navKeys[index] === "all" ? "active" : uiState.view === text.navKeys[index] ? "active" : ""}" data-nav="${item}" data-nav-key="${text.navKeys[index]}">
             <span>${["□", "✦", "∞", "◱"][index]}</span>${item}
           </button>
         `).join("")}
@@ -3620,14 +4091,60 @@
       `;
     }
 
+    function renderChat() {
+      const text = copy();
+      const isZh = uiState.lang === "zh-CN";
+      const selectedCount = uiState.selectedChatSpaces.length;
+      homeView.innerHTML = `
+        <section class="dialog-hero" style="min-height:calc(100vh - 92px);">
+          <div class="dialog-center">
+            <h2>${isZh ? "Atlas，让你的知识触手可及" : "Atlas, knowledge within reach"}</h2>
+            <p>${isZh ? "选择一个或多个知识库作为上下文，再开始对话。" : "Choose one or more knowledge spaces as context, then ask."}</p>
+            <div class="prompt-chips">
+              ${appData.dialog.prompts.map((prompt) => `<button class="prompt-chip" data-prompt="${prompt}">${prompt}</button>`).join("")}
+            </div>
+            <div class="dialog-box">
+              <div class="panel" style="position:absolute;left:0;right:0;bottom:100%;width:min(460px,100%);margin:0 auto 12px;padding:12px;text-align:left;box-shadow:var(--shadow);">
+                <h3 style="margin:0 0 10px;font-size:15px;">${text.kbTitle}</h3>
+                <div class="index-list">
+                  ${appData.dialog.knowledgeBases.map((kb) => {
+                    const selected = uiState.selectedChatSpaces.includes(kb.name);
+                    return `
+                      <button class="${selected ? "active" : ""}" data-chat-kb="${kb.name}" type="button">
+                        ${selected ? "✓" : "□"} ${kb.name} <span class="doc-muted">(${kb.count})</span>
+                      </button>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+              <textarea class="dialog-input" id="globalChatInput" placeholder="${text.dialogPlaceholder}"></textarea>
+              <div class="dialog-tools">
+                <div class="tool-left">
+                  <button class="mini-btn">${text.quickAsk}</button>
+                  <button class="icon-btn" title="${isZh ? "网页" : "Web"}">◎</button>
+                  <button class="icon-btn" title="${isZh ? "图片" : "Image"}">▧</button>
+                  <button class="icon-btn" title="${isZh ? "附件" : "Attachment"}">⌘</button>
+                  <button class="mini-btn" type="button">${isZh ? "知识库" : "Knowledge"}(${selectedCount})</button>
+                </div>
+                <div class="tool-right">
+                  <button class="mini-btn">DeepSeek Flash ⌄</button>
+                  <button class="btn">${text.send}</button>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top:14px;color:var(--muted);font-size:13px;">${isZh ? "未通过处理中心门禁的解析失败、低置信或缺少 source_trace 内容不会进入对话索引。" : "Failed parses, low-confidence content, and missing source_trace items blocked by Processing Center are excluded from chat context."}</p>
+          </div>
+        </section>
+      `;
+    }
+
     function renderSpace(activeTab = "wiki") {
       const text = copy();
       const tabs = [
         ["docs", text.tabs.docs],
-        ["wiki", text.tabs.wiki],
-        ["graph", text.tabs.graph],
         ["review", text.tabs.review],
-        ["ask", text.tabs.ask]
+        ["wiki", text.tabs.wiki],
+        ["graph", text.tabs.graph]
       ];
       spaceView.innerHTML = `
         <div class="crumbs">${text.breadcrumbHome} <span>/</span> <strong>IBM i Modernization</strong></div>
@@ -3656,7 +4173,6 @@
         <section class="tab-view ${activeTab === "wiki" ? "active" : ""}" id="tab-wiki">${renderWiki()}</section>
         <section class="tab-view ${activeTab === "graph" ? "active" : ""}" id="tab-graph">${renderGraph()}</section>
         <section class="tab-view ${activeTab === "review" ? "active" : ""}" id="tab-review">${renderReview()}</section>
-        <section class="tab-view ${activeTab === "ask" ? "active" : ""}" id="tab-ask">${renderAsk()}</section>
       `;
       renderGraphSvg();
     }
@@ -4082,6 +4598,117 @@
       return `source_trace: ${trace.sourcePath}${page}; chunk_id: ${trace.chunkId}; review_status:`;
     }
 
+    function buildDocumentRows(batch, isZh) {
+      const baselineRows = [
+        { title: "公众号 - 源码流程分析不是从头考古...", desc: "--- title: 源码流程分析不是从头考古...", size: "20.5 KB", status: "PUBLISHED", updated: "26-07-02 06:36" },
+        { title: "公众号 - 核心系统迁移，先把 ...", desc: "--- title: 主机系统字段规则自动化提...", size: "32.6 KB", status: "PUBLISHED", updated: "26-07-02 06:36" },
+        { title: "公众号 - 当方法论成立之后，...", desc: "--- title: Legacy Spec Factory：从...", size: "23.8 KB", status: "PUBLISHED", updated: "26-07-02 06:36" },
+        { title: "公众号 - 千万行老代码里的需...", desc: "--- title: 千万行老代码里的需求，怎...", size: "26.0 KB", status: "PUBLISHED", updated: "26-07-02 06:36" },
+        { title: "公众号 - 从程序单到程序链： ...", desc: "--- title: 从程序单到程序链：千万行 ...", size: "24.4 KB", status: "FAILED", updated: "26-06-25 06:52", selected: true, failureReason: "Markdown parser returned empty content after OCR fallback; source trace was not complete." },
+        { title: "公众号 - 从源码流程复原到迁...", desc: "--- title: 从源码流程复原到迁移工厂 ...", size: "18.4 KB", status: "PUBLISHED", updated: "26-07-02 06:35" },
+        { title: "公众号 - 不要让 AI 总结 30,00...", desc: "--- title: 不要让 AI 总结 30,000 行 ...", size: "34.4 KB", status: "PUBLISHED", updated: "26-07-02 06:35" },
+        { title: "公众号 - IBM i 在 AI 时代的新...", desc: "# 当 AI 走进绿屏：我们在 IBM i 上跑...", size: "16.4 KB", status: "FAILED", updated: "26-06-25 06:52", failureReason: "Mock converter failure: unsupported embedded image stream." }
+      ];
+      if (!uiState.activeBatch) return baselineRows;
+      return batch.fileItems.map((file, index) => ({
+        title: sourceFileName(file.path),
+        desc: `${isZh ? "来源追溯" : "source_trace"}: ${file.sourceTrace.sourcePath}`,
+        size: `${(16 + index * 2.3).toFixed(1)} KB`,
+        status: file.status,
+        updated: batch.uploadedAt.replace("2026-", "26-").replace(" ", " "),
+        selected: ["FAILED", "PDF_CONVERT_FAILED"].includes(file.status),
+        failureReason: file.errors ? file.errors.join("; ") : "Mock parser failed before producing Markdown chunks."
+      }));
+    }
+
+    function renderDocDetail(row) {
+      const isZh = uiState.lang === "zh-CN";
+      const isFailed = ["FAILED", "PDF_CONVERT_FAILED"].includes(row.status);
+      const markdown = `---
+title: 源码流程分析不是从头考古：Legacy Spec Factory 的可信补证路径
+type: article-draft
+status: v1-package
+audience: 面向银行、支付、卡类核心系统现代化相关的产品、架构、研发、交付与管理者
+source:
+  - "00_inbox/articles/7x24 running 软件工厂 的落地之需求梳理-基于千万行源码程序流程分析.docx"
+  - "https://github.com/wwa-lab/legacy-spec-factory"
+author: Leo手记
+published:
+created: 2026-05-30
+series: 7x24 软件工厂 需求治理系列
+series_no: 03
+cover: "assets/legacy-source-verification-path/cover/legacy-source-verification-path-cover.png"
+---
+
+# 源码流程分析不是从头考古
+
+Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，而是围绕业务入口、程序链路、字段规则和异常分支形成可验证证据。
+
+- 优先定位业务流程与关键交易入口。
+- 以 source_trace 连接原始文档、源码片段和 Wiki 摘要。
+- 低置信度内容进入 SME Review，而不是直接发布。`;
+      return `
+        <div class="doc-detail-drawer">
+          <header class="doc-detail-head">
+            <h2>${escapeHtml(row.title)}</h2>
+            <div class="doc-detail-actions">
+              <span class="badge medium">MD</span>
+              <button type="button" title="${isZh ? "下载" : "Download"}">⇩</button>
+              <button type="button" title="${isZh ? "趋势" : "Chart"}">⌁</button>
+              <button type="button" data-doc-detail-close="true" title="${isZh ? "关闭" : "Close"}">×</button>
+            </div>
+          </header>
+          <div class="doc-detail-body">
+            <section class="doc-detail-section">
+              <h3>${isZh ? "摘要" : "Summary"}</h3>
+              <div class="doc-summary-box">
+                ---<br>
+                title: 源码流程分析不是从头考古：Legacy Spec Factory 的可信补证路径<br>
+                type: article-draft<br>
+                <span style="display:block;text-align:center;color:var(--muted);">⌄</span>
+              </div>
+              ${isFailed ? `<div class="doc-error-box" style="margin-top:12px;">
+                <strong>${isZh ? "解析失败" : "Parse failed"}</strong><br>
+                ${isZh ? "原因" : "Reason"}：${escapeHtml(row.failureReason || (isZh ? "解析器未生成可用 Markdown 片段。" : "Parser produced no usable Markdown chunks."))}<br>
+                ${isZh ? "建议" : "Next"}：${isZh ? "重新解析，或查看日志确认是否需要 OCR / 格式转换修复。" : "Retry parsing, or inspect logs to decide whether OCR or conversion repair is needed."}
+              </div>` : ""}
+            </section>
+            <section class="doc-detail-section">
+              <div class="doc-section-head">
+                <div>
+                  <h3>${isZh ? "文件内容" : "File Content"} <span class="badge medium">${isZh ? "共 36 个片段" : "36 chunks"}</span></h3>
+                  <p class="doc-upload-time">${isZh ? "上传时间" : "Uploaded"}：2026-07-02 06:36:53</p>
+                </div>
+                <div class="button-row">
+                  ${isFailed ? `<button class="btn" type="button">${isZh ? "重新解析" : "Retry Parse"}</button>
+                  <button class="btn secondary" type="button">${isZh ? "查看日志" : "View Logs"}</button>` : `<button class="btn" type="button">${isZh ? "预览" : "Preview"}</button>
+                  <button class="btn secondary" type="button">${isZh ? "查看分块" : "View Chunks"}</button>`}
+                </div>
+              </div>
+              <div class="doc-preview-box">
+                <button class="icon-btn doc-expand-btn" title="${isZh ? "展开" : "Expand"}">↗</button>
+                <pre>${escapeHtml(markdown)}</pre>
+              </div>
+            </section>
+          </div>
+        </div>
+      `;
+    }
+
+    function openDocDetail(index) {
+      if (!docDetailView) return;
+      const rows = buildDocumentRows(activeBatch(), uiState.lang === "zh-CN");
+      const row = rows[index] || rows[0];
+      docDetailView.innerHTML = renderDocDetail(row);
+      docDetailView.classList.add("active");
+    }
+
+    function closeDocDetail() {
+      if (!docDetailView) return;
+      docDetailView.classList.remove("active");
+      docDetailView.innerHTML = "";
+    }
+
     function activeBatch() {
       if (uiState.activeBatch) return uiState.activeBatch;
       return {
@@ -4266,6 +4893,7 @@
     function renderDocs() {
       const batch = activeBatch();
       const text = copy();
+      const isZh = uiState.lang === "zh-CN";
       const metrics = [
         [text.totalFiles, batch.metrics.totalFiles],
         [text.pdfConverted, batch.metrics.pdfConverted],
@@ -4274,154 +4902,313 @@
         [text.failed, batch.metrics.failed],
         [text.unsupportedMetric, batch.metrics.unsupported]
       ];
+      const rows = buildDocumentRows(batch, isZh);
+      const selectedCount = rows.filter((row) => row.selected).length;
+      const statusLabel = (status) => {
+        if (["PUBLISHED", "APPROVED", "MARKDOWN_GENERATED", "PDF_CONVERTED", "REVIEW_REQUIRED", "LOW_CONFIDENCE", "OCR_REQUIRED"].includes(status)) {
+          return isZh ? "已完成" : "Done";
+        }
+        if (status === "UNSUPPORTED") return isZh ? "不支持" : "Unsupported";
+        return isZh ? "失败" : "Failed";
+      };
       return `
-        <div class="doc-grid">
-          <section class="panel">
-            <h2>${escapeHtml(batch.name)}</h2>
-            <p style="color:var(--muted);line-height:1.55;">${text.batchHelp}</p>
-            <div class="source-row" style="margin-top:12px;"><span>${text.ownerLabel}</span><strong>${escapeHtml(batch.owner)}</strong></div>
-            <div class="source-row" style="margin-top:8px;"><span>${text.uploadedAt}</span><strong>${escapeHtml(batch.uploadedAt)}</strong></div>
-            <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
-              <button class="btn" data-upload-kind="folder" data-testid="upload-folder" type="button">${text.uploadFolder}</button>
-              <button class="btn secondary" data-upload-kind="zip" data-testid="upload-zip" type="button">${text.uploadZip}</button>
-              ${uiState.activeBatch ? `<button class="btn secondary" data-view-report="true" data-testid="view-report" type="button">${text.viewReport}</button>` : ""}
+        <div class="doc-manager">
+          <aside class="doc-category">
+            <div class="doc-category-head">
+              <h2>${isZh ? "文档分类" : "Document Categories"} <span class="doc-muted">(0)</span></h2>
+              <button class="icon-btn" title="${isZh ? "添加分类" : "Add category"}">＋</button>
             </div>
-            <div class="metric-grid" data-testid="batch-metrics">
+            <input class="search" placeholder="${isZh ? "输入标签名称关键字" : "Search tag name"}" aria-label="${isZh ? "输入标签名称关键字" : "Search tag name"}">
+            <div class="doc-category-empty">${isZh ? "未找到匹配的标签" : "No matching tags"}</div>
+          </aside>
+          <section class="doc-main">
+            <div class="doc-toolbar">
+              <input class="search" placeholder="${isZh ? "搜索文档名称..." : "Search document name..."}" aria-label="${isZh ? "搜索文档名称" : "Search document name"}">
+              <div class="doc-filter-row">
+                <select class="doc-filter" aria-label="${isZh ? "全部类型" : "All types"}"><option>${isZh ? "全部类型" : "All types"}</option></select>
+                <select class="doc-filter" aria-label="${isZh ? "全部状态" : "All statuses"}"><option>${isZh ? "全部状态" : "All statuses"}</option></select>
+                <select class="doc-filter" aria-label="${isZh ? "全部来源" : "All sources"}"><option>${isZh ? "全部来源" : "All sources"}</option></select>
+                <button class="btn" data-upload-kind="folder" data-testid="upload-folder" type="button">${text.uploadFolder}</button>
+                <button class="btn secondary" data-upload-kind="zip" data-testid="upload-zip" type="button">${text.uploadZip}</button>
+                ${uiState.activeBatch ? `<button class="btn secondary" data-view-report="true" data-testid="view-report" type="button">${text.viewReport}</button>` : ""}
+              </div>
+            </div>
+            <div class="doc-date-row">
+              <input placeholder="${isZh ? "起始时间" : "Start time"}" aria-label="${isZh ? "起始时间" : "Start time"}">
+              <input placeholder="${isZh ? "结束时间" : "End time"}" aria-label="${isZh ? "结束时间" : "End time"}">
+              <div class="doc-view-tools" aria-label="${isZh ? "视图切换" : "View switch"}">
+                <button type="button" title="${isZh ? "宫格视图" : "Grid view"}">▦</button>
+                <button class="active" type="button" title="${isZh ? "列表视图" : "List view"}">☰</button>
+              </div>
+            </div>
+            <div class="metric-grid" data-testid="batch-metrics" style="display:none;">
               ${metrics.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join("")}
             </div>
-            <div class="progress-list" data-testid="batch-progress">
-              ${batch.progress.map((item) => `
-                <div>
-                  <div class="progress-head"><span>${text[item.key] || item.label}</span><span>${item.value}%</span></div>
-                  <div class="progress"><span style="width:${item.value}%"></span></div>
+            <div class="progress-list" data-testid="batch-progress" style="display:none;">
+              ${batch.progress.map((item) => `<div><div class="progress-head"><span>${text[item.key] || item.label}</span><span>${item.value}%</span></div></div>`).join("")}
+            </div>
+            <div class="doc-table" data-testid="file-tree">
+              <div class="doc-row header">
+                <span class="doc-check"></span>
+                <span>${isZh ? "文件名" : "File name"}</span>
+                <span>${isZh ? "标签" : "Tags"}</span>
+                <span>${isZh ? "来源" : "Source"}</span>
+                <span>${isZh ? "大小" : "Size"}</span>
+                <span>${isZh ? "状态" : "Status"}</span>
+                <span>${isZh ? "更新时间" : "Updated"}</span>
+              </div>
+              ${rows.map((row, index) => `
+                <div class="doc-row ${row.selected ? "selected" : ""}" data-doc-open="${index}" role="button" tabindex="0">
+                  <span class="doc-check ${row.selected ? "checked" : ""}">${row.selected ? "✓" : ""}</span>
+                  <div class="doc-file">
+                    <span class="doc-file-icon">□</span>
+                    <span>
+                      <strong>${escapeHtml(row.title)}</strong>
+                      <span>${escapeHtml(row.desc)}</span>
+                    </span>
+                  </div>
+                  <span class="doc-muted">--</span>
+                  <span class="doc-muted">⇧ ${isZh ? "上传" : "Upload"}</span>
+                  <span class="doc-muted">${row.size}</span>
+                  <span><span class="badge ${["FAILED", "PDF_CONVERT_FAILED"].includes(row.status) ? "failed" : "healthy"}">${statusLabel(row.status)}</span></span>
+                  <span class="doc-muted">${escapeHtml(row.updated)}</span>
                 </div>
               `).join("")}
             </div>
-          </section>
-          <section class="panel">
-            <h2>${text.fileTree}</h2>
-            <div class="file-tree" data-testid="file-tree">
-              ${renderFileTree(batch.fileItems, { truncated: batch.truncated, displayCap: batch.displayCap, detectedCount: batch.detectedCount })}
-            </div>
+            ${selectedCount > 0 ? `
+              <div class="doc-bulk-bar">
+                <span>${isZh ? "已选" : "Selected"} ${selectedCount} ${isZh ? "项" : "item"} <span class="doc-muted">${isZh ? "取消选择" : "Clear selection"}</span></span>
+                <div class="button-row">
+                  <button class="btn secondary" type="button">${isZh ? "重新解析" : "Retry Parse"}</button>
+                  <button class="btn secondary doc-danger" type="button">⌫ ${isZh ? "批量删除" : "Bulk Delete"}</button>
+                </div>
+              </div>
+            ` : ""}
           </section>
         </div>
       `;
     }
 
     function renderWiki() {
-      const wiki = appData.wiki;
       const text = copy();
+      const isZh = uiState.lang === "zh-CN";
+      const wikiEntries = [
+        {
+          title: isZh ? "公众号 - 源码流程分析不是从头考古..." : "Source Flow Analysis Is Not Archaeology...",
+          summary: isZh ? "本文阐述在 Legacy Spec Factory 工程链路中，源码流程分析不是默认主入口，而是..." : "Explains why source flow analysis is an evidence path inside the Legacy Spec Factory chain...",
+          date: "2026/06/27 07:39:31",
+          active: false
+        },
+        {
+          title: isZh ? "公众号 - 千万行老代码里的需求，怎..." : "Requirements Inside Ten-Million-Line Legacy Code...",
+          summary: isZh ? "本文提出一套源码切片驱动、数据字典打底、螺旋迭代优化的全域需求梳理闭环方..." : "A source-slice driven loop for extracting requirements from large legacy systems...",
+          date: "2026/06/27 07:33:45",
+          active: true
+        },
+        {
+          title: isZh ? "公众号 - 不要让 AI 总结 30,000 行 R..." : "Do Not Ask AI To Summarize 30,000 Lines Of RPG...",
+          summary: isZh ? "本文探讨 IBM i 大型 RPG 程序分析：不应简单摘要，而应进行证据驱动的结构化理解..." : "A structured, evidence-first approach to understanding large RPG programs...",
+          date: "2026/06/27 07:33:45",
+          active: false
+        },
+        {
+          title: isZh ? "公众号 - 核心系统迁移，先把 14000 ..." : "Before Core Migration, Restore 14,000 Fields...",
+          summary: isZh ? "本文介绍从 2000 万行旧主机源码中，通过接口锚定、程序白名单和字段反向溯源，..." : "Describes reverse tracing fields and interfaces before migration planning...",
+          date: "2026/06/27 07:33:45",
+          active: false
+        },
+        {
+          title: isZh ? "公众号 - 从源码流程复原到迁移工厂..." : "From Source Flow Reconstruction To Migration Factory...",
+          summary: isZh ? "本文把源码流程复原、业务语义提取和迁移工厂交付串成可复盘的工程路径..." : "Connects flow reconstruction, semantic extraction, and migration factory delivery...",
+          date: "2026/06/27 07:33:45",
+          active: false
+        }
+      ];
+      const summaryLinks = [
+        ["Concept - IBM i.md - Summary", isZh ? "IBM i 企业操作系统平台的概述，包括其重要性、核心特点、开发语言、现代化挑战及 SDD 与 AI 辅助方法的应用。" : "Overview of the IBM i enterprise platform, core traits, modernization challenges, and SDD plus AI-assisted methods."],
+        ["Project - IBM i Agent Skill Family.md - Summary", isZh ? "本文档概述 IBM i Agent Skill Family 项目，旨在构建一套 Claude Code 技能体系，在 IBM i 遗留系统上落地 SDD 方法论，以 AI 辅助提升全链路开发效率。" : "Overview of the IBM i Agent Skill Family project and its Claude Code skill system for SDD on IBM i modernization."],
+        ["Source - Leo - IBM i Agent Skill Family - 2026-04-06.md - Summary", isZh ? "本文档介绍 IBM i Agent Skill Family 的完整技能家族及其设计原则，涵盖从需求到代码的 SDD 工作流在 IBM i 平台上的具体落地。" : "Introduces the full skill family and design principles for taking SDD from requirements to code on IBM i."],
+        ["Source - Leo - Large Program Source - 2026-06-07.md - Summary", isZh ? "本文提出大型 RPG 程序分析应以证据驱动替代文本摘要，通过覆盖纪律、三层职责、防幻觉机制和自动循环实现可靠的程序理解与现代化迁移。" : "Argues for evidence-driven RPG analysis over text summaries, with coverage discipline and anti-hallucination loops."],
+        ["公众号 - IBM i 在 AI 时代的新生机 - 2026-04-06-final.md - Summary", isZh ? "本文介绍在 IBM i 上基于 SDD 方法论构建的 13 个 AI skill 体系，实现从需求到代码的完整链路，并通过实战降低人工损耗、提升质量。" : "Describes a 13-skill SDD system on IBM i that connects requirements to code and improves delivery quality."]
+      ];
       return `
         <div class="wiki-layout">
           <aside class="wiki-rail">
-            <h3>Wiki Index</h3>
             <input class="search" placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
             <ul class="index-list">
-              ${wiki.pages.map((page, index) => `<li><button data-section="${wiki.sections[index % wiki.sections.length].id}">${page}</button></li>`).join("")}
+              <li><button class="active" data-section="wiki-index">▤ ${isZh ? "索引" : "Index"}</button></li>
+              <li><button data-section="wiki-log">↺ ${isZh ? "日志" : "Log"}</button></li>
             </ul>
-            <h3 style="margin-top:22px;">${text.recentUpdates}</h3>
-            <ul class="recent-list">${wiki.recent.map((item) => `<li>${item}</li>`).join("")}</ul>
-          </aside>
-          <article class="wiki-main">
-            <header>
-              <h2>IBM i Modernization / LM Wiki</h2>
-              <p style="color:var(--muted);line-height:1.55;">${text.wikiIntro}</p>
-            </header>
-            ${wiki.sections.map((section) => `
-              <section class="wiki-section" id="${section.id}">
-                <h3>${section.title}</h3>
-                <p>${linkConcepts(section.body)}</p>
-                <div class="trace">source_trace: BRD_Methodology.pdf / page 12; RPG_Scan_Result.pdf / page 6; review_status: REVIEW_REQUIRED; confidence: medium</div>
-              </section>
-            `).join("")}
-          </article>
-          <aside class="wiki-rail">
-            <h3>Metadata</h3>
-            <div class="metadata-list">
-              <div><strong>Source Documents</strong>${wiki.metadata.sourceDocuments}</div>
-              <div><strong>Confidence</strong>${wiki.metadata.confidence}</div>
-              <div><strong>Review Status</strong><span class="badge review">${wiki.metadata.reviewStatus}</span></div>
-              <div><strong>Last Updated</strong>${wiki.metadata.lastUpdated}</div>
-              <div><strong>Owner</strong>${wiki.metadata.owner}</div>
-              <div><strong>Related Concepts</strong>
-                <ul class="related-list">${wiki.metadata.relatedConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
-              </div>
+            <div class="settings-tabs">
+              <button class="settings-tab active" type="button">${isZh ? "摘要" : "Summary"} <span class="badge healthy">12</span></button>
+              <button class="settings-tab" type="button">${isZh ? "实体" : "Entities"} <span class="badge medium">39</span></button>
+              <button class="settings-tab" type="button">${isZh ? "概念" : "Concepts"} <span class="badge medium">120</span></button>
             </div>
+            <ul class="index-list">
+              ${wikiEntries.map((entry) => `
+                <li>
+                  <button class="${entry.active ? "active" : ""}" data-section="wiki-index">
+                    <strong>${entry.title}</strong>
+                    <span style="display:block;margin-top:8px;color:var(--muted);line-height:1.5;">${entry.summary}</span>
+                    <span style="display:block;margin-top:10px;color:var(--muted);">${entry.date}</span>
+                  </button>
+                </li>
+              `).join("")}
+            </ul>
           </aside>
+          <article class="wiki-main" id="wiki-index">
+            <header>
+              <h2>${isZh ? "索引" : "Index"}</h2>
+              <p><span class="badge medium">${isZh ? "分类目录" : "Category Index"}</span></p>
+            </header>
+            <section class="wiki-section">
+              <h3>Wiki Index</h3>
+              <p>${isZh ? "本维基收录了 IBM i 企业操作系统平台的相关资料，涵盖其核心概念、基于 SDD 方法论的 AI 技能家族项目、关键原始文档，以及探讨老系统现代化路径和 AI 时代新生的实践文章。近期新增聚焦千万行 RPG 源码的逻辑拆解方法、Legacy Spec Factory 工程产线设计与交付复盘及其源码流程分析作为 module-first 链路的可信补证路径，进一步明确了源码流程分析在关键缺口上的验证角色；同时收录了《从源码流程复原到迁移工厂》和《核心系统迁移，先把 14000 个对外字段规则复原出来》，并新加入《源码流程分析不是从头考古：Legacy Spec Factory 的可信补证路径》，深化了证据驱动分析与规则自动化提取的工程实践。" : "This wiki collects IBM i modernization materials, including platform concepts, SDD-based AI skill-family work, source notes, and practical articles on legacy modernization. Recent additions focus on RPG source-flow decomposition, Legacy Spec Factory production design, delivery replay, and evidence-first analysis paths."}</p>
+            </section>
+            <section class="wiki-section">
+              <h3>${isZh ? "摘要" : "Summary"} (12)</h3>
+              <ul class="recent-list">
+                ${summaryLinks.map(([title, body]) => `<li><span class="concept">${title}</span> — ${body}</li>`).join("")}
+              </ul>
+            </section>
+          </article>
         </div>
       `;
     }
 
     function renderGraph() {
       const text = copy();
+      const isZh = uiState.lang === "zh-CN";
+      const graphLegend = [
+        [isZh ? "摘要" : "Summary", "blue"],
+        [isZh ? "实体" : "Entity", "green"],
+        [isZh ? "概念" : "Concept", "orange"],
+        [isZh ? "综合" : "Composite", "gray"],
+        [isZh ? "对比" : "Contrast", "red"]
+      ];
       return `
         <div class="graph-layout">
           <section class="graph-canvas">
+            <label class="graph-search">
+              <span>⌕</span>
+              <input placeholder="${text.wikiSearch}" aria-label="${text.wikiSearch}">
+              <span>⌄</span>
+            </label>
             <div class="graph-tooltip" id="graphTooltip"></div>
-            <svg class="graph-svg" id="graphSvg" viewBox="0 0 900 600" role="img" aria-label="IBM i Modernization 知识图谱"></svg>
+            <svg class="graph-svg" id="graphSvg" viewBox="0 0 1400 760" role="img" aria-label="IBM i Modernization 知识图谱"></svg>
+            <aside class="graph-floating-panel">
+              <div class="legend-list">
+                ${graphLegend.map(([label, color]) => `
+                  <div class="legend-item"><span class="dot ${color}"></span><span>${label}</span></div>
+                `).join("")}
+              </div>
+              <div class="graph-control-list">
+                <button type="button">⌾ ${isZh ? "适应屏幕" : "Fit screen"}</button>
+                <button type="button">◉ ${isZh ? "隐藏箭头" : "Hide arrows"}</button>
+              </div>
+              <div class="graph-overview">
+                <span>${isZh ? "全库概览" : "Full graph"}</span>
+                <strong>172 / 172 ${isZh ? "个节点" : "nodes"}</strong>
+                <span>${isZh ? "已展示知识库全部节点" : "All knowledge-space nodes shown"}</span>
+              </div>
+              <div id="nodeDetail" style="margin-top:14px;">
+                <strong style="font-size:15px;">${text.nodeDetail}</strong>
+                <p style="margin:6px 0 0;color:var(--muted);line-height:1.45;">${text.nodeDetailHelp}</p>
+              </div>
+            </aside>
           </section>
-          <aside class="panel">
-            <h2>${text.graphOverview}</h2>
-            <p style="color:var(--muted);line-height:1.55;">${text.graphHelp}</p>
-            <div class="legend-list">
-              ${legendItems().map((item) => `
-                <div class="legend-item"><span><span class="dot ${item.color}"></span>${item.label}</span><strong>${item.count}</strong></div>
-              `).join("")}
-            </div>
-            <div class="panel" style="margin-top:14px;box-shadow:none;" id="nodeDetail">
-              <h3>${text.nodeDetail}</h3>
-              <p style="color:var(--muted);line-height:1.55;">${text.nodeDetailHelp}</p>
-            </div>
-          </aside>
         </div>
       `;
     }
 
     function renderReview() {
-      const review = appData.review;
       const text = copy();
+      const isZh = uiState.lang === "zh-CN";
+      const qualityCards = [
+        [isZh ? "批量文档" : "Batch documents", "14,000", isZh ? "当前包规模" : "current package"],
+        [isZh ? "解析失败" : "Parse failed", "186", isZh ? "需要重试或删除" : "retry or remove"],
+        [isZh ? "OCR required" : "OCR required", "412", isZh ? "扫描/图片优先处理" : "scanned/image priority"],
+        [isZh ? "Low confidence" : "Low confidence", "729", isZh ? "进入 SME 抽检" : "SME sampling queue"],
+        [isZh ? "Missing source_trace" : "Missing source_trace", "94", isZh ? "禁止发布" : "publish blocked"],
+        [isZh ? "Ready to publish" : "Ready to publish", "12,579", isZh ? "可进入 Wiki/Graph/Ask" : "eligible for Wiki/Graph/Ask"]
+      ];
+      const reviewQueues = [
+        [isZh ? "解析失败" : "Parse failures", "PDF_CONVERT_FAILED / FAILED", "186", "failed"],
+        [isZh ? "缺少 source_trace" : "Missing source_trace", "TRACE_BLOCKED", "94", "review"],
+        [isZh ? "低置信度段落" : "Low-confidence chunks", "LOW_CONFIDENCE", "729", "review"],
+        [isZh ? "OCR 待处理" : "OCR required", "OCR_REQUIRED", "412", "ocr"],
+        [isZh ? "LLM 生成待审" : "LLM generated", "REVIEW_REQUIRED", "1,038", "review"]
+      ];
       return `
-        <div class="review-grid">
-          <section class="review-pane">
-            <h3>${text.pdfPreview}</h3>
-            <p style="color:var(--muted);">Source: ${review.source} / page ${review.page}</p>
-            <div class="pdf-preview">
-              <div>
-                <strong>PDF PAGE ${review.page}</strong>
-                <p>${text.pdfPlaceholder}</p>
+        <section class="panel">
+          <div class="page-head" style="margin-bottom:16px;">
+            <div class="title-block">
+              <h1>${isZh ? "批量处理中心" : "Processing Center"}</h1>
+              <p>${isZh ? "14k 文档规模下，这里负责失败重试、低置信度审核、source_trace 门禁和发布准备，不是单篇文章编辑页。" : "At 14k-document scale, this is the quality gate for retries, confidence review, source_trace checks, and publish readiness."}</p>
+            </div>
+            <div class="button-row">
+              <button class="btn secondary">${isZh ? "导出问题清单" : "Export Issues"}</button>
+              <button class="btn">${isZh ? "处理高优先级" : "Work Priority Queue"}</button>
+            </div>
+          </div>
+          <div class="metric-grid">
+            ${qualityCards.map(([label, value, note]) => `<div class="metric"><strong>${value}</strong><span>${label}</span><span class="doc-muted">${note}</span></div>`).join("")}
+          </div>
+        </section>
+        <div class="doc-manager" style="margin-top:16px;">
+          <aside class="doc-category">
+            <h2>${isZh ? "质量队列" : "Quality Queues"}</h2>
+            <ul class="index-list">
+              ${reviewQueues.map(([label, status, count, badge], index) => `
+                <li><button class="${index === 0 ? "active" : ""}" type="button"><strong>${label}</strong><span class="badge ${badge}" style="float:right;">${count}</span><span style="display:block;margin-top:7px;color:var(--muted);">${status}</span></button></li>
+              `).join("")}
+            </ul>
+          </aside>
+          <section class="doc-main">
+            <div class="doc-table">
+              <div class="doc-row header">
+                <span class="doc-check checked">✓</span>
+                <span>${isZh ? "待处理项" : "Issue"}</span>
+                <span>${isZh ? "类型" : "Type"}</span>
+                <span>${isZh ? "来源" : "Source"}</span>
+                <span>${isZh ? "数量" : "Count"}</span>
+                <span>${isZh ? "状态" : "Status"}</span>
+                <span>${isZh ? "动作" : "Action"}</span>
               </div>
-            </div>
-          </section>
-          <section class="review-pane">
-            <div class="card-foot" style="margin-top:0;">
-              <h3>${text.markdownPreview}</h3>
-              <span class="badge medium">${text.confidence} ${review.confidence}</span>
-            </div>
-            <div class="markdown-preview">${review.markdown.replace(/\n/g, "<br>")}</div>
-            <textarea placeholder="${text.reviewComments}"></textarea>
-            <div class="button-row" style="justify-content:flex-start;margin-top:12px;">
-              <button class="btn">${text.approve}</button>
-              <button class="btn secondary">${text.needFix}</button>
-              <button class="btn secondary">${text.markOcr}</button>
+              ${[
+                [isZh ? "从程序单到程序链：千万行源码流程分析" : "Program Card To Program Chain", "PDF_CONVERT_FAILED", "上传", "1", "失败", isZh ? "重新解析" : "Retry"],
+                [isZh ? "API_List.xlsx 第 8 页表格识别" : "API_List.xlsx page 8 table extraction", "OCR_REQUIRED", "上传", "17", "待处理", "OCR"],
+                [isZh ? "BRD_Methodology.pdf source_trace 缺失" : "BRD_Methodology.pdf missing source_trace", "TRACE_BLOCKED", "Parser", "6", "Blocked", isZh ? "修复 trace" : "Repair trace"],
+                [isZh ? "LLM 生成摘要待 SME 审核" : "LLM summaries pending SME review", "REVIEW_REQUIRED", "Wiki", "42", "Review", isZh ? "开始审核" : "Review"]
+              ].map(([name, type, source, count, status, action]) => `
+                <div class="doc-row">
+                  <span class="doc-check"></span>
+                  <div class="doc-file"><span class="doc-file-icon">□</span><span><strong>${name}</strong><span>${isZh ? "不会发布到 Wiki/Graph/Ask，直到问题关闭。" : "Blocked from Wiki/Graph/Ask until resolved."}</span></span></div>
+                  <span class="doc-muted">${type}</span>
+                  <span class="doc-muted">${source}</span>
+                  <span class="doc-muted">${count}</span>
+                  <span><span class="badge ${status === "失败" || status === "Blocked" ? "failed" : "review"}">${status}</span></span>
+                  <span><button class="btn secondary" type="button">${action}</button></span>
+                </div>
+              `).join("")}
             </div>
           </section>
         </div>
-        <section class="panel" style="margin-top:16px;">
-          <h2>${text.lowConfidence}</h2>
-          <div class="queue">
-            ${review.queue.map((item) => `<div class="queue-row"><span>${item}</span><span class="badge review">REVIEW_REQUIRED</span></div>`).join("")}
-          </div>
-        </section>
       `;
     }
 
     function renderAsk() {
       const ask = appData.ask;
       const text = copy();
+      const isZh = uiState.lang === "zh-CN";
       return `
         <div class="ask-grid">
           <section class="chat-panel">
-            <h3>${text.askTitle}</h3>
+            <div class="card-foot" style="margin-top:0;">
+              <h3>${isZh ? "可信问答" : "Trusted Ask"}</h3>
+              <span class="badge healthy">${isZh ? "仅已审核知识" : "Reviewed knowledge only"}</span>
+            </div>
+            <p style="color:var(--muted);line-height:1.6;">${isZh ? "Ask 不直接查询 14k 原始文档。它只使用已解析、已审核、可追溯、可发布的 Wiki / Graph / Evidence Bundle。" : "Ask does not query the 14k raw uploads directly. It only uses parsed, reviewed, source-traced, publishable Wiki / Graph / Evidence Bundle assets."}</p>
             <div style="margin-top:16px;">
               <div class="message user">${ask.question}</div>
               <div class="message answer">
@@ -4438,27 +5225,21 @@
           <aside class="panel">
             <h2>${text.askPolicy}</h2>
             <p style="color:var(--muted);line-height:1.62;">${text.askPolicyText}</p>
-            <div class="source-row"><span>${text.approvedWikiPages}</span><strong>42</strong></div>
+            <div class="source-row"><span>${isZh ? "已发布 Wiki pages" : text.approvedWikiPages}</span><strong>42</strong></div>
             <div class="source-row" style="margin-top:10px;"><span>${text.evidenceChunks}</span><strong>318</strong></div>
-            <div class="source-row" style="margin-top:10px;"><span>${text.reviewRequired}</span><strong>35</strong></div>
+            <div class="source-row" style="margin-top:10px;"><span>${isZh ? "被门禁阻断" : "Blocked by gates"}</span><strong>1,421</strong></div>
+            <div class="doc-failure-note">${isZh ? "解析失败、缺少 source_trace、低置信且未审核的内容不会进入 Ask 索引。" : "Failed parses, missing source_trace, and low-confidence unreviewed content are excluded from the Ask index."}</div>
           </aside>
         </div>
       `;
     }
 
     // Interactions
-    function linkConcepts(text) {
-      const concepts = Object.keys(appData.wiki.concepts).sort((a, b) => b.length - a.length);
-      return concepts.reduce((result, concept) => {
-        const escaped = concept.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        return result.replace(new RegExp(escaped, "g"), `<span class="concept" title="${appData.wiki.concepts[concept]}">${concept}</span>`);
-      }, text);
-    }
-
     function showHome() {
       uiState.view = "home";
       uiState.settingsOpen = false;
       uiState.createSpaceOpen = false;
+      renderHome();
       homeView.classList.add("active");
       spaceView.classList.remove("active");
       settingsView.classList.remove("active");
@@ -4468,12 +5249,26 @@
       });
     }
 
-    function showSpace(tab = "wiki") {
-      uiState.view = "space";
-      uiState.activeTab = tab;
+    function showChat() {
+      uiState.view = "chat";
       uiState.settingsOpen = false;
       uiState.createSpaceOpen = false;
-      renderSpace(tab);
+      renderChat();
+      homeView.classList.add("active");
+      spaceView.classList.remove("active");
+      settingsView.classList.remove("active");
+      createSpaceView.classList.remove("active");
+      document.querySelectorAll("#sideNav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.navKey === "chat");
+      });
+    }
+
+    function showSpace(tab = "wiki") {
+      uiState.view = "space";
+      uiState.activeTab = tab === "ask" ? "wiki" : tab;
+      uiState.settingsOpen = false;
+      uiState.createSpaceOpen = false;
+      renderSpace(uiState.activeTab);
       homeView.classList.remove("active");
       spaceView.classList.add("active");
       settingsView.classList.remove("active");
@@ -4573,7 +5368,9 @@
       applyPreferences();
       renderNav();
       renderHome();
-      if (uiState.view === "space") {
+      if (uiState.view === "chat") {
+        showChat();
+      } else if (uiState.view === "space") {
         showSpace(uiState.activeTab);
       } else {
         showHome();
@@ -4588,37 +5385,70 @@
       renderUploadSurface();
     }
 
-    function legendItems() {
-      const counts = appData.graph.nodes.reduce((acc, node) => {
-        acc[node.type] = (acc[node.type] || 0) + 1;
-        return acc;
-      }, {});
-      return [
-        { label: "Wiki Page", color: "blue", count: counts["Wiki Page"] || 0 },
-        { label: "Entity", color: "green", count: counts.Entity || 0 },
-        { label: "Concept", color: "orange", count: counts.Concept || 0 },
-        { label: "Document", color: "gray", count: counts.Document || 0 },
-        { label: "Review Required", color: "red", count: counts["Review Required"] || 0 }
-      ];
-    }
-
     function renderGraphSvg() {
       const svg = document.querySelector("#graphSvg");
       if (!svg) return;
-      const nodeById = Object.fromEntries(appData.graph.nodes.map((node) => [node.id, node]));
+      const ghostTypes = ["Wiki Page", "Entity", "Concept", "Document"];
+      const ghostLabels = [
+        "Legacy Spec", "RPGLE", "Program Card", "BRD", "Source Index", "DDS", "COBOL", "SME",
+        "Interface", "Batch Job", "Field Rule", "Evidence", "Migration", "Flow", "Golden", "Coverage"
+      ];
+      const ghostNodes = Array.from({ length: 120 }, (_, index) => {
+        const angle = index * 2.399;
+        const ring = 70 + (index % 9) * 34;
+        const wobble = (index % 5) * 14;
+        return {
+          id: `ghost-${index}`,
+          label: ghostLabels[index % ghostLabels.length],
+          type: ghostTypes[index % ghostTypes.length],
+          x: 690 + Math.cos(angle) * (ring + wobble),
+          y: 390 + Math.sin(angle) * (ring * 0.72 + wobble),
+          r: 10 + (index % 4) * 4
+        };
+      });
+      const primaryNodes = appData.graph.nodes.map((node) => ({
+        ...node,
+        x: node.x * 0.9 + 175,
+        y: node.y * 0.9 + 95,
+        r: Math.max(14, node.r * 0.78)
+      }));
+      const nodeById = Object.fromEntries(primaryNodes.map((node) => [node.id, node]));
+      const ghostEdges = ghostNodes.map((node, index) => {
+        const target = ghostNodes[(index * 7 + 11) % ghostNodes.length];
+        return `<line x1="${node.x.toFixed(1)}" y1="${node.y.toFixed(1)}" x2="${target.x.toFixed(1)}" y2="${target.y.toFixed(1)}" stroke="var(--line)" stroke-width="0.7" opacity="0.25" marker-end="url(#arrowMuted)" />`;
+      }).join("");
       const edges = appData.graph.edges.map(([from, to]) => {
         const a = nodeById[from];
         const b = nodeById[to];
-        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--line)" stroke-width="1.5" />`;
+        return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${graphColor[b.type] || "var(--orange)"}" stroke-width="1.6" opacity="0.78" marker-end="url(#arrowStrong)" />`;
       }).join("");
-      const nodes = appData.graph.nodes.map((node) => `
+      const ghosts = ghostNodes.map((node) => `
+        <g class="graph-node ghost">
+          <circle cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.52"></circle>
+          <text class="graph-label" x="${node.x.toFixed(1)}" y="${(node.y + node.r + 11).toFixed(1)}" text-anchor="middle">${node.label}</text>
+        </g>
+      `).join("");
+      const nodes = primaryNodes.map((node) => `
         <g class="graph-node" data-node="${node.id}">
           <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${graphColor[node.type]}" opacity="0.88"></circle>
-          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.1" stroke-width="8"></circle>
+          <circle cx="${node.x}" cy="${node.y}" r="${node.r + 5}" fill="none" stroke="${graphColor[node.type]}" opacity="0.24" stroke-width="7" stroke-dasharray="${node.type === "Concept" ? "3 4" : "0"}"></circle>
           <text class="graph-label" x="${node.x}" y="${node.y + node.r + 18}" text-anchor="middle">${node.label}</text>
         </g>
       `).join("");
-      svg.innerHTML = `<g>${edges}</g><g>${nodes}</g>`;
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrowMuted" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="var(--line)" opacity="0.4"></path>
+          </marker>
+          <marker id="arrowStrong" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <g>${ghostEdges}</g>
+        <g>${ghosts}</g>
+        <g>${edges}</g>
+        <g>${nodes}</g>
+      `;
     }
 
     function showNodeDetail(nodeId) {
@@ -4650,13 +5480,24 @@
 
         const kbItem = event.target.closest(".kb-item");
         if (kbItem && kbItem.dataset.kb === "IBM i Modernization") {
-          showSpace("ask");
+          showSpace("wiki");
         }
 
         const navButton = event.target.closest("[data-nav]");
         if (navButton) {
-          if (navButton.dataset.navKey === "space") showSpace("wiki");
+          if (navButton.dataset.navKey === "chat") showChat();
           else showHome();
+        }
+
+        const chatKb = event.target.closest("[data-chat-kb]");
+        if (chatKb) {
+          const kbName = chatKb.dataset.chatKb;
+          if (uiState.selectedChatSpaces.includes(kbName)) {
+            uiState.selectedChatSpaces = uiState.selectedChatSpaces.filter((name) => name !== kbName);
+          } else {
+            uiState.selectedChatSpaces = [...uiState.selectedChatSpaces, kbName];
+          }
+          renderChat();
         }
 
         const openSettingsButton = event.target.closest("[data-open-settings]");
@@ -4692,6 +5533,20 @@
         const viewReport = event.target.closest("[data-view-report]");
         if (viewReport) {
           await openBatchReport();
+        }
+
+        const docOpen = event.target.closest("[data-doc-open]");
+        if (docOpen) {
+          openDocDetail(Number(docOpen.dataset.docOpen));
+        }
+
+        if (event.target.id === "docDetailView") {
+          closeDocDetail();
+        }
+
+        const docDetailClose = event.target.closest("[data-doc-detail-close]");
+        if (docDetailClose) {
+          closeDocDetail();
         }
 
         const reportClose = event.target.closest("[data-report-close]");
@@ -4795,6 +5650,16 @@
       });
 
       document.addEventListener("keydown", (event) => {
+        const docOpen = event.target.closest ? event.target.closest("[data-doc-open]") : null;
+        if ((event.key === "Enter" || event.key === " ") && docOpen) {
+          event.preventDefault();
+          openDocDetail(Number(docOpen.dataset.docOpen));
+          return;
+        }
+        if (event.key === "Escape" && docDetailView.classList.contains("active")) {
+          closeDocDetail();
+          return;
+        }
         if (event.key === "Escape" && (uiState.uploadFlowState === "INVENTORY_READY" || uiState.uploadFlowState === "INVENTORY_EMPTY")) {
           cancelUpload();
           return;

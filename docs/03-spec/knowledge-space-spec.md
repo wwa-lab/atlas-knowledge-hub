@@ -2,7 +2,11 @@
 
 ## Status
 
-Draft.
+Draft. Updated to reflect the stakeholder-accepted Phase 1 IA refinement: Global Chat is outside individual Knowledge Spaces; Knowledge Space detail focuses on document ingestion, processing quality gates, Wiki, and Graph.
+
+## Translation Note
+
+This historical `knowledge-space` SDD slice predates the bilingual SDD rule. This update records stakeholder-accepted prototype behavior in the English source-of-truth document first. A Simplified Chinese companion for the full historical Knowledge Space SDD set is deferred to a dedicated documentation synchronization pass so the current prototype IA does not drift while a partial translation is in progress.
 
 ## Source Documents
 
@@ -29,6 +33,16 @@ For Phase 1, `frontend/public/atlas-prototype.html` is the current frontend base
 - Knowledge Space cards show name, short description, document count, lightweight capability/status icons, and creator ownership marker.
 - Selecting the `IBM i Modernization` knowledge base routes to the Knowledge Space detail experience.
 - The home view must not show the earlier dialogue hero in the current Phase 1 baseline.
+
+### Global Chat
+
+- Chat / dialogue is a global workspace-level surface, not a tab inside a single Knowledge Space.
+- The sidebar `对话` / `Chat` navigation opens the Global Chat view.
+- Global Chat allows the user to select one or more Knowledge Spaces as answer context before asking a question.
+- The selected Knowledge Space count is visible near the input controls.
+- Global Chat must not directly query unparsed, failed, low-confidence, or missing-source-trace raw uploads.
+- Content blocked by the Processing Center quality gates is excluded from the mock chat context.
+- Prototype chat actions are visual-only and must not call models, search services, or external APIs.
 
 ### Create Knowledge Space
 
@@ -134,50 +148,57 @@ For Phase 1, `frontend/public/atlas-prototype.html` is the current frontend base
 
 - The detail view shows breadcrumb `知识库 > IBM i Modernization`.
 - The detail view includes a back button returning to home.
-- Tabs are `文档`, `Wiki`, `图谱`, `Review`, and `Ask`.
+- Tabs are `文档`, `处理中心`, `Wiki`, and `图谱`.
 - The default tab is `Wiki`.
+- Ask / dialogue is intentionally outside this tab set and belongs to Global Chat.
 
 ### Document Batch
 
-- The Documents tab shows upload folder and upload ZIP actions.
-- It shows batch name `2026-06 IBM i Discovery Package`.
-- It shows total files, PDF converted, Markdown generated, review required, and failed counts.
-- It shows progress for conversion, Markdown generation, source trace validation, and SME review.
-- It shows a mock file tree with status labels.
+- The Documents tab uses a document management layout for large package review.
+- The left rail shows document category/tag search and empty category state.
+- The main area shows document search, type/status/source filters, date filters, upload actions, and list/grid view affordances.
+- The document list table shows filename, tag, source, size, status, and updated time.
+- Failed parse rows are visibly marked and can expose failure handling affordances.
+- Selecting a document row opens a right-side detail drawer over the document list.
+- The detail drawer shows title, file type, summary/front matter, uploaded time, content preview, preview action, chunk action, and close controls.
+- Failed document details show parse failure reason and mock next actions such as retry parse and view logs.
+- Upload folder and upload ZIP actions remain mock-only and continue to open the upload review / batch flow.
 
 ### Wiki
 
-- The Wiki tab uses a three-column layout: index/recent updates, main Wiki content, metadata.
+- The Wiki tab uses a two-column knowledge index layout: a left rail for search, index/log navigation, category tabs, and page list; a right content area for the selected index page.
 - Wiki content must feel auto-generated and dense, not editorial marketing copy.
-- Concept terms are visually clickable and expose short definitions.
-- Major sections include source trace, confidence, and review status.
-- Metadata includes source documents, confidence, review status, last updated, owner, and related concepts.
+- The index content summarizes the Knowledge Space and lists summary/entity/concept entries.
+- Concept-style links remain visually clickable.
+- Source trace, confidence, and review status remain required metadata for generated Wiki content, even when the index landing page is the default view.
 
 ### Graph
 
-- The Graph tab uses inline SVG without external libraries.
+- The Graph tab uses an inline SVG graph canvas without external libraries.
+- The current prototype layout is a wide graph canvas with a floating search box and a floating legend/control panel.
 - The core node is `IBM i Modernization`.
 - Node types include Wiki Page, Entity, Concept, Document, and Review Required.
 - Node colors follow the prototype convention: blue, green, orange, gray, and red.
 - Hovering a node shows a tooltip.
 - Clicking a node updates a detail panel.
-- Legend counts are shown on the right.
+- The graph may show faint background nodes and highlighted evidence paths in mock form to represent a large Knowledge Space.
+- Legend/control content is overlaid on the graph canvas rather than fixed as a separate right column.
 
-### Review
+### Processing Center
 
-- The Review tab shows a source preview placeholder and Markdown preview side by side.
-- The source preview includes page number and source filename.
-- The Markdown preview includes a confidence badge.
-- Review comments can be entered.
-- Actions are Approve, Need Fix, and Mark OCR Required.
-- A low-confidence queue is visible below.
+- The Processing Center replaces the old per-document Review tab for the large-batch workflow.
+- It is a quality gate and issue triage workbench for large uploads such as 14k-document packages.
+- It summarizes batch-scale quality states: total documents, parse failures, OCR required, low confidence, missing source_trace, and ready to publish.
+- It shows quality queues such as parse failures, missing source_trace, low-confidence chunks, OCR required, and LLM-generated review-required items.
+- It shows issue rows with issue name, type, source, count, status, and mock action.
+- Unresolved Processing Center issues block content from publish-ready Wiki, Graph, and Global Chat contexts.
+- Actions such as retry, OCR, repair trace, review, export issues, and work priority queue are visual-only in prototype mode.
 
-### Ask
+### Trusted Ask
 
-- The Ask tab shows a chat-like interface.
-- The input placeholder is `Ask about IBM i Modernization...`.
-- A mock answer explains Source Trace in the modernization workflow.
-- The answer includes source references and confidence.
+- Trusted Ask is implemented through Global Chat, not as a Knowledge Space detail tab.
+- Answers should be based on selected Knowledge Spaces and only on reviewed, published, or clearly source-traced knowledge assets.
+- Failed parses, low-confidence unreviewed content, and missing-source-trace items are excluded from the mock answer context.
 
 ## Non-Functional Requirements
 
@@ -217,11 +238,11 @@ See `docs/05-design/contracts/knowledge-space-API_IMPLEMENTATION_GUIDE.md`.
 | REQ-KS-002 | Create Knowledge Space panel opens from the folder-plus action and supports document/FAQ and RAG/Wiki selection state. |
 | REQ-KS-003 | IBM i card opens detail view with default Wiki tab and back button. |
 | REQ-KS-004 | Documents tab renders batch counts, progress, file tree, and statuses. |
-| REQ-KS-005 | Wiki tab renders index, content, metadata, concepts, trace, confidence, and review status. |
-| REQ-KS-006 | Graph tab renders SVG nodes, legend, tooltip, and detail panel. |
-| REQ-KS-007 | Review tab renders side-by-side review and low-confidence queue. |
-| REQ-KS-008 | Ask tab renders answer, sources, and confidence. |
-| REQ-KS-009 | Trace and review metadata remain visible in Wiki, Review, Graph, and Ask surfaces. |
+| REQ-KS-005 | Wiki tab renders the two-column index layout with category/page list and dense generated index content. |
+| REQ-KS-006 | Graph tab renders the wide SVG graph canvas, floating search, floating legend/control panel, tooltip, and detail panel. |
+| REQ-KS-007 | Processing Center renders batch quality gates, queues, issue table, and mock remediation actions. |
+| REQ-KS-008 | Global Chat renders outside Knowledge Space detail and supports selecting multiple Knowledge Spaces as answer context. |
+| REQ-KS-009 | Trace and review metadata remain visible or enforced across Documents, Processing Center, Wiki, Graph, and Global Chat contexts. |
 | REQ-KS-010 | Static prototype has no external dependency or network call. |
 | REQ-KS-013 | Settings > General Settings language control switches primary UI copy between Chinese and English without changing view state. |
 | REQ-KS-014 | Settings > General Settings theme control switches day/night mode while preserving readability across all main views. |

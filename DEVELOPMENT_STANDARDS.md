@@ -35,6 +35,7 @@ A slice goal is complete only when the relevant documents, implementation, verif
 - `docs/06-tasks/` is the implementation checklist.
 - Requirement IDs, user story IDs, task IDs, and verification evidence must remain traceable.
 - If implementation behavior changes, update spec, design, and tasks before or with the code change.
+- If slice implementation or acceptance status changes, update `docs/00-context/{slice}-traceability.md` and the slice row in `docs/00-context/slice-roadmap.md` / `.zh-CN.md` before close-out.
 - Do not create parallel planning systems for the same change.
 
 ## Coding Standards
@@ -135,6 +136,7 @@ Phase 0 verification:
 - Scan for external network calls and new dependencies.
 - Scan for raw secrets, private paths, and real data.
 - Use a manual UI checklist against the active spec.
+- Confirm `docs/00-context` status files are current for the touched slice, especially traceability, slice roadmap, verification evidence, and deferred work.
 
 Phase 1+ verification:
 

@@ -2,7 +2,14 @@
 
 ## 状态
 
-草稿。Phase 1 前端，仅 mock。切片 `folder-upload`。
+已实现。Phase 1 前端，仅 mock。切片 `folder-upload`。
+
+当前实现状态：
+
+- 英文与简体中文 SDD 产物集已完整。
+- `T-FU-001` 至 `T-FU-013` 已完成；其中 `T-FU-011` 明确为可选/推迟，留给后续原型到 Vue 组件提取。
+- 实现已提交到 `develop-leo`，提交为 `606da27 feat: implement folder upload prototype slice`。
+- API guide 仍按设计省略，因为本切片仅前端、仅 mock。
 
 ## 切片
 
@@ -66,16 +73,19 @@
 - `knowledge-space` **拥有：** Documents 标签页外壳（REQ-KS-004）、空间导航、全局文案表与主题 token。`folder-upload` 扩展 `renderDocs()` 并在保持一致的前提下取代静态基线批次渲染。
 - 共享类型（`FileStatus`、`Batch`、`FileItem`）须在 `frontend/src/types.ts` 协调，不得重复。
 
-## 验证证据计划
+## 验证证据
 
 依 `docs/00-context/slice-roadmap.md` 的 Phase 1 FE 行：
 
-- `cd frontend && npm run typecheck && npm run test && npm run build && npm run e2e`
-- `git diff --check`
-- `diff frontend/public/atlas-prototype.html prototypes/index.html`（须为空）
-- 扫描 diff 中的新网络调用 / 依赖 / secret / 私有路径。
+- `cd frontend && npm run typecheck` 已通过。
+- `cd frontend && npm run test` 已通过。
+- `cd frontend && npm run build` 已通过。
+- `cd frontend && npm run e2e` 已通过，包含 folder-upload smoke flow。
+- `git diff --check` 已通过。
+- `diff frontend/public/atlas-prototype.html prototypes/index.html` 为空。
+- diff review 未发现新增网络调用、依赖、secret、私有路径或真实公司数据。
 
-证据在实现后记录于此及任务完成矩阵。
+证据也记录在 `docs/06-tasks/folder-upload-tasks.md`。
 
 ## 使用的子技能（生成过程）
 
@@ -89,9 +99,9 @@
 
 ## 待解问题
 
-- 目录选择器 vs 纯合成选择（默认合成 + 可选无功能选择器）。
-- 单一活动批次 vs 批次列表（默认单一活动批次）。
-- `folderUploadMock` 提取到 `frontend/src/data/` 在本切片还是下一切片（默认：推迟至原型→Vue 提取）。
+- 本切片已解决：使用确定性的合成选择；不使用真实文件选择器或文件系统读取。
+- 本切片已解决：使用单一活动 mock 批次。
+- 推迟：`folderUploadMock` 提取到 `frontend/src/data/` 或 Vue 功能组件，留给后续原型到 Vue 组件提取。
 
 ## 推迟翻译
 

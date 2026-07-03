@@ -2,7 +2,16 @@
 
 ## Status
 
-Draft.
+Phase 1 FE implemented and current IA refinement accepted in the prototype baseline.
+
+Current implementation status:
+
+- `T-KS-001` through `T-KS-031` are complete for the current Phase 1 frontend/prototype scope.
+- The accepted detail tabs are `文档`, `处理中心`, `Wiki`, and `图谱`.
+- Global Chat / Trusted Ask is outside individual Knowledge Space detail and can select one or more Knowledge Spaces as answer context.
+- `frontend/public/atlas-prototype.html` is the active Phase 1 fidelity baseline; `prototypes/index.html` mirrors it byte-identically.
+- Backend, database, authentication, production persistence, real parser/converter/model/vector/storage adapters, and external network calls remain out of scope.
+- Full Simplified Chinese synchronization for the historical Knowledge Space SDD set is deferred; this traceability status has a Chinese companion at `docs/00-context/knowledge-space-traceability.zh-CN.md`.
 
 ## Slice
 
@@ -12,6 +21,7 @@ Draft.
 
 | Source | Role |
 |---|---|
+| `frontend/public/atlas-prototype.html` | Active Phase 1 FE fidelity baseline. |
 | `prototypes/index.html` | Current static UI prototype and demo behavior. |
 | `docs/product-vision.md` | Product purpose, target users, and trust-before-conversation principle. |
 | `docs/mvp-scope.md` | MVP boundaries and acceptance shape. |
@@ -40,15 +50,15 @@ Draft.
 
 | Requirement | Stories | Spec Sections | Tasks |
 |---|---|---|---|
-| REQ-KS-001 Knowledge Space home | US-KS-001, US-KS-002 | Home And Dialogue Mode | T-KS-001, T-KS-002 |
-| REQ-KS-002 Dialogue mode | US-KS-002, US-KS-008 | Home And Dialogue Mode, Ask | T-KS-003, T-KS-014 |
-| REQ-KS-003 Space detail tabs | US-KS-003 | Space Detail Navigation | T-KS-004 |
-| REQ-KS-004 Batch upload/status | US-KS-004 | Document Batch | T-KS-005, T-KS-006 |
-| REQ-KS-005 LM Wiki | US-KS-005 | Wiki | T-KS-007 |
-| REQ-KS-006 Knowledge graph | US-KS-006 | Graph | T-KS-008 |
-| REQ-KS-007 Review workflow | US-KS-007 | Review | T-KS-009, T-KS-010 |
-| REQ-KS-008 Source-grounded Ask | US-KS-008 | Ask | T-KS-011 |
-| REQ-KS-009 Trace and review metadata | US-KS-005, US-KS-007, US-KS-008 | Data Contracts | T-KS-012 |
+| REQ-KS-001 Knowledge Space home | US-KS-001, US-KS-002 | Home Knowledge Space Library | T-KS-001, T-KS-002, T-KS-028, T-KS-030 |
+| REQ-KS-002 Create Knowledge Space | US-KS-002 | Create Knowledge Space | T-KS-028, T-KS-030 |
+| REQ-KS-003 Space detail tabs | US-KS-003 | Space Detail Navigation | T-KS-004, T-KS-031 |
+| REQ-KS-004 Document management and batch status | US-KS-004 | Document Batch | T-KS-005, T-KS-006, T-KS-030, T-KS-031 |
+| REQ-KS-005 LM Wiki | US-KS-005 | Wiki | T-KS-007, T-KS-031 |
+| REQ-KS-006 Knowledge graph | US-KS-006 | Graph | T-KS-008, T-KS-031 |
+| REQ-KS-007 Processing Center quality gates | US-KS-007 | Processing Center | T-KS-009, T-KS-010, T-KS-031 |
+| REQ-KS-008 Global Chat / Trusted Ask | US-KS-008 | Global Chat, Trusted Ask | T-KS-011, T-KS-031 |
+| REQ-KS-009 Trace and review metadata | US-KS-005, US-KS-007, US-KS-008 | Data Contracts, Document Batch, Processing Center, Wiki, Graph, Global Chat | T-KS-012, T-KS-031 |
 | REQ-KS-010 Prototype constraints | All | Non-Functional Requirements | T-KS-013 |
 | REQ-KS-013 Language switching | US-KS-009 | Language Switching | T-KS-015, T-KS-017 |
 | REQ-KS-014 Day/night mode | US-KS-010 | Day And Night Mode | T-KS-016, T-KS-017 |
@@ -64,10 +74,11 @@ Draft.
 
 ## Gate Status
 
-- Requirements: Draft.
-- Stories: Draft.
-- Spec: Draft.
-- Architecture: Draft.
-- Design: Draft.
-- Tasks: Draft.
-- Implementation: Not started.
+- Requirements: Historical draft baseline present.
+- Stories: Historical draft baseline present.
+- Spec: Updated to current Phase 1 IA baseline.
+- Architecture: Historical draft baseline present; no backend/API work added by Phase 1 IA refinement.
+- Design: Updated to current Phase 1 IA baseline.
+- Tasks: Updated through `T-KS-031`.
+- Implementation: Phase 1 frontend/prototype baseline complete for `T-KS-001` through `T-KS-031`.
+- Verification: `npm run build`, `npm run e2e`, mirror diff, and `git diff --check` passed for `T-KS-031`; prior Phase 1 shell checks are recorded in `docs/06-tasks/knowledge-space-tasks.md`.

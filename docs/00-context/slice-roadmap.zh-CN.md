@@ -37,8 +37,8 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 
 | 阶段 | 切片 slug | 范围概述 | 归属边界 | 状态 |
 |---|---|---|---|---|
-| 1（前端） | `knowledge-space` | Vue 3 外壳复刻原型：首页、空间外壳、文档、Wiki、图谱、审核、Ask、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅（T-KS-001→030） |
-| 1（前端） | `folder-upload` | 文件夹/ZIP 上传 mock：文件清单、树、批次创建、mock 状态/报告 | 仅前端，无 API | 🔨 SDD 就绪（T-FU-001→013），待实现 |
+| 1（前端） | `knowledge-space` | Vue 3 外壳复刻已接受 IA：首页知识库列表、全局多知识库对话、空间外壳、文档、处理中心、Wiki、图谱、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅（T-KS-001→031） |
+| 1（前端） | `folder-upload` | 文件夹/ZIP 上传 mock：文件清单、树、批次创建、mock 状态/报告 | 仅前端，无 API | ✅ 已实现（T-FU-001→013；T-FU-011 可选推迟） |
 | 2（API） | `metadata-api` | Spring Boot 元数据服务：批次/文件/空间实体、PostgreSQL + Flyway、去 mock 契约 | 后端 + DB | 🔒 需 data-model + API guide 已接受 |
 | 3（适配器） | `converter-adapter` | `trinity-office` Office→PDF 置于 converter 接口之后 | 适配器，禁止直连 | 🔒 需 Phase 2 |
 | 3（适配器） | `parser-adapter` | `document-normalize` PDF→Markdown/图片 置于 parser 接口之后 | 适配器，禁止直连 | 🔒 需 Phase 2 |

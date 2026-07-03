@@ -2,7 +2,14 @@
 
 ## Status
 
-Draft. Phase 1 FE, mock-only. Slice `folder-upload`.
+Implemented. Phase 1 FE, mock-only. Slice `folder-upload`.
+
+Current implementation status:
+
+- SDD artifact set is complete in English and Simplified Chinese.
+- `T-FU-001` through `T-FU-013` are complete, except `T-FU-011`, which is explicitly optional/deferred for a later prototype-to-Vue extraction pass.
+- Implementation is committed on `develop-leo` in `606da27 feat: implement folder upload prototype slice`.
+- API guide remains intentionally omitted because this slice is frontend-only and mock-only.
 
 ## Slice
 
@@ -66,16 +73,19 @@ No backend/API contract is in scope for this Phase 1 FE, mock-only slice. Per th
 - `knowledge-space` **owns:** Documents-tab shell (REQ-KS-004), space navigation, global copy map and theme tokens. `folder-upload` extends `renderDocs()` and supersedes the static baseline batch rendering while preserving parity.
 - Shared types (`FileStatus`, `Batch`, `FileItem`) must be reconciled in `frontend/src/types.ts`, not duplicated.
 
-## Verification Evidence Plan
+## Verification Evidence
 
 Per the Phase 1 FE row of `docs/00-context/slice-roadmap.md`:
 
-- `cd frontend && npm run typecheck && npm run test && npm run build && npm run e2e`
-- `git diff --check`
-- `diff frontend/public/atlas-prototype.html prototypes/index.html` (must be empty)
-- Scan diff for new network calls / dependencies / secrets / private paths.
+- `cd frontend && npm run typecheck` passed.
+- `cd frontend && npm run test` passed.
+- `cd frontend && npm run build` passed.
+- `cd frontend && npm run e2e` passed, including the folder-upload smoke flow.
+- `git diff --check` passed.
+- `diff frontend/public/atlas-prototype.html prototypes/index.html` was empty.
+- Diff review found no new network calls, dependencies, secrets, private paths, or real company data.
 
-Evidence is recorded here and in the tasks Completion Matrix after implementation.
+Evidence is also recorded in `docs/06-tasks/folder-upload-tasks.md`.
 
 ## Sub-Skills Used (generation pass)
 
@@ -89,9 +99,9 @@ Evidence is recorded here and in the tasks Completion Matrix after implementatio
 
 ## Open Questions
 
-- Directory picker vs synthetic-only selection (default synthetic + optional non-functional picker).
-- Single active batch vs batch list (default single active batch).
-- Whether `folderUploadMock` extraction to `frontend/src/data/` happens in this slice or the next (default: deferred to prototype→Vue extraction).
+- Resolved for this slice: use deterministic synthetic selection only; no real file picker or filesystem read.
+- Resolved for this slice: use a single active mock batch.
+- Deferred: `folderUploadMock` extraction to `frontend/src/data/` or Vue feature components belongs to a later prototype-to-Vue extraction pass.
 
 ## Deferred Translations
 

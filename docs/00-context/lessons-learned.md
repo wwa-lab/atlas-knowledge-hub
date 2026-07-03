@@ -26,6 +26,7 @@ When an outcome differs from expectation:
 | Verification missed a defect | Task verification, `DEVELOPMENT_STANDARDS.md`, or future test coverage |
 | Agent repeated a workflow mistake | `AGENTS.md` or `PROJECT_RULES.md` |
 | Standard applies across slices | `DEVELOPMENT_STANDARDS.md` |
+| Slice status drifted after implementation | `PROJECT_RULES.md`, `DEVELOPMENT_STANDARDS.md`, and `docs/00-context/{slice}-traceability.md` |
 
 ## Entry Template
 
@@ -57,4 +58,18 @@ Root cause: The earlier SDD docs specified settings content but did not define s
 Decision: Settings is now specified as a sidebar-driven shell surface. Common shortcuts open specific settings panels, and All Settings opens a modal/sheet without replacing the current view.
 Durable updates: Updated `REQ-KS-022`, `Sidebar And Settings Shell`, `Settings Shell` design guidance, traceability, and task `T-KS-026`.
 New verification: Verify settings shortcuts open the correct modal panel, All Settings opens over the current view, and close returns to the previous view without resetting state.
+Status: Applied.
+
+### LL-20260703-001 Keep `docs/00-context` Status In The Close-Out Gate
+
+ID: LL-20260703-001
+Date: 2026-07-03
+Slice: knowledge-space, folder-upload
+Source: User acceptance feedback after the Knowledge Space IA refinement commit.
+Expectation: When implementation, prototype acceptance, or task completion status changes, the `docs/00-context` status files should be updated in the same change as spec/design/tasks/code so the next slice decision starts from current state.
+Observed: The Knowledge Space IA refinement updated spec, design, tasks, prototype, and tests, but initially left `docs/00-context/knowledge-space-traceability.md` and `docs/00-context/slice-roadmap.md` with stale task/status language. Folder Upload traceability also still described the slice as draft after implementation had completed.
+Root cause: The quality gates required traceability in principle, but the close-out checklist did not explicitly require a `docs/00-context` status audit after implementation or acceptance status changed.
+Decision: Add a Context status gate to project rules and add a Phase 0/1 verification check requiring traceability and slice-roadmap status to be current before close-out.
+Durable updates: Updated `PROJECT_RULES.md` quality gates, `DEVELOPMENT_STANDARDS.md` goal/verification standards, `docs/00-context/slice-roadmap.md`, `docs/00-context/slice-roadmap.zh-CN.md`, `docs/00-context/knowledge-space-traceability.md`, `docs/00-context/knowledge-space-traceability.zh-CN.md`, and folder-upload traceability files.
+New verification: For future slice work, search `docs/00-context` for stale status markers such as old task ranges, `impl pending`, `待实现`, `Implementation: Not started`, or draft status after implementation; final reports must say whether `docs/00-context` was checked or updated.
 Status: Applied.

@@ -10,7 +10,13 @@ Stakeholder authorization to start Phase 1 was given on 2026-07-02. Phase 1 star
 
 After stakeholder review, the current Phase 1 FE is now the frontend baseline even where it differs from the earlier static prototype. `frontend/public/atlas-prototype.html` is the active FE fidelity file, and `prototypes/index.html` mirrors it for direct static review.
 
+After subsequent stakeholder IA review, the accepted prototype baseline now uses Global Chat outside Knowledge Space detail, and the Knowledge Space detail tabs are `文档`, `处理中心`, `Wiki`, and `图谱`.
+
 See `docs/00-context/knowledge-space-prototype-review.md` for review notes and verification evidence.
+
+## Translation Note
+
+This historical `knowledge-space` task document predates the bilingual SDD rule. This update records the accepted English task/evidence baseline first. Full Simplified Chinese synchronization for the historical Knowledge Space SDD set is deferred to a dedicated documentation pass.
 
 ## Implementation Gates
 
@@ -53,6 +59,7 @@ See `docs/00-context/knowledge-space-prototype-review.md` for review notes and v
 | T-KS-028 | Start Phase 1 Vue frontend shell with mock data. | T-KS-014, stakeholder authorization | `frontend` has Vue 3, Vite, TypeScript, typed mock data, core Knowledge Space surfaces, and no backend/external service calls. |
 | T-KS-029 | Add Phase 1 frontend verification baseline. | T-KS-028 | Frontend typecheck, build, unit/component tests, coverage, and E2E smoke test pass or skipped checks are explicitly reported with reasons. |
 | T-KS-030 | Align static HTML and SDD docs to current Phase 1 FE baseline. | T-KS-028, stakeholder review | `prototypes/index.html` mirrors `frontend/public/atlas-prototype.html`; spec, design, tasks, and frontend README describe the current FE layout and interactions. |
+| T-KS-031 | Align accepted IA refinement: global multi-Knowledge-Space chat, document management/detail drawer, processing center, Wiki index, and graph canvas. | Stakeholder IA review | Spec/design/tasks reflect the accepted IA; prototype mirror is byte-identical; build and E2E pass. |
 
 ## Completion Matrix
 
@@ -88,6 +95,7 @@ See `docs/00-context/knowledge-space-prototype-review.md` for review notes and v
 | T-KS-028 | Complete | `frontend/` now contains a Vue 3 + Vite + TypeScript host for the accepted attachment prototype fidelity baseline. |
 | T-KS-029 | Complete | Typecheck, build, Vitest coverage, and Playwright E2E smoke checks passed for the Phase 1 shell. |
 | T-KS-030 | Complete | Current FE baseline mirrored from `frontend/public/atlas-prototype.html` to `prototypes/index.html`; SDD docs updated to current home library, create Knowledge Space, General Settings language/theme, and list-style model management behavior. |
+| T-KS-031 | Complete | Global Chat moved outside Knowledge Space detail with multi-space selection; detail tabs are Documents, Processing Center, Wiki, and Graph; Documents, Processing Center, Wiki, and Graph layouts updated; `npm run build`, `npm run e2e`, mirror diff, and `git diff --check` passed. |
 
 ## T-KS-001 Review Result
 
@@ -215,3 +223,25 @@ Updated scope:
 Verification result:
 
 - Static HTML mirror and SDD alignment are verified as part of the Phase 1 frontend check set.
+
+## T-KS-031 IA Refinement Result
+
+Completed after stakeholder review of the current prototype.
+
+Updated scope:
+
+- Global Chat is outside Knowledge Space detail and is opened from the sidebar Chat entry.
+- Global Chat supports selecting multiple Knowledge Spaces as answer context and shows the selected count.
+- Knowledge Space detail tabs are now Documents, Processing Center, Wiki, and Graph.
+- Documents uses a large-package document management layout with category rail, filters, document table, failed-state handling, bulk action bar, and a right-side document detail drawer.
+- Processing Center replaces the old single-document Review workbench and now represents batch quality gates for parse failures, OCR required, low confidence, missing source_trace, LLM-generated review-required content, and ready-to-publish content.
+- Wiki uses a two-column index layout with page/category list and dense index content.
+- Graph uses a full-canvas inline SVG layout with floating search, legend/control panel, faint background graph density, and highlighted evidence paths.
+- Ask / Trusted Ask is represented by Global Chat and consumes only reviewed, published, or clearly source-traced knowledge assets.
+
+Verification result:
+
+- `cd frontend && npm run build` passed.
+- `cd frontend && npm run e2e` passed.
+- `diff frontend/public/atlas-prototype.html prototypes/index.html` was empty.
+- `git diff --check` passed.

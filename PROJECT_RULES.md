@@ -111,7 +111,8 @@ Required gates:
 4. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
 5. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
 6. Verification gate: the checks listed in the task plan are run, or any skipped check is named with a reason.
-7. Evidence gate: the final response includes documents changed, code changed, verification evidence, and residual risks.
+7. Context status gate: `docs/00-context/{slice}-traceability.md` and, when slice status changes, `docs/00-context/slice-roadmap.md` plus its `.zh-CN.md` companion reflect the final status, task range, verification evidence, and deferred work.
+8. Evidence gate: the final response includes documents changed, code changed, verification evidence, residual risks, and whether `docs/00-context` status was checked or updated.
 
 Prototype-phase verification should include, when relevant:
 

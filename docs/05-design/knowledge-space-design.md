@@ -2,7 +2,11 @@
 
 ## Status
 
-Draft.
+Draft. Updated to match the stakeholder-accepted Phase 1 IA refinement: Global Chat lives outside Knowledge Space detail, and the detail surface focuses on Documents, Processing Center, Wiki, and Graph.
+
+## Translation Note
+
+This historical `knowledge-space` design document predates the bilingual SDD rule. This update records the accepted English design baseline first. A full Simplified Chinese companion for the historical Knowledge Space SDD set is deferred to a dedicated documentation synchronization pass rather than creating an incomplete partial translation in this prototype adjustment.
 
 ## Experience Principles
 
@@ -28,6 +32,24 @@ Draft.
 - A `我创建的` / created-by-me filter and count sits above the card grid.
 - Knowledge Space cards show title, short description, document count, lightweight capability/status icons, and owner/created marker.
 - The current Phase 1 baseline does not show the earlier dialogue hero on Home.
+
+### Global Chat
+
+Layout:
+
+- Global Chat is opened from the sidebar `对话` / `Chat` entry.
+- It is a workspace-level surface, not nested under a single Knowledge Space.
+- Center composition uses a large chat prompt area with suggested prompts.
+- A Knowledge Space selector sits above the input area and supports selecting multiple spaces.
+- The selected Knowledge Space count is visible near the input controls.
+- Model selection and send affordances remain in the input tool row.
+
+Behavior:
+
+- Selecting or deselecting a Knowledge Space updates the selected count without leaving the Chat view.
+- Chat context is limited to selected Knowledge Spaces.
+- Failed parses, low-confidence unreviewed content, and missing-source-trace content blocked by Processing Center are excluded from the mock chat context.
+- All chat actions are visual-only in prototype mode and do not call model, search, or external APIs.
 
 ### Language Control
 
@@ -264,71 +286,90 @@ Elements:
 - Breadcrumb: `知识库 > IBM i Modernization`.
 - Back button.
 - Upload folder and upload ZIP buttons.
-- Tabs: `文档`, `Wiki`, `图谱`, `Review`, `Ask`.
+- Tabs: `文档`, `处理中心`, `Wiki`, `图谱`.
 - Default tab: `Wiki`.
+- No Ask tab appears inside Knowledge Space detail; dialogue is handled by Global Chat.
 
 ### Documents Tab
 
 Elements:
 
-- Batch summary panel.
-- Progress bars.
-- File tree with status badges.
+- Left document category/tag rail.
+- Main toolbar with document search, type/status/source filters, upload actions, date filters, and view toggle.
+- Document table with columns for filename, tags, source, size, status, and updated time.
+- Right-side document detail drawer opened by selecting a document row.
+- Detail drawer with title, file type, actions, summary/front matter, uploaded time, preview/chunk actions, and Markdown preview.
 
 Design notes:
 
 - Status badges should distinguish success, parsing, review required, OCR required, and failed states.
 - Keep adapter language visible where it clarifies architecture, but avoid tool-first copy.
+- Failed rows should expose handling paths such as retry parse, view logs, and bulk delete in mock form.
+- The document list is optimized for large document packages rather than a small batch summary only.
 
 ### Wiki Tab
 
 Layout:
 
-- Left rail: search, index, recent updates.
-- Center: dense auto-generated LM Wiki page.
-- Right rail: metadata and related concepts.
+- Left rail: search, index/log navigation, category tabs, and Wiki page list.
+- Right content area: dense auto-generated index page with summary/entity/concept links.
 
 Behavior:
 
-- Index item click highlights a section.
-- Concept hover/title exposes short definition.
-- Source trace block remains visible under major sections.
+- Index/list item click changes or highlights the active index context in mock form.
+- Concept-style links remain visually clickable.
+- Source trace, confidence, and review status remain required metadata for generated Wiki content even when the default view is an index landing page.
 
 ### Graph Tab
 
 Layout:
 
-- Main inline SVG canvas.
-- Right legend and node detail panel.
+- Full-width inline SVG graph canvas.
+- Floating search control on the canvas.
+- Floating legend/control panel with node categories, fit-screen/hide-arrow controls, full-graph counts, and node detail.
 
 Behavior:
 
 - Hover node shows tooltip.
 - Click node updates detail panel.
-- Legend shows counts by node type.
+- Background nodes may be faint to communicate large-corpus density.
+- Highlighted nodes and edges show the currently emphasized evidence path.
 
-### Review Tab
+### Processing Center Tab
 
 Layout:
 
-- Left source preview.
-- Right Markdown preview.
-- Low-confidence queue below.
+- Top quality summary cards for large-batch processing.
+- Left quality queue rail.
+- Main issue table with issue name, type, source, count, status, and action.
 
 Actions:
 
-- Approve.
-- Need Fix.
-- Mark OCR Required.
+- Export issue list.
+- Work priority queue.
+- Retry parse.
+- OCR.
+- Repair trace.
+- Review.
 
-### Ask Tab
+Design notes:
+
+- This tab is a quality gate and triage workbench, not a single-document editing surface.
+- It determines what can flow into Wiki, Graph, and Global Chat.
+- Unresolved parse failures, missing source_trace, and unreviewed low-confidence output are blocked from trusted downstream surfaces.
+
+### Trusted Ask / Global Chat
 
 Layout:
 
-- Chat panel with user question and answer.
-- Source reference list.
-- Confidence badge.
-- Supporting evidence/coverage side panel.
+- Trusted Ask is represented by the Global Chat surface.
+- It is not rendered as a Knowledge Space tab.
+- It includes selected Knowledge Spaces, suggested prompts, input, model selector, and send affordance.
+
+Design notes:
+
+- Ask consumes reviewed/published/source-traced knowledge assets.
+- Ask does not directly query raw uploaded documents.
 
 ## Component Inventory For Future Vue Implementation
 
@@ -339,13 +380,13 @@ Layout:
 | `CreateKnowledgeSpacePanel` | Full-screen create flow with step navigation and basic-info mock controls. |
 | `KnowledgeSpaceCard` | Space summary card. |
 | `SpaceDetailShell` | Breadcrumb, actions, and tabs. |
-| `DocumentBatchPanel` | Batch metrics and progress. |
-| `FileTreeStatusList` | Source file paths and statuses. |
-| `WikiLayout` | Index, content, metadata rails. |
+| `GlobalChat` | Workspace-level chat surface with multi-Knowledge-Space context selection. |
+| `DocumentManager` | Document category rail, filters, table, failed-state actions, and upload actions. |
+| `DocumentDetailDrawer` | Right-side document detail, parse-failure details, preview/chunk actions. |
+| `ProcessingCenter` | Batch quality gates, quality queues, and issue table. |
+| `WikiLayout` | Two-column index/page-list and dense generated index content. |
 | `ConceptTerm` | Clickable/hoverable concept definitions. |
-| `GraphViewer` | Lightweight graph rendering and node detail. |
-| `ReviewWorkbench` | Side-by-side source and Markdown review. |
-| `AskPanel` | Chat-like question/answer surface with sources. |
+| `GraphViewer` | Full-canvas graph rendering, floating search, legend/control panel, and node detail. |
 | `ModelManagement` | Settings view for Add Model action, built-in-model info, category filters, and model cards. |
 | `ModelConfigPanel` | Future provider/source/API fields and advanced options when edit/create flows are implemented. |
 | `RegistrationSettings` | Settings view for registration mode and sign-up preview. |

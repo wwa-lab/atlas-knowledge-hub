@@ -52,6 +52,9 @@ test("Phase 1 shows the accepted attachment prototype and core flow", async ({ p
   await prototype.locator('[data-tab="graph"]').click();
   await expect(prototype.locator(".graph-svg")).toBeVisible();
 
-  await prototype.locator('[data-tab="ask"]').click();
-  await expect(prototype.getByText("Source Trace 指 Atlas")).toBeVisible();
+  await expect(prototype.locator('[data-tab="ask"]')).toHaveCount(0);
+  await prototype.locator('[data-nav-key="chat"]').click();
+  await expect(prototype.locator("h2", { hasText: /Atlas/ })).toBeVisible();
+  await expect(prototype.getByText(/知识库\(2\)|Knowledge\(2\)/)).toBeVisible();
+  await expect(prototype.locator('[data-chat-kb="IBM i Modernization"]')).toBeVisible();
 });
