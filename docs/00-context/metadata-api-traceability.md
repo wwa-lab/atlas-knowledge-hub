@@ -79,8 +79,8 @@ Unlike the Phase 1 FE slices (`knowledge-space`, `folder-upload`), this is a Pha
 
 Per the Phase 2 API row of `docs/00-context/slice-roadmap.md` (executed during implementation, T-MA-013):
 
-- `cd backend && mvn verify` — **passed** on 2026-07-03. Evidence: 7 unit/static tests + 7 integration tests passed; Flyway applied `V1__init_schema.sql` and `V2__seed_mock_metadata.sql` against PostgreSQL 16.14; Hibernate `ddl-auto=validate` completed during Spring context startup.
-- PostgreSQL integration note: Testcontainers' Docker Java client could not negotiate with this local Docker Desktop daemon, so the committed integration harness starts the same `postgres:16-alpine` test database through Docker CLI when `ATLAS_TEST_DB_URL` is not provided. The tests still run against real PostgreSQL and can also use an externally supplied datasource through `ATLAS_TEST_DB_*`.
+- `cd backend && mvn verify` — **passed** on 2026-07-03. Evidence: 8 unit/static tests + 7 integration tests passed; Testcontainers 2.0.3 started `postgres:16-alpine`; Flyway applied `V1__init_schema.sql` and `V2__seed_mock_metadata.sql` against PostgreSQL 16.14; Hibernate `ddl-auto=validate` completed during Spring context startup.
+- PostgreSQL integration note: integration tests use Testcontainers PostgreSQL directly, matching the SDD verification contract. Test DB credentials are runtime-only test container values and are not committed.
 - `git diff --check` — **passed**.
 - New-dependency / no-external-network scan — **passed** for product code. Findings limited to Maven schema URLs in `pom.xml`; no product HTTP client, engine import, or outbound network adapter exists.
 - Secret / private-path / real-data scan — **passed** after cleanup. Runtime test DB secret is generated in memory; no raw credential, private absolute path, or real company data is committed in backend source or seed migrations.

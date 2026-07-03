@@ -7,6 +7,9 @@ import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -19,6 +22,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 /** Maps application exceptions to the Atlas API envelope. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   /** Handles Bean Validation errors on request bodies. */
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -69,6 +74,12 @@ public class GlobalExceptionHandler {
   /** Handles unexpected server faults with a generic user-safe message. */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiEnvelope<Void>> onUnexpected(Exception ex, HttpServletRequest request) {
+    String correlationId = UUID.randomUUID().toString();
+    LOG.error(
+        "Unhandled metadata API error correlationId={} path={}",
+        correlationId,
+        request.getRequestURI(),
+        ex);
     return error(
         HttpStatus.INTERNAL_SERVER_ERROR,
         "INTERNAL_ERROR",

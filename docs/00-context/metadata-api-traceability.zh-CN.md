@@ -79,8 +79,8 @@
 
 按 `docs/00-context/slice-roadmap.md` 的 Phase 2 API 行（实现期已执行，T-MA-013）：
 
-- `cd backend && mvn verify` —— **通过**（2026-07-03）。证据：7 个单元/静态测试 + 7 个集成测试通过；Flyway 在 PostgreSQL 16.14 上应用 `V1__init_schema.sql` 与 `V2__seed_mock_metadata.sql`；Spring 上下文启动期间 Hibernate `ddl-auto=validate` 通过。
-- PostgreSQL 集成说明：本地 Docker Desktop 与 Testcontainers 的 Docker Java client 握手失败，因此已提交的集成测试 harness 在未提供 `ATLAS_TEST_DB_URL` 时通过 Docker CLI 启动同一个 `postgres:16-alpine` 测试库。测试仍运行在真实 PostgreSQL 上，也可通过 `ATLAS_TEST_DB_*` 使用外部 datasource。
+- `cd backend && mvn verify` —— **通过**（2026-07-03）。证据：8 个单元/静态测试 + 7 个集成测试通过；Testcontainers 2.0.3 启动 `postgres:16-alpine`；Flyway 在 PostgreSQL 16.14 上应用 `V1__init_schema.sql` 与 `V2__seed_mock_metadata.sql`；Spring 上下文启动期间 Hibernate `ddl-auto=validate` 通过。
+- PostgreSQL 集成说明：集成测试直接使用 Testcontainers PostgreSQL，与 SDD 验证契约一致。测试库凭据仅为运行期测试容器值，未提交到源码。
 - `git diff --check` —— **通过**。
 - 新依赖 / 无外部网络扫描 —— **产品代码通过**。发现项仅限 `pom.xml` 中 Maven schema URL；无产品 HTTP client、引擎 import 或出站网络 adapter。
 - secret / 私有路径 / 真实数据扫描 —— **清理后通过**。运行期测试 DB secret 在内存中生成；backend 源码与 seed migration 中未提交明文凭据、私有绝对路径或真实公司数据。
