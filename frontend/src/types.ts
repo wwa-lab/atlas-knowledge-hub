@@ -260,6 +260,133 @@ export interface ApiEnvelope<T> {
   meta: unknown
 }
 
+export interface ApiSpace {
+  id: string
+  name: string
+  description: string
+  type: string
+  indexStrategy: string
+  owner: string
+  status: string
+  documentCount: number
+  wikiPageCount: number
+  reviewCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiBatchMetrics {
+  totalFiles: number
+  pdfConverted: number
+  markdownGenerated: number
+  reviewRequired: number
+  failed: number
+  unsupported: number
+}
+
+export interface ApiBatch {
+  id: string
+  spaceId: string
+  name: string
+  sourceKind: 'folder' | 'zip'
+  owner: string
+  uploadedAt: string
+  metrics: ApiBatchMetrics
+}
+
+export interface ApiFileItem {
+  id: string
+  batchId: string
+  sourcePath: string
+  sourceType: SourceType
+  status: FileStatus
+  confidence: number | null
+  reviewStatus: ApiReviewStatus
+  pdfPath: string | null
+  markdownPath: string | null
+  assetsPath: string | null
+  errorMessage: string | null
+}
+
+export interface ApiSourceChunk {
+  id: string
+  fileItemId: string
+  sourceFile: string
+  page: number | null
+  section: string | null
+  confidence: number | null
+  reviewStatus: ApiReviewStatus
+}
+
+export interface ApiReviewQueueRepresentative {
+  fileId: string
+  status: FileStatus
+  reviewStatus: ApiReviewStatus
+  confidence: number | null
+  hasSourceTrace: boolean
+}
+
+export interface ApiReviewQueueItem {
+  type:
+    | 'PARSER_FAILURE'
+    | 'OCR_REQUIRED'
+    | 'LOW_CONFIDENCE'
+    | 'MISSING_SOURCE_TRACE'
+    | 'LLM_GENERATED_REVIEW_REQUIRED'
+    | 'READY_TO_PUBLISH'
+  count: number
+  publishBlocked: boolean
+  representativeItems: ApiReviewQueueRepresentative[]
+}
+
+export interface ApiReviewQueues {
+  spaceId: string
+  queues: ApiReviewQueueItem[]
+}
+
+export interface ApiReview {
+  id: number
+  targetType: string
+  targetId: string
+  action: 'APPROVE' | 'NEED_FIX' | 'OCR_REQUIRED'
+  reviewer: string
+  comment: string | null
+  affectedChunks: string[] | null
+  createdAt: string
+}
+
+export interface ApiWikiPage {
+  id: string
+  spaceId: string
+  title: string
+  markdownPath: string
+  sourceDocumentIds: string[]
+  confidence: number | null
+  reviewStatus: Extract<ApiReviewStatus, 'PUBLISHED'>
+  owner: string
+  lastUpdated: string
+}
+
+export interface ApiGraphProjectionRun {
+  runId: string
+  spaceId: string
+  adapterId: string
+  scope: string
+  status: string
+  safeMessage: string | null
+  summary: Record<string, number>
+}
+
+export interface ApiVectorRun {
+  runId: string
+  spaceId: string
+  batchId: string | null
+  adapterKey: string
+  operation: string
+  status: string
+  safeMessage: string | null
+}
+
 export type AskRunStatus =
   | 'REQUESTED'
   | 'RETRIEVING'
@@ -275,12 +402,13 @@ export interface ApiAskEvidence {
   sourceChunkId: string
   fileItemId: string
   sourceFile: string
-  page?: number
-  section?: string
+  page?: number | null
+  section?: string | null
   reviewStatus: ApiReviewStatus
   confidence: number | null
-  vectorItemKey: string
+  vectorItemKey: string | null
   score: number | null
+  createdAt?: string
 }
 
 export interface ApiAskRun {
@@ -293,10 +421,12 @@ export interface ApiAskRun {
   requestedBy: string
   answer: string | null
   answerConfidence: number | null
-  answerReviewStatus: Extract<ApiReviewStatus, 'REVIEW_REQUIRED'>
+  answerReviewStatus: ApiReviewStatus
   modelRunId: string | null
   safeMessage: string | null
   evidence: ApiAskEvidence[]
+  createdAt?: string
+  completedAt?: string | null
 }
 
 export interface AskSource {

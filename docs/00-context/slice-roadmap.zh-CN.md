@@ -48,6 +48,7 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | 4（加固） | `review-publish` | SME 审核状态机 + 已批准 Markdown 发布到 Wiki | 全栈 | ✅ 已实现（T-REVIEW-PUBLISH-001→009；production auth/RBAC 延后） |
 | 4（加固） | `knowledge-graph` | 从已批准页面抽取节点/边 + 可解释可视化 | 全栈 | ✅ 已实现（T-KG-001→013；production graph layout/engine 延后） |
 | 4（加固） | `ask-rag` | 基于已批准内容、带溯源、审核感知的 Ask | 全栈 | ✅ 已实现 |
+| 4（产品化） | `full-stack-productization` | P0 浏览器驱动全栈闭环：space list、sample batch、review、publish Wiki、graph evidence、Ask citations | 全栈 | ✅ 已实现（T-FSP-001→010；production upload/auth/provider hardening 延后） |
 | 4+（验收） | `provider-backed-e2e` | Opt-in 本地第三层 E2E：DeepSeek-backed Ask 通过 ModelAdapter，覆盖 live API graph/publish/vector flow，且只使用 mock/sample data | 验收 + model adapter | ✅ 已实现（provider run 需要本地 `ATLAS_MODEL_API_KEY`） |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。

@@ -2,85 +2,68 @@ import { mount } from '@vue/test-utils'
 import App from './App.vue'
 import { trustedAskRun } from './data/atlasMock'
 
-describe('Atlas Phase 1 prototype fidelity host', () => {
+describe('Atlas P0 full-stack productization shell', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('embeds the accepted prototype fixture', () => {
-    mockGraphApi()
-    const wrapper = mount(App)
-    const frame = wrapper.get('iframe')
+  it('renders API-backed space detail and disables unconnected prototype actions', async () => {
+    mockP0Api()
+    const wrapper = await mountWorkbench()
 
-    expect(frame.attributes('src')).toBe('/atlas-prototype.html')
-    expect(frame.attributes('title')).toBe('Atlas Knowledge Hub Phase 1 Prototype')
+    expect(wrapper.get('[data-testid="space-list"]').text()).toContain('IBM i Modernization')
+    expect(wrapper.get('[data-testid="space-detail"]').text()).toContain('Mock discovery package')
+    expect(wrapper.findAll('[data-testid="coming-soon"]').length).toBeGreaterThanOrEqual(2)
+    expect(wrapper.get('[data-tab="graph"]').attributes('data-state')).toBe('ready')
   })
 
-  it('renders an API-backed Graph tab with filters, canvas, and evidence metadata', async () => {
-    mockGraphApi()
-    const wrapper = mount(App)
+  it('drives sample batch, review, publish, downstream refresh, and Ask through API calls', async () => {
+    const api = mockP0Api()
+    const wrapper = await mountWorkbench()
+
+    await wrapper.get('[data-testid="create-sample-batch"]').trigger('click')
     await flushAsync()
+    expect(wrapper.get('[data-testid="batch-list"]').text()).toContain('P0 Browser Batch')
+    expect(wrapper.get('[data-testid="file-list"]').text()).toContain('REVIEW_REQUIRED')
+    expect(wrapper.get('[data-testid="chunk-list"]').text()).toContain('chunk-p0')
 
-    const graphTab = wrapper.get('[data-tab="graph"]')
-    expect(graphTab.attributes('data-state')).toBe('ready')
-    expect(graphTab.text()).toContain('Graph API connected')
-    expect(graphTab.text()).toContain('RPGLE modernization')
-    expect(graphTab.text()).toContain('MENTIONS')
-    expect(graphTab.get('[data-testid="graph-evidence-detail"]').text()).toContain('Source Trace')
-    expect(graphTab.text()).toContain('chunk-file-001-p12-b02')
+    await wrapper.get('[data-testid="approve-file"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="file-list"]').text()).toContain('APPROVED')
 
-    await graphTab.get('[data-testid="graph-search"]').setValue('No matching graph object')
-    expect(graphTab.get('[data-testid="graph-empty"]').text()).toContain('No graph nodes match')
-    expect(graphTab.get('[data-testid="graph-no-evidence"]').text()).toContain(
-      'No evidence-backed relationships'
-    )
+    await wrapper.get('[data-testid="publish-file"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="wiki-pages"]').text()).toContain('PUBLISHED')
+
+    await wrapper.get('[data-testid="refresh-graph-evidence"]').trigger('click')
+    await flushAsync()
+    expect(api.graphProjectionCreated).toBe(true)
+    expect(api.vectorRunCreated).toBe(true)
+
+    await wrapper.get('[data-testid="ask-submit"]').trigger('click')
+    await flushAsync()
+    const answer = wrapper.get('[data-testid="ask-answer"]').text()
+    expect(answer).toContain('SUCCEEDED')
+    expect(answer).toContain('REVIEW_REQUIRED')
+    expect(answer).toContain('chunk-p0')
   })
 
-  it('shows unauthorized graph state without falling back to mock data', async () => {
+  it('shows safe space loading errors without hiding coming-soon guardrails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
-      status: 403,
+      status: 500,
       json: async () => ({
         success: false,
         data: null,
-        error: { code: 'FORBIDDEN', message: 'Forbidden' },
+        error: { code: 'INTERNAL_ERROR', message: 'API failed safely' },
         meta: null
       })
     } as Response)
 
-    const wrapper = mount(App)
-    await flushAsync()
+    const wrapper = await mountWorkbench()
 
-    const graphTab = wrapper.get('[data-tab="graph"]')
-    expect(graphTab.attributes('data-state')).toBe('unauthorized')
-    expect(graphTab.text()).toContain('Unauthorized graph access')
-    expect(graphTab.text()).not.toContain('Using safe mock graph')
-  })
-
-  it('shows an empty graph state for spaces without approved evidence', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        success: true,
-        data: {
-          spaceId: 'ibm-i-modernization',
-          nodes: [],
-          edges: [],
-          counts: { nodes: 0, edges: 0, excluded: 3 }
-        },
-        error: null,
-        meta: null
-      })
-    } as Response)
-
-    const wrapper = mount(App)
-    await flushAsync()
-
-    const graphTab = wrapper.get('[data-tab="graph"]')
-    expect(graphTab.attributes('data-state')).toBe('empty')
-    expect(graphTab.text()).toContain('No approved or published evidence')
-    expect(graphTab.text()).toContain('Excluded 3')
+    expect(wrapper.text()).toContain('API failed safely')
+    expect(wrapper.findAll('[data-testid="coming-soon"]').length).toBeGreaterThan(0)
   })
 
   it('maps trusted Ask mock state to review-required answer evidence', () => {
@@ -92,88 +75,305 @@ describe('Atlas Phase 1 prototype fidelity host', () => {
   })
 })
 
-function mockGraphApi() {
-  vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+async function mountWorkbench() {
+  const wrapper = mount(App)
+  await flushAsync()
+  await wrapper.get('.workbench-entry').trigger('click')
+  await flushAsync()
+  return wrapper
+}
+
+function mockP0Api() {
+  const state = {
+    batchCreated: false,
+    fileReviewStatus: 'REVIEW_REQUIRED',
+    wikiPublished: false,
+    graphProjectionCreated: false,
+    vectorRunCreated: false
+  }
+
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input)
-    if (url.includes('/nodes/node-concept-rpgle')) {
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({
-          success: true,
-          data: {
-            node: {
-              id: 'node-concept-rpgle',
-              label: 'RPGLE modernization',
-              type: 'CONCEPT',
-              reviewStatus: 'APPROVED',
-              confidence: 0.93,
-              evidenceCount: 1
-            },
-            adjacentNodes: [],
-            adjacentEdges: [],
-            evidenceReferences: [
-              {
-                sourceChunkId: 'chunk-file-001-p12-b02',
-                sourceFile: 'Graph/Modernization.md',
-                page: 1,
-                section: 'RPGLE modernization',
-                confidence: 0.93,
-                reviewStatus: 'APPROVED'
-              }
-            ]
-          },
-          error: null,
-          meta: null
-        })
-      } as Response
+    const method = init?.method ?? 'GET'
+
+    if (url.endsWith('/api/spaces')) {
+      return jsonOk([
+        {
+          id: 'ibm-i-modernization',
+          name: 'IBM i Modernization',
+          description: 'Mock discovery package for modernization planning.',
+          type: 'document',
+          indexStrategy: 'rag',
+          owner: 'Platform Team',
+          status: 'REVIEW_REQUIRED',
+          documentCount: 6,
+          wikiPageCount: state.wikiPublished ? 1 : 0,
+          reviewCount: 1,
+          createdAt: '2026-06-01T09:00:00Z',
+          updatedAt: '2026-06-20T14:30:00Z'
+        }
+      ])
     }
-    return {
-      ok: true,
-      status: 200,
-      json: async () => ({
-        success: true,
-        data: {
-          spaceId: 'ibm-i-modernization',
-          nodes: [
-            {
-              id: 'node-concept-rpgle',
-              label: 'RPGLE modernization',
-              type: 'CONCEPT',
-              reviewStatus: 'APPROVED',
-              confidence: 0.93,
-              evidenceCount: 1
-            },
-            {
-              id: 'node-document-target-architecture',
-              label: 'Target Architecture',
-              type: 'DOCUMENT',
-              reviewStatus: 'APPROVED',
-              confidence: 0.91,
-              evidenceCount: 1
-            }
-          ],
-          edges: [
-            {
-              id: 'edge-source-mentions-rpgle',
-              sourceNodeId: 'node-document-target-architecture',
-              targetNodeId: 'node-concept-rpgle',
-              type: 'MENTIONS',
-              reviewStatus: 'APPROVED',
-              confidence: 0.93,
-              evidenceCount: 1
-            }
-          ],
-          counts: { nodes: 2, edges: 1, excluded: 0 }
-        },
-        error: null,
-        meta: null
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization')) {
+      return jsonOk({
+        id: 'ibm-i-modernization',
+        name: 'IBM i Modernization',
+        description: 'Mock discovery package for modernization planning.',
+        type: 'document',
+        indexStrategy: 'rag',
+        owner: 'Platform Team',
+        status: 'REVIEW_REQUIRED',
+        documentCount: 6,
+        wikiPageCount: state.wikiPublished ? 1 : 0,
+        reviewCount: 1,
+        createdAt: '2026-06-01T09:00:00Z',
+        updatedAt: '2026-06-20T14:30:00Z'
       })
-    } as Response
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/batches') && method === 'POST') {
+      state.batchCreated = true
+      return jsonOk(batch(), 201)
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/batches')) {
+      return jsonOk(state.batchCreated ? [batch()] : [])
+    }
+
+    if (url.endsWith('/api/batches/batch-p0/files')) {
+      return jsonOk(state.batchCreated ? [file(state.fileReviewStatus)] : [])
+    }
+
+    if (url.endsWith('/api/files/file-p0/chunks')) {
+      return jsonOk([chunk()])
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/review-queues')) {
+      return jsonOk({
+        spaceId: 'ibm-i-modernization',
+        queues: [
+          {
+            type: 'READY_TO_PUBLISH',
+            count: state.fileReviewStatus === 'APPROVED' ? 1 : 0,
+            publishBlocked: false,
+            representativeItems: []
+          },
+          {
+            type: 'LOW_CONFIDENCE',
+            count: 0,
+            publishBlocked: true,
+            representativeItems: []
+          }
+        ]
+      })
+    }
+
+    if (url.endsWith('/api/files/file-p0/reviews') && method === 'POST') {
+      state.fileReviewStatus = 'APPROVED'
+      return jsonOk(
+        {
+          id: 1,
+          targetType: 'file',
+          targetId: 'file-p0',
+          action: 'APPROVE',
+          reviewer: 'p0-browser',
+          comment: 'Approved',
+          affectedChunks: ['chunk-p0'],
+          createdAt: '2026-07-03T00:00:00Z'
+        },
+        201
+      )
+    }
+
+    if (url.endsWith('/api/files/file-p0/publish') && method === 'POST') {
+      state.wikiPublished = true
+      return jsonOk(wikiPage(), 201)
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/wiki-pages')) {
+      return jsonOk(state.wikiPublished ? [wikiPage()] : [])
+    }
+
+    if (url.includes('/api/spaces/ibm-i-modernization/graph/projection-runs')) {
+      state.graphProjectionCreated = true
+      return jsonOk(
+        { runId: 'graph-run-p0', spaceId: 'ibm-i-modernization', status: 'SUCCEEDED', summary: {} },
+        201
+      )
+    }
+
+    if (url.includes('/api/spaces/ibm-i-modernization/vector-runs')) {
+      state.vectorRunCreated = true
+      return jsonOk(
+        { runId: 'vector-run-p0', spaceId: 'ibm-i-modernization', status: 'SUCCEEDED' },
+        201
+      )
+    }
+
+    if (url.includes('/api/spaces/ibm-i-modernization/graph/nodes/node-p0')) {
+      return jsonOk(graphDetail())
+    }
+
+    if (url.includes('/api/spaces/ibm-i-modernization/graph')) {
+      return jsonOk(graphView())
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/ask') && method === 'POST') {
+      return jsonOk(askRun(), 201)
+    }
+
+    if (url.endsWith('/api/ask-runs/ask-p0')) {
+      return jsonOk(askRun())
+    }
+
+    return jsonOk(null)
   })
+
+  return state
+}
+
+function jsonOk(data: unknown, status = 200) {
+  return Promise.resolve({
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => ({ success: true, data, error: null, meta: null })
+  } as Response)
+}
+
+function batch() {
+  return {
+    id: 'batch-p0',
+    spaceId: 'ibm-i-modernization',
+    name: 'P0 Browser Batch',
+    sourceKind: 'folder',
+    owner: 'P0 Browser',
+    uploadedAt: '2026-07-03T00:00:00Z',
+    metrics: {
+      totalFiles: 1,
+      pdfConverted: 0,
+      markdownGenerated: 1,
+      reviewRequired: 1,
+      failed: 0,
+      unsupported: 0
+    }
+  }
+}
+
+function file(reviewStatus: string) {
+  return {
+    id: 'file-p0',
+    batchId: 'batch-p0',
+    sourcePath: 'samples/p0/productization.md',
+    sourceType: 'pdf',
+    status: 'MARKDOWN_GENERATED',
+    confidence: 0.93,
+    reviewStatus,
+    pdfPath: null,
+    markdownPath: 'generated/md/productization.md',
+    assetsPath: null,
+    errorMessage: null
+  }
+}
+
+function chunk() {
+  return {
+    id: 'chunk-p0',
+    fileItemId: 'file-p0',
+    sourceFile: 'productization.md',
+    page: 1,
+    section: 'P0 Browser Evidence',
+    confidence: 0.93,
+    reviewStatus: 'APPROVED'
+  }
+}
+
+function wikiPage() {
+  return {
+    id: 'wiki-file-p0',
+    spaceId: 'ibm-i-modernization',
+    title: 'P0 Wiki',
+    markdownPath: 'generated/md/productization.md',
+    sourceDocumentIds: ['file-p0'],
+    confidence: 0.93,
+    reviewStatus: 'PUBLISHED',
+    owner: 'p0-browser',
+    lastUpdated: '2026-07-03T00:00:00Z'
+  }
+}
+
+function graphView() {
+  return {
+    spaceId: 'ibm-i-modernization',
+    nodes: [
+      {
+        id: 'node-p0',
+        label: 'P0 Browser Evidence',
+        type: 'CONCEPT',
+        reviewStatus: 'APPROVED',
+        confidence: 0.93,
+        evidenceCount: 1
+      }
+    ],
+    edges: [],
+    counts: { nodes: 1, edges: 0, excluded: 0 }
+  }
+}
+
+function graphDetail() {
+  return {
+    node: graphView().nodes[0],
+    adjacentNodes: [],
+    adjacentEdges: [],
+    evidenceReferences: [
+      {
+        sourceChunkId: 'chunk-p0',
+        sourceFile: 'productization.md',
+        page: 1,
+        section: 'P0 Browser Evidence',
+        confidence: 0.93,
+        reviewStatus: 'APPROVED'
+      }
+    ]
+  }
+}
+
+function askRun() {
+  return {
+    runId: 'ask-p0',
+    spaceId: 'ibm-i-modernization',
+    question: 'What evidence was published?',
+    status: 'SUCCEEDED',
+    reviewPolicy: 'APPROVED_ONLY',
+    mode: 'mock',
+    requestedBy: 'p0-browser',
+    answer: 'Mock chat summary for the referenced Atlas evidence.',
+    answerConfidence: 0.82,
+    answerReviewStatus: 'REVIEW_REQUIRED',
+    modelRunId: 'model-run-p0',
+    safeMessage: 'Trusted ask completed.',
+    evidence: [
+      {
+        evidenceId: 'ask-ev-p0',
+        sourceChunkId: 'chunk-p0',
+        fileItemId: 'file-p0',
+        sourceFile: 'productization.md',
+        page: 1,
+        section: 'P0 Browser Evidence',
+        reviewStatus: 'APPROVED',
+        confidence: 0.93,
+        vectorItemKey: 'ibm-i-modernization/chunk-p0',
+        score: 0.91,
+        createdAt: '2026-07-03T00:00:00Z'
+      }
+    ],
+    createdAt: '2026-07-03T00:00:00Z',
+    completedAt: '2026-07-03T00:00:01Z'
+  }
 }
 
 async function flushAsync() {
-  await new Promise(resolve => setTimeout(resolve, 0))
-  await new Promise(resolve => setTimeout(resolve, 0))
+  for (let index = 0; index < 6; index++) {
+    await new Promise(resolve => setTimeout(resolve, 0))
+  }
 }

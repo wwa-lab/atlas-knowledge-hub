@@ -1036,6 +1036,93 @@
       text-decoration: none;
     }
 
+    .model-config-panel {
+      display: grid;
+      gap: 18px;
+      margin: 0 0 32px;
+      padding: 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .model-config-header {
+      display: grid;
+      gap: 8px;
+    }
+
+    .model-config-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .model-config-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .model-config-badge {
+      width: fit-content;
+      padding: 4px 10px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .model-config-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .model-config-list {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 10px 16px;
+      margin: 0;
+      padding: 16px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .model-config-list dt {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .model-config-list dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text);
+    }
+
+    .model-command {
+      margin: 0;
+      padding: 16px;
+      overflow: auto;
+      color: var(--text);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .model-safety-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
     .model-list-tabs {
       display: flex;
       gap: 34px;
@@ -3148,6 +3235,17 @@
         modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
         builtinModel: "内置模型",
         builtinModelHelp: "内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。",
+        providerBackedTitle: "Provider-backed E2E 配置",
+        providerBackedSubtitle: "DeepSeek chat 调用只允许发生在后端 ModelAdapter 内。当前页面展示需要在 VS Code terminal 中设置的环境变量，不保存、不回显真实 key。",
+        providerBackedBadge: "本地 opt-in",
+        requiredEnvironment: "必填环境变量",
+        shellCommand: "VS Code terminal 命令",
+        apiKeyMasked: "当前页面只显示占位符；真实 key 只能来自 shell env",
+        providerSafetyItems: [
+          "不要把真实 key 写进前端代码、Playwright spec、文档、截图、trace 或 git。",
+          "第三层 E2E 仍然只使用 mock/sample knowledge data。",
+          "缺少 ATLAS_MODEL_API_KEY 时脚本会在启动服务前安全失败。"
+        ],
         allModels: "全部",
         chatModels: "对话",
         embeddingModels: "Embedding",
@@ -3364,6 +3462,17 @@
         modelSettingsSubtitle: "Manage AI model types, including Ollama local models, remote APIs, GitHub Models / Copilot-available models, and custom providers.",
         builtinModel: "Built-in Models",
         builtinModelHelp: "Built-in models are visible to all tenants. Sensitive values are masked and full secrets are never displayed here.",
+        providerBackedTitle: "Provider-backed E2E Configuration",
+        providerBackedSubtitle: "DeepSeek chat calls are allowed only inside the backend ModelAdapter. This page shows the environment variables to set in a VS Code terminal; it does not store or reveal real keys.",
+        providerBackedBadge: "Local opt-in",
+        requiredEnvironment: "Required environment",
+        shellCommand: "VS Code terminal command",
+        apiKeyMasked: "This page shows a placeholder only; the real key must come from shell env",
+        providerSafetyItems: [
+          "Do not put real keys in frontend code, Playwright specs, docs, screenshots, traces, or git.",
+          "Third-layer E2E still uses mock/sample knowledge data only.",
+          "When ATLAS_MODEL_API_KEY is missing, the script fails safely before starting services."
+        ],
         allModels: "All",
         chatModels: "Chat",
         embeddingModels: "Embedding",
@@ -4570,6 +4679,35 @@
           <a href="#" aria-label="${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"}">
             ${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"} ↗
           </a>
+        </section>
+        <section class="model-config-panel" data-testid="provider-backed-model-config">
+          <div class="model-config-header">
+            <span class="model-config-badge">${text.providerBackedBadge}</span>
+            <h2>${text.providerBackedTitle}</h2>
+            <p>${text.providerBackedSubtitle}</p>
+          </div>
+          <div class="model-config-grid">
+            <dl class="model-config-list" aria-label="${text.requiredEnvironment}">
+              <dt>${text.provider}</dt>
+              <dd>ATLAS_MODEL_PROVIDER=deepseek</dd>
+              <dt>${text.baseUrl}</dt>
+              <dd>ATLAS_MODEL_ENDPOINT=https://api.deepseek.com</dd>
+              <dt>${text.modelName}</dt>
+              <dd>ATLAS_MODEL_NAME=deepseek-chat</dd>
+              <dt>${text.apiKey}</dt>
+              <dd>ATLAS_MODEL_API_KEY=&lt;local-deepseek-api-key&gt;</dd>
+              <dt>${text.apiKeyStatus}</dt>
+              <dd>${text.apiKeyMasked}</dd>
+            </dl>
+            <pre class="model-command" aria-label="${text.shellCommand}"><code>export ATLAS_MODEL_PROVIDER=deepseek
+export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+export ATLAS_MODEL_API_KEY='&lt;local-deepseek-api-key&gt;'
+export ATLAS_MODEL_NAME=deepseek-chat
+npm run e2e:third-layer</code></pre>
+          </div>
+          <ul class="model-safety-list">
+            ${text.providerSafetyItems.map((item) => `<li>${item}</li>`).join("")}
+          </ul>
         </section>
         <nav class="model-list-tabs" aria-label="${text.modelSettingsTitle}">
           ${categories.map(([key, label, count], index) => `<button class="model-list-tab ${index === 0 ? "active" : ""}" type="button">${label}(${count})</button>`).join("")}

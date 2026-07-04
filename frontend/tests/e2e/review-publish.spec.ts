@@ -1,24 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from '@playwright/test'
+import { mockP0Api } from './p0-api-mock'
 
-test("review publish states show ready content and blocked trace gates", async ({ page }) => {
-  await page.goto("/");
-  const prototype = page.frameLocator('iframe[title="Atlas Knowledge Hub Phase 1 Prototype"]');
+test('review and publish states use backend queues and Wiki metadata', async ({ page }) => {
+  await mockP0Api(page)
+  await page.goto('/')
 
-  await prototype.locator('[data-space="IBM i Modernization"]').click();
-  await prototype.locator('[data-tab="review"]').click();
+  await page.getByTestId('create-sample-batch').click()
+  await expect(page.getByTestId('review-queues')).toContainText('READY_TO_PUBLISH 0')
+  await expect(page.getByTestId('publish-file')).toBeDisabled()
 
-  await expect(prototype.getByTestId("review-publish-summary")).toContainText("Ready to publish");
-  await expect(prototype.locator('[data-review-queue="missing-source-trace"]')).toContainText(
-    /publish blocked|禁止发布/
-  );
-  await expect(prototype.locator('[data-review-queue-type="MISSING_SOURCE_TRACE"]')).toBeVisible();
-  await expect(prototype.getByTestId("ready-publish-row")).toContainText("APPROVED");
-  await expect(prototype.getByTestId("ready-publish-row")).toContainText(/Publish|发布/);
-  await expect(prototype.getByTestId("review-blocked-row").first()).toContainText(
-    /Blocked from Wiki\/Graph\/Ask|不会发布到 Wiki\/Graph\/Ask/
-  );
+  await page.getByTestId('approve-file').click()
+  await expect(page.getByTestId('review-queues')).toContainText('READY_TO_PUBLISH 1')
 
-  await prototype.locator('[data-tab="wiki"]').click();
-  await expect(prototype.getByTestId("published-wiki-metadata")).toContainText("PUBLISHED");
-  await expect(prototype.getByTestId("published-wiki-metadata")).toContainText("source_trace");
-});
+  await page.getByTestId('publish-file').click()
+  await expect(page.getByTestId('wiki-pages')).toContainText('P0 Wiki')
+  await expect(page.getByTestId('wiki-pages')).toContainText('PUBLISHED')
+  await expect(page.getByTestId('wiki-pages')).toContainText('file-p0')
+})

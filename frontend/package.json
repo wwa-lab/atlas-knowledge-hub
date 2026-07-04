@@ -13,9 +13,9 @@
     "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test tests/e2e/acceptance tests/e2e/folder-upload.spec.ts tests/e2e/knowledge-graph.spec.ts tests/e2e/phase1-smoke.spec.ts tests/e2e/review-publish.spec.ts",
+    "e2e": "playwright test tests/e2e/acceptance tests/e2e/folder-upload.spec.ts tests/e2e/full-stack-productization.spec.ts tests/e2e/knowledge-graph.spec.ts tests/e2e/phase1-smoke.spec.ts tests/e2e/review-publish.spec.ts",
     "e2e:acceptance": "playwright test tests/e2e/acceptance",
-    "e2e:second-layer": "playwright test tests/e2e/second-layer",
+    "e2e:second-layer": "playwright test tests/e2e/second-layer --workers=1",
     "e2e:third-layer": "playwright test tests/e2e/third-layer --timeout 120000",
     "prepare": "bash ../scripts/setup-hooks.sh"
   },

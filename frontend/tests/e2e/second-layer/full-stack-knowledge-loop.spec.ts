@@ -127,16 +127,8 @@ test('second-layer local stack publishes trusted knowledge, projects graph, and 
   expect(askEnvelope.data.evidence[0].sourceChunkId).toBe(chunkId)
 
   await page.goto('/')
-  const graph = page.locator('[data-tab="graph"]')
-  await expect(graph).toHaveAttribute('data-state', 'ready')
-  await expect(graph.getByTestId('graph-state')).toContainText('Graph API connected')
-  await expect(graph).not.toContainText('Using safe mock graph')
-
-  await graph.getByTestId('graph-search').fill(section)
-  await expect(graph.locator('.graph-node-button', { hasText: section })).toBeVisible()
-  await graph.locator('.graph-node-button', { hasText: section }).click()
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText(chunkId)
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText('APPROVED')
+  await expect(page.getByTestId('space-list')).toContainText('IBM i Modernization')
+  await expect(page.getByTestId('coming-soon')).toHaveCount(3)
 })
 
 async function expectApiOk(

@@ -1,37 +1,20 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from '@playwright/test'
+import { mockP0Api } from './p0-api-mock'
 
-test("folder upload mock flow creates a batch and opens the report", async ({ page }) => {
-  const requestsAfterTrigger: string[] = [];
+test('metadata-only sample upload creates a real API batch and source trace view', async ({ page }) => {
+  await mockP0Api(page)
+  await page.goto('/')
 
-  await page.goto("/");
-  const prototype = page.frameLocator('iframe[title="Atlas Knowledge Hub Phase 1 Prototype"]');
+  await expect(page.getByTestId('coming-soon').first()).toBeDisabled()
+  await expect(page.getByTestId('coming-soon')).toContainText([
+    'Production file upload coming soon',
+    'Production auth and member admin coming soon',
+    'Real provider setup coming soon'
+  ])
 
-  await prototype.locator('[data-space="IBM i Modernization"]').click();
-  await prototype.locator('[data-tab="docs"]').click();
-
-  page.on("request", (request) => {
-    requestsAfterTrigger.push(request.url());
-  });
-
-  await prototype.getByTestId("upload-folder").click();
-  await expect(prototype.getByTestId("upload-review")).toBeVisible();
-  await expect(prototype.getByTestId("inventory-row")).toHaveCount(8);
-  await expect(prototype.getByTestId("unsupported-row")).toHaveCount(2);
-  await expect(prototype.getByText(/source package|来源包/i)).toBeVisible();
-  expect(requestsAfterTrigger).toEqual([]);
-
-  await prototype.getByTestId("create-batch").click();
-  await expect(prototype.getByTestId("upload-review")).toHaveCount(0);
-  await expect(prototype.getByTestId("batch-metrics")).toContainText(/8|文件总数/);
-  await expect(prototype.getByTestId("batch-progress").locator(".progress-head")).toHaveCount(4);
-  await expect(prototype.getByTestId("file-tree")).toContainText("Target_Architecture.pptx");
-
-  await prototype.getByTestId("view-report").click();
-  const report = prototype.getByTestId("batch-report");
-  await expect(report).toBeVisible();
-  await expect(report.getByText(/source_trace:/).first()).toBeVisible();
-  await expect(report.getByText("UNSUPPORTED").first()).toBeVisible();
-  await expect(report.getByText("PDF_CONVERT_FAILED").first()).toBeVisible();
-  await expect(report.getByText("LOW_CONFIDENCE").first()).toBeVisible();
-  await expect(report.getByText("REVIEW_REQUIRED").first()).toBeVisible();
-});
+  await page.getByTestId('create-sample-batch').click()
+  await expect(page.getByTestId('batch-list')).toContainText('P0 Browser Batch')
+  await expect(page.getByTestId('file-list')).toContainText('samples/p0/productization.md')
+  await expect(page.getByTestId('chunk-list')).toContainText('productization.md')
+  await expect(page.getByTestId('chunk-list')).toContainText('confidence 0.93')
+})

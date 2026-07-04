@@ -1,67 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from '@playwright/test'
+import { mockP0Api } from './p0-api-mock'
 
-test("Phase 1 shows the accepted attachment prototype and core flow", async ({ page }) => {
-  await page.goto("/");
+test('P0 shell exposes API-driven workspace and disables unconnected prototype actions', async ({ page }) => {
+  await mockP0Api(page)
+  await page.goto('/')
 
-  const prototype = page.frameLocator('iframe[title="Atlas Knowledge Hub Phase 1 Prototype"]');
+  await expect(page.getByRole('heading', { name: 'Knowledge Workspace' })).toBeVisible()
+  await expect(page.getByTestId('space-list')).toContainText('IBM i Modernization')
+  await expect(page.getByTestId('space-detail')).toContainText('Platform Team')
+  await expect(page.locator('iframe')).toHaveCount(0)
 
-  await expect(prototype.getByText("Atlas Knowledge Hub")).toBeVisible();
-  await expect(prototype.locator("h1", { hasText: "知识库" })).toBeVisible();
-  await expect(prototype.locator(".dialog-hero")).toHaveCount(0);
-  await expect(prototype.locator(".library-cards")).toBeVisible();
-  await expect(prototype.locator(".library-card", { hasText: "IBM i Modernization" })).toBeVisible();
-  await expect(prototype.getByText("内部知识工作台")).toBeVisible();
+  await expect(page.getByTestId('coming-soon')).toHaveCount(3)
+  await expect(page.getByText('Production file upload coming soon')).toBeDisabled()
+  await expect(page.getByText('Production auth and member admin coming soon')).toBeDisabled()
+  await expect(page.getByText('Real provider setup coming soon')).toBeDisabled()
 
-  await prototype.locator("[data-create-space]").click();
-  await expect(prototype.locator("#createSpaceView")).toHaveClass(/active/);
-  await expect(prototype.locator("h1", { hasText: "新建知识库" })).toBeVisible();
-  await expect(prototype.locator("h2", { hasText: "基本信息" })).toBeVisible();
-  await prototype.locator('[data-knowledge-type="faq"]').click();
-  await expect(prototype.locator('[data-knowledge-type="faq"]')).toHaveClass(/active/);
-  await expect(prototype.locator('[data-knowledge-type="document"]')).not.toHaveClass(/active/);
-  await prototype.locator('[data-create-step="model"]').click();
-  await expect(prototype.locator('[data-create-step="model"]')).toHaveClass(/active/);
-  await expect(prototype.locator('[data-create-step="basic"]')).not.toHaveClass(/active/);
-  await expect(prototype.getByText("RAG 检索")).toBeVisible();
-  await prototype.locator('[data-index-strategy="wiki"]').click();
-  await expect(prototype.locator('[data-index-strategy="wiki"]')).toHaveClass(/active/);
-  await expect(prototype.locator('[data-index-strategy="rag"]')).not.toHaveClass(/active/);
-  await expect(prototype.getByRole("button", { name: "创建知识库" })).toBeVisible();
-  await prototype.locator("#cancelCreateSpace").click();
-  await expect(prototype.locator("#createSpaceView")).not.toHaveClass(/active/);
-
-  await expect(prototype.locator(".utility-controls")).toHaveCount(0);
-  await prototype.locator("[data-open-settings]").click();
-  await expect(prototype.locator("#settingsLanguageSelect")).toHaveValue("zh-CN");
-  await prototype.locator("#settingsLanguageSelect").selectOption("en-US");
-  await expect(prototype.locator("h1", { hasText: "General Settings" })).toBeVisible();
-  await prototype.locator("#settingsThemeSelect").selectOption("night");
-  await expect(prototype.locator("html")).toHaveAttribute("data-theme", "night");
-  await prototype.locator(".settings-rail").locator('[data-settings-panel="models"]').click();
-  await expect(prototype.locator("h1", { hasText: /模型配置|Model Configuration/ })).toBeVisible();
-  await expect(prototype.locator(".model-info-panel")).toBeVisible();
-  await expect(prototype.locator(".model-list-card")).toHaveCount(2);
-  await expect(prototype.locator(".model-list-tab").first()).toContainText("(2)");
-  await expect(prototype.getByText(/编辑模型|Edit Model/)).toHaveCount(0);
-  await prototype.locator("#closeSettings").click();
-
-  await prototype.locator('[data-space="IBM i Modernization"]').click();
-  await expect(prototype.locator("h1", { hasText: "IBM i Modernization" })).toBeVisible();
-  await expect(prototype.getByText("35 Review Required")).toBeVisible();
-
-  await prototype.locator('[data-tab="graph"]').click();
-  await expect(prototype.locator(".graph-svg")).toBeVisible();
-
-  await prototype.locator('[data-tab="ask"]').click();
-  await expect(prototype.getByTestId("trusted-ask")).toBeVisible();
-  await expect(prototype.getByTestId("ask-answer")).toHaveAttribute("data-status", "SUCCEEDED");
-  await expect(prototype.getByTestId("ask-answer")).toContainText("Source Trace");
-  await expect(prototype.getByTestId("ask-evidence")).toContainText("REVIEW_REQUIRED");
-  await expect(prototype.getByTestId("ask-review-warning")).toContainText("REVIEW_REQUIRED");
-  await expect(prototype.getByTestId("ask-no-evidence")).toContainText("No eligible approved evidence");
-  await expect(prototype.getByTestId("ask-safe-error")).toContainText("failed safely");
-  await prototype.locator('[data-nav-key="chat"]').click();
-  await expect(prototype.locator("h2", { hasText: /Atlas/ })).toBeVisible();
-  await expect(prototype.getByText(/知识库\(2\)|Knowledge\(2\)/)).toBeVisible();
-  await expect(prototype.locator('[data-chat-kb="IBM i Modernization"]')).toBeVisible();
-});
+  await expect(page.getByTestId('create-sample-batch')).toBeEnabled()
+  await expect(page.getByTestId('approve-file')).toBeDisabled()
+  await expect(page.getByTestId('publish-file')).toBeDisabled()
+})
