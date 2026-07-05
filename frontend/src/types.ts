@@ -260,6 +260,34 @@ export interface ApiEnvelope<T> {
   meta: unknown
 }
 
+export type ApiAtlasRole =
+  'VIEWER' | 'EDITOR' | 'KNOWLEDGE_MANAGER' | 'SPACE_OWNER' | 'AUDITOR' | 'PLATFORM_ADMIN'
+
+export type ApiMembershipStatus = 'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'REMOVED'
+
+export interface ApiAuthUser {
+  id: string
+  email: string
+  displayName: string
+  status: 'ACTIVE' | 'DISABLED'
+  globalRoles: ApiAtlasRole[]
+}
+
+export interface ApiAuthMembership {
+  id: string
+  spaceId: string
+  spaceName: string
+  role: ApiAtlasRole
+  status: ApiMembershipStatus
+}
+
+export interface ApiMe {
+  user: ApiAuthUser
+  activeSpaceId: string | null
+  memberships: ApiAuthMembership[]
+  capabilities: string[]
+}
+
 export interface ApiSpace {
   id: string
   name: string
@@ -360,6 +388,26 @@ export interface ApiWikiReference {
   id: string
   label: string | null
   locator: string | null
+}
+
+export interface ApiWikiPageIssue {
+  id: string
+  spaceId: string
+  pageId: string
+  issueType:
+    | 'STALE_SOURCE'
+    | 'BROKEN_LINK'
+    | 'ORPHAN_PAGE'
+    | 'THIN_CONTENT'
+    | 'REVIEW_REQUIRED'
+    | 'MISSING_SOURCE_REF'
+    | string
+  severity: 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | string
+  status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED' | 'IGNORED' | string
+  evidenceRefs: ApiWikiReference[]
+  message: string | null
+  createdAt: string
+  resolvedAt: string | null
 }
 
 export interface ApiWikiPage {

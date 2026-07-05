@@ -7,6 +7,7 @@ import {
   createSampleBatch,
   createSpace as createSpaceApi,
   getAskRun,
+  getCurrentUser,
   getDeepSeekConfiguration,
   getGraph,
   getGraphNode,
@@ -16,6 +17,7 @@ import {
   listFiles,
   listModelAdapters,
   listSpaces,
+  listWikiPageIssues,
   listWikiPages,
   publishFile as publishFileApi,
   getReviewQueues,
@@ -33,13 +35,15 @@ import type {
   ApiGraphNodeDetail,
   ApiGraphNodeType,
   ApiGraphView,
+  ApiMe,
   ApiModelCapability,
   ApiModelConfiguration,
   ApiReviewQueues,
   ApiReviewStatus,
   ApiSourceChunk,
   ApiSpace,
-  ApiWikiPage
+  ApiWikiPage,
+  ApiWikiPageIssue
 } from '@/types'
 
 type ModelCategory = 'all' | 'chat' | 'embedding' | 'rerank' | 'vision' | 'speech'
@@ -256,6 +260,35 @@ interface VueModelDraft extends VueModelConfig {
 
 const defaultSpaceId = 'ibm-i-modernization'
 const prototypeSrc = '/atlas-prototype.html'
+const defaultMockMe: ApiMe = {
+  user: {
+    id: 'frontend-demo',
+    email: 'frontend-demo@example.test',
+    displayName: 'Frontend Demo',
+    status: 'ACTIVE',
+    globalRoles: []
+  },
+  activeSpaceId: defaultSpaceId,
+  memberships: [
+    {
+      id: 'membership-frontend-ibmi',
+      spaceId: defaultSpaceId,
+      spaceName: 'IBM i Modernization',
+      role: 'SPACE_OWNER',
+      status: 'ACTIVE'
+    }
+  ],
+  capabilities: [
+    'CONTENT_READ',
+    'CONTENT_WRITE',
+    'GOVERNANCE_READ',
+    'KNOWLEDGE_OPERATE',
+    'MEMBER_MANAGE',
+    'SETTINGS_MANAGE',
+    'SPACE_MANAGE',
+    'SPACE_READ'
+  ]
+}
 
 const activeExperience = ref<'atlas' | 'prototype' | 'p0'>('atlas')
 const productView = ref<ProductView>('home')
@@ -279,6 +312,7 @@ const apiInfo = ref<ApiInfoState>({
 const messageIndexEnabled = ref(false)
 const messageEmbeddingModel = ref('text-embedding-v4')
 const spaces = ref<ApiSpace[]>([])
+const currentUser = ref<ApiMe | null>(defaultMockMe)
 const selectedSpace = ref<ApiSpace | null>(null)
 const selectedSpaceId = ref(defaultSpaceId)
 const batches = ref<ApiBatch[]>([])
@@ -288,6 +322,7 @@ const selectedFileId = ref('')
 const chunks = ref<ApiSourceChunk[]>([])
 const reviewQueues = ref<ApiReviewQueues | null>(null)
 const wikiPages = ref<ApiWikiPage[]>([])
+const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
 const askRun = ref<ApiAskRun | null>(null)
 const askQuestion = ref('What evidence was published for the P0 browser flow?')
 const workflowMessage = ref('')
@@ -303,6 +338,7 @@ const isPublishing = ref(false)
 const isRefreshingEvidence = ref(false)
 const isAsking = ref(false)
 const spacesError = ref('')
+const authError = ref('')
 const createSpaceError = ref('')
 const createSpaceStatus = ref('')
 const workflowError = ref('')
@@ -898,14 +934,24 @@ const selectedFile = computed(
   () => files.value.find(file => file.id === selectedFileId.value) ?? null
 )
 const selectedChunkIds = computed(() => chunks.value.map(chunk => chunk.id))
+const currentCapabilities = computed(() => new Set(currentUser.value?.capabilities ?? []))
+const canManageSpaces = computed(() => hasCapability('SPACE_MANAGE'))
+const canWriteContent = computed(() => hasCapability('CONTENT_WRITE'))
+const canOperateKnowledge = computed(() => hasCapability('KNOWLEDGE_OPERATE'))
+const canManageMembers = computed(() => hasCapability('MEMBER_MANAGE'))
 const canApprove = computed(
   () =>
+    canOperateKnowledge.value &&
     Boolean(selectedFile.value) &&
     selectedFile.value?.reviewStatus !== 'APPROVED' &&
     chunks.value.length > 0
 )
-const canPublish = computed(() => selectedFile.value?.reviewStatus === 'APPROVED')
-const canAsk = computed(() => Boolean(selectedSpaceId.value && askQuestion.value.trim()))
+const canPublish = computed(
+  () => canOperateKnowledge.value && selectedFile.value?.reviewStatus === 'APPROVED'
+)
+const canAsk = computed(
+  () => canOperateKnowledge.value && Boolean(selectedSpaceId.value && askQuestion.value.trim())
+)
 const readyQueueCount = computed(
   () => reviewQueues.value?.queues.find(queue => queue.type === 'READY_TO_PUBLISH')?.count ?? 0
 )
@@ -1057,8 +1103,25 @@ const apiBlockedReviewCount = computed(() =>
     .filter(queue => queue.publishBlocked)
     .reduce((total, queue) => total + queue.count, 0)
 )
-const apiProcessingIssues = computed(() =>
-  reviewQueueCards.value.map(queue => ({
+const apiWikiIssueCards = computed(() => {
+  const groups = wikiPageIssues.value.reduce<Record<string, ApiWikiPageIssue[]>>((acc, issue) => {
+    acc[issue.issueType] = [...(acc[issue.issueType] ?? []), issue]
+    return acc
+  }, {})
+  return Object.entries(groups).map(([issueType, issues]) => ({
+    id: `wiki-${issueType.toLowerCase()}`,
+    label: `WIKI ${issueType.replaceAll('_', ' ')}`,
+    type: issueType,
+    count: issues.length,
+    status: issues.some(issue => issue.severity === 'HIGH' || issue.severity === 'MEDIUM')
+      ? 'review warning'
+      : 'quality note',
+    action: '查看 Wiki warning',
+    source: issues[0]?.pageId ?? 'Wiki lint'
+  }))
+})
+const apiProcessingIssues = computed(() => [
+  ...reviewQueueCards.value.map(queue => ({
     id: queue.type.toLowerCase(),
     label: queue.type.replaceAll('_', ' '),
     type: queue.type,
@@ -1066,8 +1129,9 @@ const apiProcessingIssues = computed(() =>
     status: queue.publishBlocked ? 'blocks Wiki / Graph / Ask' : 'eligible',
     action: queue.publishBlocked ? '查看阻塞项' : '发布 Wiki',
     source: queue.representativeItems[0]?.fileId ?? 'API review queue'
-  }))
-)
+  })),
+  ...apiWikiIssueCards.value
+])
 const apiProductWikiPages = computed<ProductWikiPage[]>(() =>
   wikiPages.value.map(page => ({
     id: page.id,
@@ -1111,6 +1175,9 @@ const selectedProductWikiPage = computed(
   () =>
     visibleProductWikiPages.value.find(page => page.id === selectedProductWikiPageId.value) ??
     visibleProductWikiPages.value[0]
+)
+const selectedProductWikiPageIssues = computed(() =>
+  wikiPageIssues.value.filter(issue => issue.pageId === selectedProductWikiPage.value?.id)
 )
 const apiProductGraphNodes = computed<ProductGraphNode[]>(() =>
   graphNodes.value.map((node, index) => ({
@@ -1422,7 +1489,19 @@ onMounted(() => {
 })
 
 async function initialize() {
-  await Promise.all([loadSpaces(), loadGraph(), loadModelCapabilities()])
+  await Promise.all([loadCurrentUser(), loadSpaces(), loadGraph(), loadModelCapabilities()])
+}
+
+async function loadCurrentUser() {
+  try {
+    currentUser.value = await getCurrentUser()
+    authError.value = ''
+  } catch (error) {
+    authError.value = safeError(
+      error,
+      'Current user context unavailable; using local mock permissions.'
+    )
+  }
 }
 
 async function loadSpaces() {
@@ -1443,6 +1522,10 @@ async function loadSpaces() {
 }
 
 function openCreateSpacePanel() {
+  if (!canManageSpaces.value) {
+    createSpaceStatus.value = '当前账号没有创建知识库权限。'
+    return
+  }
   createSpaceDraft.value = {
     name: '',
     description: '',
@@ -1461,6 +1544,10 @@ function closeCreateSpacePanel() {
 }
 
 async function createProductSpace() {
+  if (!canManageSpaces.value) {
+    createSpaceError.value = '当前账号没有创建知识库权限。'
+    return
+  }
   const draft = {
     ...createSpaceDraft.value,
     name: createSpaceDraft.value.name.trim(),
@@ -1516,16 +1603,18 @@ async function loadSpaceContext(spaceId: string) {
   isLoadingSpace.value = true
   workflowError.value = ''
   try {
-    const [space, batchList, queues, pages] = await Promise.all([
+    const [space, batchList, queues, pages, issues] = await Promise.all([
       getSpace(spaceId),
       listBatches(spaceId),
       getReviewQueues(spaceId),
-      listWikiPages(spaceId, true)
+      listWikiPages(spaceId, true),
+      listWikiPageIssues(spaceId)
     ])
     selectedSpace.value = space
     batches.value = batchList
     reviewQueues.value = queues
     wikiPages.value = pages
+    wikiPageIssues.value = issues
     const firstBatch = batchList[0]
     if (firstBatch) {
       await selectBatch(firstBatch.id)
@@ -1558,7 +1647,7 @@ async function selectFile(fileId: string) {
 }
 
 async function createBatchFromBrowser() {
-  if (!selectedSpaceId.value) {
+  if (!selectedSpaceId.value || !canWriteContent.value) {
     return
   }
   isCreatingBatch.value = true
@@ -1581,7 +1670,7 @@ function openDocumentUpload() {
 }
 
 async function handleDocumentUpload(event: { target: unknown }) {
-  if (!selectedSpaceId.value) {
+  if (!selectedSpaceId.value || !canWriteContent.value) {
     return
   }
   const input = event.target as { files: ArrayLike<unknown> | null; value: string }
@@ -1607,7 +1696,7 @@ async function handleDocumentUpload(event: { target: unknown }) {
 
 async function approveSelectedFile() {
   const file = selectedFile.value
-  if (!file || chunks.value.length === 0) {
+  if (!file || !canOperateKnowledge.value || chunks.value.length === 0) {
     return
   }
   isReviewing.value = true
@@ -1644,7 +1733,7 @@ async function publishSelectedFile() {
 
 async function refreshDownstreamEvidence() {
   const batch = selectedBatch.value
-  if (!batch || chunks.value.length === 0) {
+  if (!batch || !canOperateKnowledge.value || chunks.value.length === 0) {
     return
   }
   isRefreshingEvidence.value = true
@@ -1689,14 +1778,16 @@ async function submitProductAsk() {
 }
 
 async function refreshWorkflow(batchId = selectedBatchId.value, fileId = selectedFileId.value) {
-  const [batchList, queues, pages] = await Promise.all([
+  const [batchList, queues, pages, issues] = await Promise.all([
     listBatches(selectedSpaceId.value),
     getReviewQueues(selectedSpaceId.value),
-    listWikiPages(selectedSpaceId.value, true)
+    listWikiPages(selectedSpaceId.value, true),
+    listWikiPageIssues(selectedSpaceId.value)
   ])
   batches.value = batchList
   reviewQueues.value = queues
   wikiPages.value = pages
+  wikiPageIssues.value = issues
   const nextBatchId = batchId || batchList[0]?.id || ''
   if (nextBatchId) {
     selectedBatchId.value = nextBatchId
@@ -1870,6 +1961,10 @@ function modelTypeToCategory(type: ApiModelCapability['modelType']): Exclude<Mod
 
 function safeError(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
+}
+
+function hasCapability(capability: string) {
+  return currentCapabilities.value.has(capability)
 }
 
 function showProductHome() {
@@ -2272,7 +2367,9 @@ function isDeepSeekDraft(model: VueModelConfig) {
       <span>用户问候或打招呼</span>
       <p>工作区设置</p>
       <button type="button" @click="openSettings('spaceInfo')">◎ 空间信息</button>
-      <button type="button" @click="openSettings('members')">♙ 成员管理</button>
+      <button type="button" :disabled="!canManageMembers" @click="openSettings('members')">
+        ♙ 成员管理
+      </button>
       <button type="button" @click="openSettings('models')">⬡ 模型管理</button>
       <button type="button" @click="openSettings('vector')">◎ 向量数据库引擎</button>
       <button type="button" @click="openSettings('parser')">▧ 解析引擎</button>
@@ -2292,6 +2389,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
             data-testid="vue-create-space-open"
             type="button"
             aria-label="新建知识库"
+            :disabled="!canManageSpaces"
             @click="openCreateSpacePanel"
           >
             □＋
@@ -2390,7 +2488,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <button
               data-testid="vue-create-space-submit"
               type="button"
-              :disabled="isCreatingSpace"
+              :disabled="isCreatingSpace || !canManageSpaces"
               @click="createProductSpace"
             >
               {{ isCreatingSpace ? '创建中...' : '创建' }}
@@ -2555,7 +2653,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   <button
                     data-testid="vue-api-upload-documents"
                     type="button"
-                    :disabled="isCreatingBatch || !apiBackedProductSpace"
+                    :disabled="isCreatingBatch || !apiBackedProductSpace || !canWriteContent"
                     @click="openDocumentUpload"
                   >
                     {{ isCreatingBatch ? 'Uploading...' : 'Upload PDF / ZIP' }}
@@ -2564,7 +2662,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
                     class="secondary"
                     data-testid="vue-api-create-batch"
                     type="button"
-                    :disabled="isCreatingBatch || !apiBackedProductSpace"
+                    :disabled="isCreatingBatch || !apiBackedProductSpace || !canWriteContent"
                     @click="createBatchFromBrowser"
                   >
                     Create sample batch
@@ -2864,6 +2962,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   >links in {{ selectedProductWikiPage.inLinks.length }} / out
                   {{ selectedProductWikiPage.outLinks.length }}</span
                 >
+                <span>wiki warnings {{ selectedProductWikiPageIssues.length }}</span>
                 <span>source_trace: {{ selectedProductWikiPage.sourceTrace }}</span>
                 <span
                   >chunk_refs
@@ -2874,6 +2973,17 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   }}</span
                 >
               </div>
+              <section
+                v-if="selectedProductWikiPageIssues.length > 0"
+                data-testid="vue-wiki-issues"
+                class="atlas-wiki-section"
+              >
+                <h3>Wiki quality warnings</h3>
+                <div v-for="issue in selectedProductWikiPageIssues" :key="issue.id">
+                  <strong>{{ issue.issueType }}</strong>
+                  <span>{{ issue.severity }} · {{ issue.status }} · {{ issue.message }}</span>
+                </div>
+              </section>
               <nav class="atlas-entity-links" aria-label="Wiki entity links">
                 <button
                   v-for="entity in selectedProductWikiPage.entities"
@@ -3392,6 +3502,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   type="button"
                   aria-label="邀请成员"
                   title="邀请成员"
+                  :disabled="!canManageMembers"
                   @click="inviteMockMember"
                 >
                   +人
@@ -3402,6 +3513,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   type="button"
                   aria-label="复制邀请链接"
                   title="复制邀请链接"
+                  :disabled="!canManageMembers"
                   @click="copyInviteMockLink"
                 >
                   ⌁
@@ -4035,7 +4147,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
               <button
                 data-testid="create-sample-batch"
                 type="button"
-                :disabled="isCreatingBatch || !selectedSpaceId"
+                :disabled="isCreatingBatch || !selectedSpaceId || !canWriteContent"
                 @click="createBatchFromBrowser"
               >
                 {{ isCreatingBatch ? 'Creating...' : 'Create sample batch' }}
@@ -4166,7 +4278,12 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <button
               data-testid="refresh-graph-evidence"
               type="button"
-              :disabled="wikiPages.length === 0 || chunks.length === 0 || isRefreshingEvidence"
+              :disabled="
+                wikiPages.length === 0 ||
+                chunks.length === 0 ||
+                isRefreshingEvidence ||
+                !canOperateKnowledge
+              "
               @click="refreshDownstreamEvidence"
             >
               {{

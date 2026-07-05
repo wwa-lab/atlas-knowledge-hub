@@ -1,13 +1,30 @@
 # 实现任务拆解：auth-space-rbac
 
-状态：Draft SDD
-最后更新：2026-07-05
+状态：已实现，保留 E2E 缺口
+最后更新：2026-07-06
 Source spec：`docs/03-spec/auth-space-rbac-spec.md`
 Source design：`docs/05-design/auth-space-rbac-design.md`
 
 ## 概览
 
-本任务计划为受控内部 beta 实现后端强制认证和空间 RBAC。任务尚未被接受进入编码；必须等待用户接受本 SDD 文档集后才能实现。
+本任务计划为受控内部 beta 实现后端强制认证和空间 RBAC。SDD 被接受后，第一轮实现已于 2026-07-06 完成。
+
+## Implementation Status
+
+| Task | Status | Evidence |
+|---|---|---|
+| T-AUTH-SPACE-RBAC-001 | Done | 已添加 auth/RBAC enums、current-user context、auth decisions 与 authorization matrix。 |
+| T-AUTH-SPACE-RBAC-002 | Done | `V13__auth_space_rbac.sql` 增加 users、memberships、constraints、indexes 与 sample-safe seed users。 |
+| T-AUTH-SPACE-RBAC-003 | Done | 已添加 user/membership repositories 与 `SpaceMembershipService`，包含 last-owner protection。 |
+| T-AUTH-SPACE-RBAC-004 | Done | 已通过 `X-Atlas-User` 实现 mock-local current user resolver；missing/disabled user 被拒绝。 |
+| T-AUTH-SPACE-RBAC-005 | Done | MVC interceptor 与 path policy 已实现 `401`、`403` 与 safe `404`。 |
+| T-AUTH-SPACE-RBAC-006 | Done | 已添加 `/api/auth/me` 与 `/api/spaces/{spaceId}/members` endpoints。 |
+| T-AUTH-SPACE-RBAC-007 | Done | 现有核心 API domains 通过 centralized path policy 受保护；graph-specific header guard 已移除。 |
+| T-AUTH-SPACE-RBAC-008 | Done | 前端启动加载 `/api/auth/me`，发送 mock auth header，并基于 capabilities 禁用代表性写操作。 |
+| T-AUTH-SPACE-RBAC-009 | Partial | 前端 unit coverage 已验证 viewer disabled controls；本轮未运行专门 Playwright role E2E。 |
+| T-AUTH-SPACE-RBAC-010 | Done | Backend full tests、frontend build、frontend typecheck 与 frontend unit tests 已通过。 |
+| T-AUTH-SPACE-RBAC-011 | Done | 已运行 `git diff --check`、focused secret scan 与 network/dependency scan；命中项为既有 mock/test fixture 或既有 adapter URL。 |
+| T-AUTH-SPACE-RBAC-012 | Done | Traceability 已更新 implementation evidence 与 residual risks。 |
 
 ## Workstreams
 

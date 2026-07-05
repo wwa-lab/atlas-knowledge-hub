@@ -7,6 +7,7 @@ import type {
   ApiGraphProjectionRun,
   ApiGraphView,
   ApiIngestionResponse,
+  ApiMe,
   ApiModelCapability,
   ApiModelConfiguration,
   ApiReview,
@@ -15,7 +16,8 @@ import type {
   ApiSpace,
   ApiDownstreamRefreshResponse,
   ApiVectorRun,
-  ApiWikiPage
+  ApiWikiPage,
+  ApiWikiPageIssue
 } from '@/types'
 
 export class ApiError extends Error {
@@ -33,18 +35,16 @@ const DEFAULT_DEV_API_BASE_URL = 'http://127.0.0.1:8080'
 
 const atlasApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
 
-const graphReadHeaders = {
-  'X-Atlas-User': 'frontend-demo',
-  'X-Atlas-Role': 'VIEWER'
-}
-
-const graphAdminHeaders = {
-  'X-Atlas-User': 'frontend-demo',
-  'X-Atlas-Role': 'ADMIN'
+const authHeaders = {
+  'X-Atlas-User': import.meta.env.VITE_ATLAS_MOCK_USER || 'frontend-demo'
 }
 
 export function apiBaseUrl() {
   return atlasApiBaseUrl
+}
+
+export async function getCurrentUser() {
+  return atlasFetch<ApiMe>('/api/auth/me')
 }
 
 export async function listSpaces() {
@@ -149,10 +149,14 @@ export async function listWikiPages(spaceId: string, includeDrafts = false) {
   return atlasFetch<ApiWikiPage[]>(`/api/spaces/${spaceId}/wiki-pages${query}`)
 }
 
+export async function listWikiPageIssues(spaceId: string, status = 'OPEN') {
+  const query = status ? `?status=${encodeURIComponent(status)}` : ''
+  return atlasFetch<ApiWikiPageIssue[]>(`/api/spaces/${spaceId}/wiki-page-issues${query}`)
+}
+
 export async function createGraphProjection(spaceId: string) {
   return atlasFetch<ApiGraphProjectionRun>(`/api/spaces/${spaceId}/graph/projection-runs`, {
     method: 'POST',
-    headers: graphAdminHeaders,
     body: {
       scope: 'APPROVED_ONLY',
       adapterId: 'deterministic',
@@ -213,15 +217,11 @@ export async function getGraph(spaceId: string, query = '') {
   if (query.trim()) {
     params.set('q', query.trim())
   }
-  return atlasFetch<ApiGraphView>(`/api/spaces/${spaceId}/graph?${params}`, {
-    headers: graphReadHeaders
-  })
+  return atlasFetch<ApiGraphView>(`/api/spaces/${spaceId}/graph?${params}`)
 }
 
 export async function getGraphNode(spaceId: string, nodeId: string) {
-  return atlasFetch<ApiGraphNodeDetail>(`/api/spaces/${spaceId}/graph/nodes/${nodeId}`, {
-    headers: graphReadHeaders
-  })
+  return atlasFetch<ApiGraphNodeDetail>(`/api/spaces/${spaceId}/graph/nodes/${nodeId}`)
 }
 
 export async function createAskRun(spaceId: string, question: string, fileId?: string) {
@@ -290,6 +290,7 @@ async function atlasFetch<T>(path: string, options: AtlasFetchOptions = {}): Pro
     method: options.method ?? 'GET',
     headers: {
       ...(options.body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+      ...authHeaders,
       ...options.headers
     },
     body: requestBody

@@ -366,6 +366,8 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('MANUAL')
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('P0 Evidence')
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('chunk-p0')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('wiki warnings 1')
+    expect(wrapper.get('[data-testid="vue-wiki-issues"]').text()).toContain('BROKEN_LINK')
 
     await wrapper
       .findAll('button')
@@ -484,6 +486,28 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(answer).toContain('chunk-p0')
   })
 
+  it('disables API-backed write controls for viewer capabilities', async () => {
+    mockP0Api({ currentUser: authMe('VIEWER', ['CONTENT_READ', 'SPACE_READ']) })
+    const wrapper = mount(App)
+    await flushAsync()
+
+    expect(
+      wrapper.get('[data-testid="vue-create-space-open"]').attributes('disabled')
+    ).toBeDefined()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await flushAsync()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '文档')!
+      .trigger('click')
+
+    expect(wrapper.get('[data-testid="vue-api-create-batch"]').attributes('disabled')).toBeDefined()
+    expect(
+      wrapper.get('[data-testid="vue-api-upload-documents"]').attributes('disabled')
+    ).toBeDefined()
+  })
+
   it('shows safe space loading errors without hiding coming-soon guardrails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
@@ -519,7 +543,9 @@ async function mountWorkbench() {
   return wrapper
 }
 
-function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
+function mockP0Api(
+  options: { deepSeekConfigured?: boolean; currentUser?: ReturnType<typeof authMe> } = {}
+) {
   const state = {
     batchCreated: false,
     fileReviewStatus: 'REVIEW_REQUIRED',
@@ -534,6 +560,10 @@ function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input)
     const method = init?.method ?? 'GET'
+
+    if (url.endsWith('/api/auth/me')) {
+      return jsonOk(options.currentUser ?? authMe('SPACE_OWNER'))
+    }
 
     if (url.endsWith('/api/spaces') && method === 'POST') {
       const body = JSON.parse(String(init?.body ?? '{}'))
@@ -623,6 +653,10 @@ function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
       return jsonOk(state.wikiPublished ? [wikiPage()] : [])
     }
 
+    if (url.includes('/api/spaces/ibm-i-modernization/wiki-page-issues')) {
+      return jsonOk(state.wikiPublished ? [wikiIssue()] : [])
+    }
+
     if (url.includes('/api/spaces/ibm-i-modernization/graph/projection-runs')) {
       state.graphProjectionCreated = true
       return jsonOk(
@@ -700,6 +734,41 @@ function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
   })
 
   return state
+}
+
+function authMe(
+  role: 'VIEWER' | 'EDITOR' | 'KNOWLEDGE_MANAGER' | 'SPACE_OWNER' | 'AUDITOR' = 'SPACE_OWNER',
+  capabilities = [
+    'CONTENT_READ',
+    'CONTENT_WRITE',
+    'GOVERNANCE_READ',
+    'KNOWLEDGE_OPERATE',
+    'MEMBER_MANAGE',
+    'SETTINGS_MANAGE',
+    'SPACE_MANAGE',
+    'SPACE_READ'
+  ]
+) {
+  return {
+    user: {
+      id: 'frontend-demo',
+      email: 'frontend-demo@example.test',
+      displayName: 'Frontend Demo',
+      status: 'ACTIVE',
+      globalRoles: []
+    },
+    activeSpaceId: 'ibm-i-modernization',
+    memberships: [
+      {
+        id: 'membership-frontend-ibmi',
+        spaceId: 'ibm-i-modernization',
+        spaceName: 'IBM i Modernization',
+        role,
+        status: 'ACTIVE'
+      }
+    ],
+    capabilities
+  }
 }
 
 function jsonOk(data: unknown, status = 200) {
@@ -821,6 +890,28 @@ function wikiPage() {
     reviewStatus: 'PUBLISHED',
     owner: 'p0-browser',
     lastUpdated: '2026-07-03T00:00:00Z'
+  }
+}
+
+function wikiIssue() {
+  return {
+    id: 'wiki-issue-broken-link-001',
+    spaceId: 'ibm-i-modernization',
+    pageId: 'wiki-file-p0',
+    issueType: 'BROKEN_LINK',
+    severity: 'MEDIUM',
+    status: 'OPEN',
+    evidenceRefs: [
+      {
+        type: 'WIKI_PAGE',
+        id: 'wiki-file-p0',
+        label: 'p0-wiki',
+        locator: null
+      }
+    ],
+    message: 'Wiki link target does not exist in this Knowledge Space.',
+    createdAt: '2026-07-05T00:00:00Z',
+    resolvedAt: null
   }
 }
 

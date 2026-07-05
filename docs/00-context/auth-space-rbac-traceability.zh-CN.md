@@ -1,8 +1,8 @@
 # 溯源：auth-space-rbac
 
-状态：Draft SDD generated
-最后更新：2026-07-05
-成熟度：仅 SDD 草案；本 SDD pass 未修改产品代码。
+状态：已实现，保留 E2E 缺口
+最后更新：2026-07-06
+成熟度：SDD 接受后的第一轮实现已完成。
 
 ## Source Documents
 
@@ -90,28 +90,40 @@ Skill files read：
 - Major findings：None identified。
 - Minor findings：Production SSO/OIDC mapping 有意延后，并通过 OQ-AUTH-SPACE-RBAC-002 跟踪。
 
+## Implementation Evidence
+
+本轮实现已完成：
+
+- Persistence：`backend/src/main/resources/db/migration/V13__auth_space_rbac.sql` 增加 `atlas_user`、`space_membership`、constraints、indexes 与 sample-safe mock users/memberships。
+- Backend auth boundary：`CurrentUserService`、`AuthorizationService`、`AuthorizationPathPolicy`、`AtlasAuthInterceptor` 与 `AtlasAuthWebConfig` 在 controller 前执行 current-user 与 role/capability checks。
+- APIs：新增 `/api/auth/me` 与 `/api/spaces/{spaceId}/members`，覆盖 current user、member list/create/update/remove 与 last active owner protection。
+- Existing domains：space、batch、file/chunk、review/publish、Wiki、graph、Ask、vector、conversion、parser、storage、model/settings、ingestion 与 downstream refresh paths 通过 centralized path policy 受保护。
+- Graph API：移除早期 graph-only `X-Atlas-Role` controller guard，统一走 shared RBAC boundary。
+- Frontend：所有 API 请求携带 `X-Atlas-User`，启动时加载 `/api/auth/me`，并基于 backend capabilities 禁用代表性写操作。
+
 ## Verification Evidence
 
-本 SDD pass 已完成：
+本 implementation pass 已完成：
 
 - `npm run agent:check-sdd -- --slice auth-space-rbac --require-api-guide`：PASS。首次运行只出现预期 warning：未提供 completion report path。
 - File existence check：PASS，20 个预期双语 SDD 文件全部存在。
 - Bilingual ID parity：PASS，SDD gate 已覆盖 requirements、stories、spec、architecture、data flow、data model、design、API guide、tasks 和 traceability。
 - Deferred-decision scan on `auth-space-rbac` SDD files：PASS，未发现延期决策关键词模式。
-- `git diff --check` on touched SDD/roadmap files：PASS。
-- Focused secret/private-path scan on touched SDD/roadmap files：PASS，未发现 raw secret 或 private absolute path patterns。
-- Focused network/dependency scan：PASS with notes。命中项均为文档中声明外部调用不在范围内的约束，另有 `backend/pom.xml` 中既有 Maven schema URLs；本 SDD-only pass 未引入 package 或 lockfile dependency diff。
+- `cd backend && mvn test`：PASS，123 tests。
+- `cd backend && mvn test -Dtest=AuthorizationServiceTest,AuthSpaceRbacApiContractIT`：PASS，9 targeted RBAC tests。
+- `npm --prefix frontend run typecheck`：PASS。
+- `npm --prefix frontend test`：PASS，3 test files / 19 tests。
+- `npm --prefix frontend run build`：PASS，包含 lint、typecheck 与 Vite production build。
+- `git diff --check`：PASS。
+- Focused secret/private-path scan on new auth/RBAC files：PASS with notes。命中项为 `ask-runs` identifier text 与既有 frontend model `apiKey` request field，不是 raw secrets。
+- Focused network/dependency scan：PASS with notes。命中项为既有 configured model/endpoint UI 与 adapter references；本 slice 未新增 package dependencies 或 external cloud calls。
 
 ## Residual Risks
 
-- 实现范围较广，因为 guard coverage 横跨许多现有 controllers。
-- 增加 security filter 可能影响现有测试与本地开发流程。
+- 本轮未运行专门 Playwright role E2E；前端覆盖为 viewer disabled controls 的 unit test 加 production build。
+- `/api/spaces` list 当前仍为 authenticated-only prototype 行为；individual space detail 与 derived resources 已按 space guard 保护。
 - Production SSO/OIDC、full audit retention、secret manager 与 rate limiting 仍是独立 Wave 3 slices。
 
 ## Next Gate
 
-必须人工接受本 SDD set 后才能实现。推荐实现提示词：
-
-```text
-Implement the auth-space-rbac slice strictly against docs/03-spec/auth-space-rbac-spec.md and docs/06-tasks/auth-space-rbac-tasks.md.
-```
+验收 review 建议重点看 role semantics、`/api/spaces` list visibility，以及是否要在下一个 Wave 3 slice 前补专门 Playwright role E2E。

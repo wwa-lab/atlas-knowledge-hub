@@ -68,6 +68,10 @@ export async function mockP0Api(page: Page) {
       return fulfill(route, state.wikiPublished ? [wikiPage()] : [])
     }
 
+    if (path === '/api/spaces/ibm-i-modernization/wiki-page-issues') {
+      return fulfill(route, state.wikiPublished ? [wikiIssue()] : [])
+    }
+
     if (path === '/api/spaces/ibm-i-modernization/graph/projection-runs') {
       state.graphProjectionCreated = true
       return fulfill(route, { runId: 'graph-run-p0', spaceId: 'ibm-i-modernization', status: 'SUCCEEDED', summary: { createdCount: 1 } }, 201)
@@ -253,6 +257,28 @@ function wikiPage() {
     reviewStatus: 'PUBLISHED',
     owner: 'p0-browser',
     lastUpdated: '2026-07-03T00:00:00Z'
+  }
+}
+
+function wikiIssue() {
+  return {
+    id: 'wiki-issue-broken-link-001',
+    spaceId: 'ibm-i-modernization',
+    pageId: 'wiki-file-p0',
+    issueType: 'BROKEN_LINK',
+    severity: 'MEDIUM',
+    status: 'OPEN',
+    evidenceRefs: [
+      {
+        type: 'WIKI_PAGE',
+        id: 'wiki-file-p0',
+        label: 'p0-wiki',
+        locator: null
+      }
+    ],
+    message: 'Wiki link target does not exist in this Knowledge Space.',
+    createdAt: '2026-07-05T00:00:00Z',
+    resolvedAt: null
   }
 }
 
