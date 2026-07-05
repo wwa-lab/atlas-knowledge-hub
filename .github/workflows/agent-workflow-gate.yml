@@ -1,0 +1,74 @@
+name: Agent Workflow Gate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      slice:
+        description: "Optional slice slug to run SDD gate checks"
+        required: false
+        type: string
+      require_api_guide:
+        description: "Require API implementation guide files for the slice"
+        required: false
+        type: boolean
+        default: false
+      report_path:
+        description: "Optional completion report path for skill-chain evidence checks"
+        required: false
+        type: string
+      base_ref:
+        description: "Optional base ref/sha for changed-slice detection"
+        required: false
+        type: string
+
+jobs:
+  workflow-gate:
+    name: Agent Workflow Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run workflow gate
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          INPUT_SLICE: ${{ github.event.inputs.slice || '' }}
+          INPUT_REQUIRE_API_GUIDE: ${{ github.event.inputs.require_api_guide || 'false' }}
+          INPUT_REPORT_PATH: ${{ github.event.inputs.report_path || '' }}
+          INPUT_BASE_REF: ${{ github.event.inputs.base_ref || '' }}
+        run: |
+          args=()
+
+          if [[ -n "$INPUT_SLICE" ]]; then
+            args+=(--slice "$INPUT_SLICE")
+          else
+            args+=(--changed-slices)
+          fi
+
+          if [[ "$INPUT_REQUIRE_API_GUIDE" == "true" ]]; then
+            args+=(--require-api-guide)
+          fi
+
+          if [[ -n "$INPUT_REPORT_PATH" ]]; then
+            args+=(--report "$INPUT_REPORT_PATH")
+          fi
+
+          if [[ -n "$INPUT_BASE_REF" ]]; then
+            args+=(--base-ref "$INPUT_BASE_REF")
+          elif [[ "$EVENT_NAME" == "pull_request" && -n "$PR_BASE_SHA" ]]; then
+            args+=(--base-ref "$PR_BASE_SHA")
+          elif [[ "$EVENT_NAME" == "push" && -n "$PUSH_BEFORE_SHA" && "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            args+=(--base-ref "$PUSH_BEFORE_SHA")
+          fi
+
+          npm run agent:check-workflow -- "${args[@]}"

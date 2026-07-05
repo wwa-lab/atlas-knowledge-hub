@@ -1,0 +1,395 @@
+manifest_schema_version: "1.0"
+manifest_id: wiki-foundation-20260705
+created_at: "2026-07-05T06:38:31Z"
+created_by: codex
+
+workspace:
+  project_name: atlas-knowledge-hub
+  repo_path: ${ATLAS_REPO_ROOT}
+  repo_url: null
+  branch: develop-leo
+  commit_sha: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+
+task:
+  title: Atlas next-phase plan from Wiki Foundation to internal beta
+  objective: >
+    Package the full next-phase wave plan and execute the first Wiki Foundation
+    slice so Atlas can evolve from published Wiki metadata toward Auto Wiki,
+    governance, Ask/Graph productization, connector, and operations capabilities
+    without copying WeKnora implementation details or breaking existing API-backed
+    product surfaces.
+  mode: code-change
+  sdd_profile: atlas-lightweight-product-sdd
+  execution_strategy: sequential-slices
+  recommended_first_slice: wiki-data-model
+  slice_queue:
+    - wave: 0
+      slug: next-phase-gap-matrix
+      purpose: Produce the explicit WeKnora-inspired MVP to Atlas implementation gap matrix.
+    - wave: 0
+      slug: readiness-language-cleanup
+      purpose: Align roadmap/readiness wording with verified maturity evidence.
+    - wave: 1
+      slug: wiki-data-model
+      purpose: Add Auto Wiki-ready page, folder, generation, log, and issue data foundations.
+    - wave: 1
+      slug: wiki-ingest-v0
+      purpose: Generate review-required Wiki pages from approved source chunks through adapter-safe model calls.
+    - wave: 1
+      slug: wiki-linkify-lint
+      purpose: Add Wiki linkification and basic quality issue detection.
+    - wave: 1
+      slug: real-office-parser-runtime
+      purpose: Connect internal converter/parser runtimes through Atlas adapter boundaries.
+    - wave: 2
+      slug: wiki-index-log
+      purpose: Add structured Wiki index summary and append-only operational logs.
+    - wave: 2
+      slug: wiki-refresh-retract
+      purpose: Support source refresh, retract, stale markers, and protected manual edits.
+    - wave: 2
+      slug: wiki-review-gate
+      purpose: Add review gates for generated Wiki pages before trusted publication.
+    - wave: 2
+      slug: knowledge-graph-quality
+      purpose: Improve graph quality using Wiki/source evidence and edge review states.
+    - wave: 3
+      slug: auth-space-rbac
+      purpose: Add SSO/current-user/space membership and backend RBAC foundations.
+    - wave: 3
+      slug: audit-log-foundation
+      purpose: Add safe audit event capture and audit views for core operations.
+    - wave: 3
+      slug: secret-manager-integration
+      purpose: Move runtime secrets behind masked/configured state and rotation flows.
+    - wave: 3
+      slug: rate-limit-safe-errors
+      purpose: Add rate limiting and stable safe error envelopes for sensitive operations.
+    - wave: 4
+      slug: ask-session-citations
+      purpose: Add Ask sessions, message history, streaming/stop contract, and citation snapshots.
+    - wave: 4
+      slug: answer-review-governance
+      purpose: Add answer review queues, evidence sufficiency status, and model cost metadata.
+    - wave: 4
+      slug: graph-from-wiki-extraction
+      purpose: Extract graph candidates from approved Wiki pages with evidence-backed review states.
+    - wave: 4
+      slug: retrieval-quality-metrics
+      purpose: Add retrieval run summaries, Ask readiness indicators, and eval fixtures.
+    - wave: 5
+      slug: manual-url-knowledge-ingest
+      purpose: Add manual Markdown and URL ingest with SSRF protection.
+    - wave: 5
+      slug: connector-sync-v0
+      purpose: Add first low-risk connector model, sync job, sync log, and review pipeline integration.
+    - wave: 5
+      slug: worker-retry-dead-letter
+      purpose: Add shared job states, retry policy, dead-letter, and operator-safe logs.
+    - wave: 5
+      slug: deployment-monitoring-runbook
+      purpose: Add deployment topology, health checks, SLO draft, alert, and rollback runbooks.
+  waves:
+    - wave: 0
+      name: maturity-and-plan-calibration
+      purpose: Separate task completion, demo readiness, API-backed readiness, internal beta, and production readiness.
+      status: planning
+    - wave: 1
+      name: wiki-foundation
+      purpose: Build Auto Wiki data foundations, minimum ingest, linkify/lint, and real parser runtime slices.
+      status: start-now
+    - wave: 2
+      name: wiki-hardening
+      purpose: Add Wiki index/log, refresh/retract, review gates, and graph quality.
+      status: gated-by-wave-1
+    - wave: 3
+      name: trust-and-governance
+      purpose: Add auth, RBAC, audit, secret handling, rate limit, and safe errors for controlled internal use.
+      status: gated-by-core-knowledge-loop
+    - wave: 4
+      name: ask-and-graph-productization
+      purpose: Add Ask sessions/citation snapshots, answer review governance, graph extraction, and retrieval metrics.
+      status: gated-by-trusted-wiki-and-governance
+    - wave: 5
+      name: connector-and-operations
+      purpose: Add manual/URL ingest, connector sync, worker recovery, and deployment monitoring runbooks.
+      status: gated-by-trust-and-governance
+
+inputs:
+  source_references:
+    - type: local-file
+      ref: ${WEKNORA_ANALYSIS_DIR}
+      version: analysis snapshot for WeKnora commit 18d7a6b
+      notes: Read-only product and SDD reference. Do not copy source code, UI assets, prompts, project structure, or implementation details.
+    - type: local-file
+      ref: docs/00-context/next-phase-plan.zh-CN.md
+      version: untracked local draft as of 2026-07-05
+      notes: Optional context only. Do not modify or treat as the sole source of truth unless the user asks.
+  documents:
+    - path: README.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: PROJECT_RULES.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: DEVELOPMENT_STANDARDS.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/00-context/sdd-profile.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: ROADMAP.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: ROADMAP.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/07-acceptance/product-acceptance-report.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/07-acceptance/internal-beta-readiness.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/00-context/wiki-foundation-goal-plan.zh-CN.md
+      required: true
+      version: local-created
+    - path: docs/03-spec/full-stack-productization-spec.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/06-tasks/full-stack-productization-tasks.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+    - path: docs/00-context/full-stack-productization-traceability.zh-CN.md
+      required: true
+      version: 16ee1d58fb30d701e1f6a6ddf30d3c345913e442
+  skill_files:
+    - path: .agents/skills/atlas-sdd-generate-all/SKILL.md
+      required: true
+      purpose: Full Atlas SDD orchestration, slice contract, bilingual artifact set, and final consistency gate.
+    - path: .agents/skills/req-to-user-story/SKILL.md
+      required: true
+      purpose: Convert slice requirements into user stories and acceptance criteria.
+    - path: .agents/skills/user-story-to-spec/SKILL.md
+      required: true
+      purpose: Convert user stories into implementation-facing behavior specification.
+    - path: .agents/skills/spec-to-architecture/SKILL.md
+      required: true
+      purpose: Convert specification into architecture, data flow, and data model direction.
+    - path: .agents/skills/architecture-to-design/SKILL.md
+      required: true
+      purpose: Convert architecture into detailed UX, API, component, and implementation design.
+    - path: .agents/skills/design-to-tasks/SKILL.md
+      required: true
+      purpose: Convert design into executable Codex implementation tasks.
+    - path: .agents/skills/review-doc-quality/SKILL.md
+      required: true
+      purpose: Review the generated bilingual SDD set for coverage, traceability, and consistency.
+    - path: .agents/skills/architecture-review/SKILL.md
+      required: false
+      required_when: Slice materially changes architecture, adapter boundaries, API contracts, persistence, security, or data flow.
+      purpose: Required when a slice materially changes architecture, adapter boundaries, API contracts, persistence, security, or data flow.
+  implementation_files_to_inspect:
+    - backend/src/main/java/com/atlas/metadata/domain/WikiPage.java
+    - backend/src/main/java/com/atlas/metadata/service/ReviewPublishService.java
+    - backend/src/main/java/com/atlas/metadata/service/IngestionService.java
+    - backend/src/main/java/com/atlas/metadata/adapter/LocalPdfTextParserAdapter.java
+    - backend/src/main/resources/db/migration/V1__init_schema.sql
+    - backend/src/main/resources/db/migration/V8__ask_rag.sql
+    - backend/src/main/resources/db/migration/V9__knowledge_graph_hardening.sql
+    - frontend/src/App.vue
+    - frontend/src/api.ts
+    - frontend/src/types.ts
+
+constraints:
+  allowed_paths:
+    - docs/00-context/
+    - docs/01-requirements/
+    - docs/02-user-stories/
+    - docs/03-spec/
+    - docs/04-architecture/
+    - docs/05-design/
+    - docs/06-tasks/
+    - backend/src/main/java/com/atlas/metadata/
+    - backend/src/main/resources/db/migration/
+    - backend/src/test/java/com/atlas/metadata/
+    - frontend/src/
+    - frontend/tests/e2e/
+  forbidden_paths:
+    - .env
+    - .claude/settings.local.json
+    - frontend/node_modules/
+    - backend/target/
+    - frontend/dist/
+    - frontend/playwright-report/
+    - frontend/test-results/
+    - samples/output/
+    - tmp/
+  external_actions_require_approval: true
+  no_external_cloud_calls: true
+  no_real_company_data: true
+  no_raw_secrets: true
+  no_weknora_code_copying: true
+  sdd_generation_policy:
+    must_use_project_local_skill_chain: true
+    entry_skill: .agents/skills/atlas-sdd-generate-all/SKILL.md
+    chain:
+      - atlas-sdd-generate-all
+      - req-to-user-story
+      - user-story-to-spec
+      - spec-to-architecture
+      - architecture-to-design
+      - design-to-tasks
+      - review-doc-quality
+    architecture_review_required_when_material_architecture_or_api_changes: true
+    do_not_hand_write_all_sdd_docs_in_one_pass: true
+    block_if_skill_chain_unavailable_or_unused: true
+  adapter_boundaries_required:
+    - parser
+    - converter
+    - model
+    - vector
+    - storage
+    - search
+
+outputs:
+  expected_artifacts_strategy: >
+    For every slug in task.slice_queue, create or update the full bilingual Atlas
+    SDD artifact set before implementation. The wiki-data-model paths below are
+    the initial slice example, not the only expected slice output.
+  expected_artifact_patterns:
+    - path: docs/01-requirements/{slice}-requirements.md
+      kind: markdown
+    - path: docs/01-requirements/{slice}-requirements.zh-CN.md
+      kind: markdown
+    - path: docs/02-user-stories/{slice}-stories.md
+      kind: markdown
+    - path: docs/02-user-stories/{slice}-stories.zh-CN.md
+      kind: markdown
+    - path: docs/03-spec/{slice}-spec.md
+      kind: markdown
+    - path: docs/03-spec/{slice}-spec.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-architecture.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-architecture.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-data-flow.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-data-flow.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-data-model.md
+      kind: markdown
+    - path: docs/04-architecture/{slice}-data-model.zh-CN.md
+      kind: markdown
+    - path: docs/05-design/{slice}-design.md
+      kind: markdown
+    - path: docs/05-design/{slice}-design.zh-CN.md
+      kind: markdown
+    - path: docs/05-design/contracts/{slice}-API_IMPLEMENTATION_GUIDE.md
+      kind: markdown
+    - path: docs/05-design/contracts/{slice}-API_IMPLEMENTATION_GUIDE.zh-CN.md
+      kind: markdown
+    - path: docs/06-tasks/{slice}-tasks.md
+      kind: markdown
+    - path: docs/06-tasks/{slice}-tasks.zh-CN.md
+      kind: markdown
+    - path: docs/00-context/{slice}-traceability.md
+      kind: markdown
+    - path: docs/00-context/{slice}-traceability.zh-CN.md
+      kind: markdown
+  initial_slice_expected_artifacts:
+    - path: docs/01-requirements/wiki-data-model-requirements.md
+      kind: markdown
+    - path: docs/01-requirements/wiki-data-model-requirements.zh-CN.md
+      kind: markdown
+    - path: docs/02-user-stories/wiki-data-model-stories.md
+      kind: markdown
+    - path: docs/02-user-stories/wiki-data-model-stories.zh-CN.md
+      kind: markdown
+    - path: docs/03-spec/wiki-data-model-spec.md
+      kind: markdown
+    - path: docs/03-spec/wiki-data-model-spec.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-architecture.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-architecture.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-data-flow.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-data-flow.zh-CN.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-data-model.md
+      kind: markdown
+    - path: docs/04-architecture/wiki-data-model-data-model.zh-CN.md
+      kind: markdown
+    - path: docs/05-design/wiki-data-model-design.md
+      kind: markdown
+    - path: docs/05-design/wiki-data-model-design.zh-CN.md
+      kind: markdown
+    - path: docs/05-design/contracts/wiki-data-model-API_IMPLEMENTATION_GUIDE.md
+      kind: markdown
+    - path: docs/05-design/contracts/wiki-data-model-API_IMPLEMENTATION_GUIDE.zh-CN.md
+      kind: markdown
+    - path: docs/06-tasks/wiki-data-model-tasks.md
+      kind: markdown
+    - path: docs/06-tasks/wiki-data-model-tasks.zh-CN.md
+      kind: markdown
+    - path: docs/00-context/wiki-data-model-traceability.md
+      kind: markdown
+    - path: docs/00-context/wiki-data-model-traceability.zh-CN.md
+      kind: markdown
+  optional_code_artifacts:
+    - backend Flyway migration for Wiki data model additions
+    - backend domain/repository/DTO/mapper/service/controller updates
+    - backend API contract tests for Wiki metadata, folder, log, and issue read paths
+    - frontend API client/type updates
+    - frontend Wiki tab metadata rendering updates
+    - frontend unit and Playwright regression coverage
+  completion_report:
+    include_changed_files: true
+    include_sdd_skill_chain: true
+    include_skill_files_read: true
+    include_verification: true
+    include_risks: true
+    include_maturity_statement: true
+
+verification:
+  commands:
+    - command: cd backend && mvn verify
+      required: true
+    - command: cd frontend && npm run typecheck && npm run test && npm run build
+      required: true
+    - command: cd frontend && npm run e2e
+      required: true
+    - command: npm run e2e:second-layer
+      required: true
+    - command: git diff --check
+      required: true
+    - command: focused secret/private-path scan over changed files
+      required: true
+    - command: focused network/dependency scan over changed files
+      required: true
+  quality_gates:
+    - goal_scope_clear
+    - sdd_skill_chain_used_and_reported
+    - sdd_bilingual_docs_synced
+    - requirement_story_task_traceability
+    - implementation_matches_spec
+    - existing_api_backed_wiki_flow_not_regressed
+    - adapter_boundaries_preserved
+    - source_trace_confidence_review_status_preserved
+    - no_real_data_or_secrets
+    - no_external_cloud_calls
+    - readiness_language_matches_evidence
+
+stop_conditions:
+  - required input document missing
+  - required project-local SDD skill file missing or unavailable
+  - agent is about to generate a full SDD set without using .agents/skills/atlas-sdd-generate-all/SKILL.md and the required skill chain
+  - SDD scope conflicts with current ROADMAP or PROJECT_RULES
+  - user has not accepted SDD and the agent is about to edit product code
+  - implementation would require production auth/RBAC redesign before the wiki-data-model slice
+  - implementation would require real company documents or credentials
+  - implementation would require external provider calls outside approved opt-in third-layer testing
+  - Flyway migration would break existing mock/sample seed data or existing E2E without an accepted migration plan
+  - WeKnora reference material tempts copying implementation details instead of extracting Atlas-specific product intent

@@ -46,6 +46,20 @@ Status:
 
 ## Lessons
 
+### LL-20260705-004 SDD Handoffs Must Force Project-Local Skill Usage
+
+ID: LL-20260705-004
+Date: 2026-07-05
+Slice: wiki-foundation / SDD handoff
+Source: User feedback that the downstream Codex prompt generated or guided SDD work without explicitly using the project-local `.agents/skills` SDD workflow.
+Expectation: Full Atlas SDD generation must use `.agents/skills/atlas-sdd-generate-all/SKILL.md` and the project-local SDD skill chain: `req-to-user-story`, `user-story-to-spec`, `spec-to-architecture`, `architecture-to-design`, `design-to-tasks`, and `review-doc-quality`. If a slice materially changes architecture, API contracts, persistence, security, adapter boundaries, or data flow, `architecture-review` must also be used.
+Observed: The goal handoff plan said to generate or update complete bilingual SDD documents, but did not explicitly name the required `.agents/skills` files, did not require the downstream agent to report skill-chain usage, and did not define skipping the skill chain as a stop condition.
+Root cause: Handoff prompt weakness and missing verification gate, not a missing project rule. `PROJECT_RULES.md`, `docs/SDD-BOOTSTRAP.md`, and `.agents/skills/atlas-sdd-generate-all/SKILL.md` already require the skill chain, but the copied Codex prompt and execution manifest did not surface that rule strongly enough for a separate execution thread.
+Decision: Any future agent handoff that asks for Atlas SDD generation must pin the project-local skill files as required inputs, explicitly instruct the agent to use the skill chain before writing SDD artifacts, and require the completion report to state `SDD skill chain used: yes/no` with the list of skill files read.
+Durable updates: Updated `PROJECT_RULES.md` so the SDD gate requires skill-chain evidence. Updated `docs/00-context/wiki-foundation-goal-plan.zh-CN.md` with a mandatory SDD skill usage section and stronger Master/Single Slice prompts. Updated `docs/00-context/execution-manifests/wiki-foundation-20260705.yaml` with required skill files, SDD generation policy, quality gate, completion report fields, and stop conditions.
+New verification: Before accepting future generated SDD docs, check that the completion report lists the project-local skill chain and `review-doc-quality` result. If the skill chain is absent, treat the SDD handoff as incomplete even if the Markdown files exist.
+Status: Applied.
+
 ### LL-20260705-003 Test-Ready Must Not Be Claimed As Product-Ready
 
 ID: LL-20260705-003

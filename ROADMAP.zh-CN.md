@@ -303,6 +303,15 @@ Atlas 应成为一个真实的 Vue 3 + Spring Boot 内部产品，用于管理�
 
 状态：Batch 7 checkpoint 已完成 mock/sample-safe 内部 Beta 规划的 L4 readiness preparation。Readiness 报告已识别受控试用准入条件、安全配置模板、L4-ready 区域、L3/更低缺口，以及残留 P0/P1/P2 风险。Batch 8 Final 验收证据整理已完成，见 `docs/07-acceptance/product-acceptance-report.zh-CN.md`；Atlas 已可进入用户验收评审，但这不代表生产就绪或最终产品验收通过。
 
+## 当前下一阶段 Wave 进度
+
+2026-07-05 状态：
+
+- Wave 1 / `wiki-foundation` / `wiki-data-model`：已作为 Wiki Foundation 数据模型切片完成。Atlas 现在具备 additive `wiki_page` metadata 字段、最小 folder/run/log/issue 读取模型、后端读取 APIs、contract/repository 覆盖，以及 Vue Wiki metadata 展示。
+- 成熟度说明：这仍只是 Wiki Foundation 数据底座，不等于 Auto Wiki ingest 完成，也不代表生产就绪。
+- Wave 1 / `wiki-ingest-v0`：Implementation 已作为 Auto Wiki ingest v0 foundation 完成验证：deterministic review-required candidates、safe run/log/issue evidence、显式 draft listing 和完整本地验证。本切片不代表 linkify/lint、review-gate、connector、model-assisted generation 或 production readiness。
+- 当前 active slice：Wave 1 / `wiki-linkify-lint`。完整双语 SDD 草稿已生成，范围包括 deterministic Wiki link insertion、link metadata refresh、lint issue recording，以及 Processing Center/Wiki warnings。产品代码尚未开始；实现仍需用户先接受 spec、API guide 和 tasks。
+
 ## 近期执行顺序
 
 按这个顺序推进：

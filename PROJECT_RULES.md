@@ -25,6 +25,8 @@ Atlas uses a goal-driven SDD mode for implementation slices.
 
 A slice goal is a short execution contract that tells the agent what outcome to deliver end to end. When the user sets a slice goal, the agent should move through document creation or update, implementation, verification, and final evidence in one continuous workflow unless blocked.
 
+For Codex goal mode and loop-style execution, use `docs/00-context/agent-goal-loop-workflow.md` / `.zh-CN.md` as the workflow contract and `docs/00-context/agent-goal-loop-quickstart.md` / `.zh-CN.md` to choose the lightest safe workflow tier. Master goals may manage a roadmap or slice queue, but must execute one slice at a time. Single-slice goals must complete one slice from SDD gate to verification evidence. Loops may iterate and fix scoped failures, but they must not bypass SDD, acceptance, security, data, adapter, verification, or lessons-learned gates. New manifests should be generated with `npm run agent:manifest`, SDD readiness should be checked with `npm run agent:check-sdd`, closeout should run `npm run agent:closeout`, and workflow gates should also run automatically on PR/push through the `Agent Workflow Gate` GitHub Actions workflow.
+
 Each slice goal should include:
 
 - Goal: the user-facing outcome to achieve.
@@ -65,7 +67,7 @@ Use SDD-capable agents for:
 - Traceability and acceptance criteria.
 - SDD document quality review.
 
-For full Atlas SDD generation, use `docs/SDD-BOOTSTRAP.md` / `docs/SDD-BOOTSTRAP.zh-CN.md` and the project-local `atlas-sdd-generate-all` workflow. Claude Code uses `.claude/skills/atlas-sdd-generate-all/`; Codex can use the mirrored `.agents/skills/atlas-sdd-generate-all/`. The workflow must orchestrate the project-local SDD skill chain: `req-to-user-story`, `user-story-to-spec`, `spec-to-architecture`, `architecture-to-design`, `design-to-tasks`, and `review-doc-quality`.
+For full Atlas SDD generation, use `docs/SDD-BOOTSTRAP.md` / `docs/SDD-BOOTSTRAP.zh-CN.md` and the project-local `atlas-sdd-generate-all` workflow. Claude Code uses `.claude/skills/atlas-sdd-generate-all/`; Codex can use the mirrored `.agents/skills/atlas-sdd-generate-all/`. The workflow must orchestrate the project-local SDD skill chain: `req-to-user-story`, `user-story-to-spec`, `spec-to-architecture`, `architecture-to-design`, `design-to-tasks`, and `review-doc-quality`. The SDD completion report must list the entry skill, downstream skills used, skill files read, and `review-doc-quality` result; if the required project-local skill chain is unavailable or not used, stop and report instead of generating ad hoc SDD documents.
 
 SDD generation should stop at complete, reviewable SDD artifacts, implementation guidance, and task checklists unless the user explicitly asks the same agent to continue into implementation.
 
@@ -107,13 +109,13 @@ Required gates:
 
 1. Goal gate: scope, exclusions, acceptance criteria, verification, and constraints are clear enough to execute without hidden assumptions.
 2. Product readiness claim gate: status language must match the verified user outcome. Do not describe work as "ready to test", "usable", "accepted", "done", "out-of-the-box", or product-ready unless the actual user-facing workflow was run from the documented local startup path. If only automated gates, mock surfaces, scripted API setup, or prototype flows were verified, say that explicitly.
-3. SDD gate: required slice docs exist or are updated, English and Simplified Chinese copies are synchronized for touched SDD documents, requirement IDs are traceable, and tasks map back to the spec.
+3. SDD gate: required slice docs exist or are updated, English and Simplified Chinese copies are synchronized for touched SDD documents, requirement IDs are traceable, tasks map back to the spec, and full SDD generation reports the project-local skill chain used. Missing skill-chain evidence means the SDD gate is incomplete.
 4. Implementation gate: changed behavior is represented in `docs/03-spec/`, and code changes are limited to the active goal and slice.
 5. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
 6. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
 7. Verification gate: the checks listed in the task plan are run, or any skipped check is named with a reason.
 8. Context status gate: `docs/00-context/{slice}-traceability.md` and, when slice status changes, `docs/00-context/slice-roadmap.md` plus its `.zh-CN.md` companion reflect the final status, task range, verification evidence, and deferred work.
-9. Evidence gate: the final response includes documents changed, code changed, verification evidence, residual risks, and whether `docs/00-context` status was checked or updated.
+9. Evidence gate: the final response includes documents changed, code changed, verification evidence, residual risks, and whether `docs/00-context` status was checked or updated. Use `docs/00-context/checklists/goal-closeout-gate.md` / `.zh-CN.md` before marking a goal complete.
 
 Prototype-phase verification should include, when relevant:
 

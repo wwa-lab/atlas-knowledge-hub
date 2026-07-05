@@ -102,6 +102,15 @@ interface ProductWikiPage {
   id: string
   title: string
   slug: string
+  pageType: string
+  aliases: string[]
+  sourceRefs: string[]
+  chunkRefs: string[]
+  inLinks: string[]
+  outLinks: string[]
+  version: number
+  sourceMode: string
+  refreshPolicy: string
   confidence: number
   reviewStatus: 'PUBLISHED' | 'APPROVED' | 'REVIEW_REQUIRED'
   owner: string
@@ -540,6 +549,15 @@ const productWikiPages: ProductWikiPage[] = [
     id: 'wiki-modernization-index',
     title: 'IBM i Modernization Index',
     slug: 'modernization-index',
+    pageType: 'INDEX',
+    aliases: ['Modernization Hub'],
+    sourceRefs: ['FILE: file-001 / generated/wiki/modernization-overview.md'],
+    chunkRefs: ['SOURCE_CHUNK: chunk-file-001-p12-b02 / page 12'],
+    inLinks: [],
+    outLinks: ['source-trace-standard'],
+    version: 1,
+    sourceMode: 'PUBLISHED_FILE',
+    refreshPolicy: 'MANUAL',
     confidence: 0.96,
     reviewStatus: 'PUBLISHED',
     owner: 'Atlas Delivery',
@@ -567,6 +585,15 @@ const productWikiPages: ProductWikiPage[] = [
     id: 'wiki-source-trace',
     title: 'Source Trace Standard',
     slug: 'source-trace-standard',
+    pageType: 'TOPIC',
+    aliases: ['Traceability Standard'],
+    sourceRefs: ['FILE: file-001 / current-state-summary.md'],
+    chunkRefs: ['SOURCE_CHUNK: trace-009 / section architecture'],
+    inLinks: ['modernization-index'],
+    outLinks: [],
+    version: 1,
+    sourceMode: 'PUBLISHED_FILE',
+    refreshPolicy: 'MANUAL',
     confidence: 0.91,
     reviewStatus: 'APPROVED',
     owner: 'SME Review',
@@ -587,6 +614,15 @@ const productWikiPages: ProductWikiPage[] = [
     id: 'wiki-review-hold',
     title: 'Unverified RPG Inventory Notes',
     slug: 'review-required-rpg-inventory',
+    pageType: 'SOURCE_SUMMARY',
+    aliases: [],
+    sourceRefs: ['FILE: file-005 / RPG_Scan_Result.xlsx'],
+    chunkRefs: [],
+    inLinks: [],
+    outLinks: [],
+    version: 1,
+    sourceMode: 'PUBLISHED_FILE',
+    refreshPolicy: 'MANUAL',
     confidence: 0.67,
     reviewStatus: 'REVIEW_REQUIRED',
     owner: 'Parser pipeline',
@@ -1036,18 +1072,32 @@ const apiProductWikiPages = computed<ProductWikiPage[]>(() =>
   wikiPages.value.map(page => ({
     id: page.id,
     title: page.title,
-    slug: page.markdownPath,
+    slug: page.slug ?? page.markdownPath,
+    pageType: page.pageType ?? 'SOURCE_SUMMARY',
+    aliases: page.aliases ?? [],
+    sourceRefs: (page.sourceRefs ?? []).map(formatWikiReference),
+    chunkRefs: (page.chunkRefs ?? []).map(formatWikiReference),
+    inLinks: page.inLinks ?? [],
+    outLinks: page.outLinks ?? [],
+    version: page.version ?? 1,
+    sourceMode: page.sourceMode ?? 'PUBLISHED_FILE',
+    refreshPolicy: page.refreshPolicy ?? 'MANUAL',
     confidence: page.confidence ?? 0,
     reviewStatus: page.reviewStatus,
     owner: page.owner,
     updatedAt: page.lastUpdated,
-    sourceTrace: `sources ${page.sourceDocumentIds.join(', ') || 'none'} / ${page.markdownPath}`,
-    entities: ['API Wiki', 'Source Trace', page.reviewStatus],
+    sourceTrace: wikiSourceTrace(page),
+    entities: [
+      'API Wiki',
+      page.pageType ?? 'SOURCE_SUMMARY',
+      page.sourceMode ?? 'PUBLISHED_FILE',
+      page.reviewStatus
+    ],
     sections: [
       {
         title: 'API-backed published metadata',
         body: 'This Wiki page is loaded from the Atlas review-publish API and remains tied to reviewed source documents.',
-        sourceTrace: page.sourceDocumentIds.join(', ') || page.markdownPath,
+        sourceTrace: wikiSourceTrace(page),
         confidence: page.confidence ?? 0,
         reviewStatus: page.reviewStatus
       }
@@ -1470,7 +1520,7 @@ async function loadSpaceContext(spaceId: string) {
       getSpace(spaceId),
       listBatches(spaceId),
       getReviewQueues(spaceId),
-      listWikiPages(spaceId)
+      listWikiPages(spaceId, true)
     ])
     selectedSpace.value = space
     batches.value = batchList
@@ -1642,7 +1692,7 @@ async function refreshWorkflow(batchId = selectedBatchId.value, fileId = selecte
   const [batchList, queues, pages] = await Promise.all([
     listBatches(selectedSpaceId.value),
     getReviewQueues(selectedSpaceId.value),
-    listWikiPages(selectedSpaceId.value)
+    listWikiPages(selectedSpaceId.value, true)
   ])
   batches.value = batchList
   reviewQueues.value = queues
@@ -1748,6 +1798,20 @@ function uniqueValues<T extends string>(values: T[]) {
 
 function productReviewStatus(status: ApiReviewStatus): ProductGraphNode['reviewStatus'] {
   return status === 'PUBLISHED' || status === 'APPROVED' ? status : 'REVIEW_REQUIRED'
+}
+
+function formatWikiReference(ref: ApiWikiPage['sourceRefs'][number]) {
+  const label = ref.label ? ` · ${ref.label}` : ''
+  const locator = ref.locator ? ` / ${ref.locator}` : ''
+  return `${ref.type}: ${ref.id}${label}${locator}`
+}
+
+function wikiSourceTrace(page: ApiWikiPage) {
+  const sourceRefs = (page.sourceRefs ?? []).map(formatWikiReference)
+  if (sourceRefs.length > 0) {
+    return sourceRefs.join('; ')
+  }
+  return `sources ${page.sourceDocumentIds.join(', ') || 'none'} / ${page.markdownPath}`
 }
 
 function productGraphNodeType(type: ApiGraphNodeType): ProductGraphNode['type'] {
@@ -2782,9 +2846,33 @@ function isDeepSeekDraft(model: VueModelConfig) {
                 </button>
               </header>
               <div class="atlas-wiki-meta">
+                <span>type {{ selectedProductWikiPage.pageType }}</span>
+                <span>version {{ selectedProductWikiPage.version }}</span>
+                <span>source {{ selectedProductWikiPage.sourceMode }}</span>
+                <span>refresh {{ selectedProductWikiPage.refreshPolicy }}</span>
                 <span>confidence {{ selectedProductWikiPage.confidence.toFixed(2) }}</span>
                 <span>updated {{ selectedProductWikiPage.updatedAt }}</span>
+                <span
+                  >aliases
+                  {{
+                    selectedProductWikiPage.aliases.length > 0
+                      ? selectedProductWikiPage.aliases.join(', ')
+                      : 'none'
+                  }}</span
+                >
+                <span
+                  >links in {{ selectedProductWikiPage.inLinks.length }} / out
+                  {{ selectedProductWikiPage.outLinks.length }}</span
+                >
                 <span>source_trace: {{ selectedProductWikiPage.sourceTrace }}</span>
+                <span
+                  >chunk_refs
+                  {{
+                    selectedProductWikiPage.chunkRefs.length > 0
+                      ? selectedProductWikiPage.chunkRefs.join('; ')
+                      : 'none'
+                  }}</span
+                >
               </div>
               <nav class="atlas-entity-links" aria-label="Wiki entity links">
                 <button
@@ -4051,8 +4139,28 @@ function isDeepSeekDraft(model: VueModelConfig) {
               <article v-for="page in wikiPages" :key="page.id">
                 <strong>{{ page.title }}</strong>
                 <span>{{ page.reviewStatus }} · confidence {{ page.confidence ?? 'n/a' }}</span>
+                <span
+                  >{{ page.slug ?? page.markdownPath }} · {{ page.pageType ?? 'SOURCE_SUMMARY' }} ·
+                  v{{ page.version ?? 1 }}</span
+                >
+                <span
+                  >{{ page.sourceMode ?? 'PUBLISHED_FILE' }} ·
+                  {{ page.refreshPolicy ?? 'MANUAL' }}</span
+                >
                 <span>{{ page.markdownPath }}</span>
                 <span>sources {{ page.sourceDocumentIds.join(', ') }}</span>
+                <span
+                  >refs
+                  {{
+                    page.sourceRefs?.length > 0
+                      ? page.sourceRefs.map(formatWikiReference).join('; ')
+                      : 'none'
+                  }}</span
+                >
+                <span
+                  >links in {{ page.inLinks?.length ?? 0 }} / out
+                  {{ page.outLinks?.length ?? 0 }}</span
+                >
               </article>
             </div>
             <button

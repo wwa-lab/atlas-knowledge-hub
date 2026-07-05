@@ -360,6 +360,12 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain(
       'API-backed published metadata'
     )
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('p0-wiki')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('SOURCE_SUMMARY')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('PUBLISHED_FILE')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('MANUAL')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('P0 Evidence')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('chunk-p0')
 
     await wrapper
       .findAll('button')
@@ -401,6 +407,8 @@ describe('Atlas P0 full-stack productization shell', () => {
     )
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('source_trace:')
     expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('PUBLISHED')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('INDEX')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('Modernization Hub')
 
     await wrapper
       .findAll('button')
@@ -611,7 +619,7 @@ function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
       return jsonOk(wikiPage(), 201)
     }
 
-    if (url.endsWith('/api/spaces/ibm-i-modernization/wiki-pages')) {
+    if (url.includes('/api/spaces/ibm-i-modernization/wiki-pages')) {
       return jsonOk(state.wikiPublished ? [wikiPage()] : [])
     }
 
@@ -781,9 +789,34 @@ function wikiPage() {
   return {
     id: 'wiki-file-p0',
     spaceId: 'ibm-i-modernization',
+    folderId: null,
     title: 'P0 Wiki',
+    slug: 'p0-wiki',
+    pageType: 'SOURCE_SUMMARY',
     markdownPath: 'generated/md/productization.md',
     sourceDocumentIds: ['file-p0'],
+    aliases: ['P0 Evidence'],
+    sourceRefs: [
+      {
+        type: 'FILE',
+        id: 'file-p0',
+        label: 'file-p0',
+        locator: 'generated/md/productization.md'
+      }
+    ],
+    chunkRefs: [
+      {
+        type: 'SOURCE_CHUNK',
+        id: 'chunk-p0',
+        label: 'source chunk',
+        locator: 'page 1'
+      }
+    ],
+    inLinks: [],
+    outLinks: ['p0-browser-evidence'],
+    version: 1,
+    sourceMode: 'PUBLISHED_FILE',
+    refreshPolicy: 'MANUAL',
     confidence: 0.93,
     reviewStatus: 'PUBLISHED',
     owner: 'p0-browser',

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,7 +19,12 @@ import com.atlas.metadata.dto.ReviewQueueItemResponse;
 import com.atlas.metadata.dto.ReviewQueueItemResponse.ReviewQueueType;
 import com.atlas.metadata.dto.ReviewQueueRepresentativeResponse;
 import com.atlas.metadata.dto.ReviewQueuesResponse;
+import com.atlas.metadata.dto.WikiFolderResponse;
+import com.atlas.metadata.dto.WikiGenerationRunResponse;
+import com.atlas.metadata.dto.WikiLogEntryResponse;
 import com.atlas.metadata.dto.WikiPageResponse;
+import com.atlas.metadata.dto.WikiPageIssueResponse;
+import com.atlas.metadata.dto.WikiReferenceResponse;
 import com.atlas.metadata.enums.FileStatus;
 import com.atlas.metadata.enums.ReviewStatus;
 import com.atlas.metadata.exception.ConflictException;
@@ -26,6 +32,7 @@ import com.atlas.metadata.service.ReviewPublishService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -70,17 +77,7 @@ class ReviewPublishApiContractIT {
   @Test
   void publishApprovedFileReturnsPublishedWikiMetadata() throws Exception {
     when(reviewPublishService.publishFile(eq("file-001"), any(CreateWikiPublishRequest.class)))
-        .thenReturn(
-            new WikiPageResponse(
-                "wiki-file-001",
-                "ibm-i-modernization",
-                "BRD Generated Flow",
-                "generated/md/BRD.md",
-                List.of("file-001"),
-                new BigDecimal("0.820"),
-                ReviewStatus.PUBLISHED,
-                "sme-team",
-                OffsetDateTime.parse("2026-07-03T12:00:00Z")));
+        .thenReturn(wikiPage("wiki-file-001", "ibm-i-modernization", "BRD Generated Flow", "brd"));
 
     mockMvc
         .perform(
@@ -97,9 +94,148 @@ class ReviewPublishApiContractIT {
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data.id").value("wiki-file-001"))
         .andExpect(jsonPath("$.data.reviewStatus").value("PUBLISHED"))
+        .andExpect(jsonPath("$.data.slug").value("brd"))
+        .andExpect(jsonPath("$.data.pageType").value("SOURCE_SUMMARY"))
         .andExpect(jsonPath("$.data.markdownPath").value("generated/md/BRD.md"))
         .andExpect(jsonPath("$.data.sourceDocumentIds[0]").value("file-001"))
+        .andExpect(jsonPath("$.data.aliases").isArray())
+        .andExpect(jsonPath("$.data.sourceRefs[0].type").value("FILE"))
+        .andExpect(jsonPath("$.data.chunkRefs[0].type").value("SOURCE_CHUNK"))
+        .andExpect(jsonPath("$.data.inLinks").isArray())
+        .andExpect(jsonPath("$.data.outLinks").isArray())
+        .andExpect(jsonPath("$.data.version").value(1))
+        .andExpect(jsonPath("$.data.sourceMode").value("PUBLISHED_FILE"))
+        .andExpect(jsonPath("$.data.refreshPolicy").value("MANUAL"))
         .andExpect(jsonPath("$.data.confidence").value(0.820));
+  }
+
+  @Test
+  void wikiFoundationReadEndpointsReturnSafeMetadata() throws Exception {
+    when(reviewPublishService.getPublishedWikiPageBySlug("ibm-i-modernization", "brd"))
+        .thenReturn(wikiPage("wiki-file-001", "ibm-i-modernization", "BRD Generated Flow", "brd"));
+    when(reviewPublishService.listWikiFolders("ibm-i-modernization"))
+        .thenReturn(
+            List.of(
+                new WikiFolderResponse(
+                    "wiki-folder-foundation",
+                    "ibm-i-modernization",
+                    null,
+                    "foundation",
+                    "Foundation",
+                    "Sample-safe Wiki foundation pages",
+                    10)));
+    when(reviewPublishService.listWikiGenerationRuns("ibm-i-modernization"))
+        .thenReturn(
+            List.of(
+                new WikiGenerationRunResponse(
+                    "wiki-run-sample-001",
+                    "ibm-i-modernization",
+                    "wiki-file-001",
+                    "SUCCEEDED",
+                    "PUBLISHED_FILE",
+                    "MANUAL",
+                    "system-sample",
+                    List.of(new WikiReferenceResponse("FILE", "file-001", "file-001", null)),
+                    List.of(),
+                    List.of("wiki-file-001"),
+                    List.of(),
+                    "Sample-safe metadata refresh recorded.",
+                    null,
+                    OffsetDateTime.parse("2026-07-03T12:00:00Z"),
+                    OffsetDateTime.parse("2026-07-03T12:00:03Z"))));
+    when(reviewPublishService.listWikiPageLogs("wiki-file-001"))
+        .thenReturn(
+            List.of(
+                new WikiLogEntryResponse(
+                    "wiki-log-001",
+                    "ibm-i-modernization",
+                    "wiki-file-001",
+                    null,
+                    "PUBLISHED",
+                    "sme-team",
+                    "Published safe Wiki metadata.",
+                    Map.of("sourceMode", "PUBLISHED_FILE"),
+                    OffsetDateTime.parse("2026-07-03T12:00:00Z"))));
+    when(reviewPublishService.listWikiPageIssues("wiki-file-001"))
+        .thenReturn(
+            List.of(
+                new WikiPageIssueResponse(
+                    "wiki-issue-001",
+                    "ibm-i-modernization",
+                    "wiki-file-001",
+                    "MISSING_SOURCE_REF",
+                    "LOW",
+                    "OPEN",
+                    List.of(new WikiReferenceResponse("WIKI_PAGE", "wiki-file-001", "page", null)),
+                    "Sample-safe issue placeholder for future lint workflows.",
+                    OffsetDateTime.parse("2026-07-03T12:00:00Z"),
+                    null)));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/wiki-pages/by-slug/brd"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.id").value("wiki-file-001"))
+        .andExpect(jsonPath("$.data.slug").value("brd"));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/wiki-folders"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].slug").value("foundation"));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/wiki-generation-runs"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].status").value("SUCCEEDED"))
+        .andExpect(jsonPath("$.data[0].safeSummary").value("Sample-safe metadata refresh recorded."));
+
+    mockMvc
+        .perform(get("/api/wiki-pages/wiki-file-001/logs"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].eventType").value("PUBLISHED"))
+        .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))));
+
+    mockMvc
+        .perform(get("/api/wiki-pages/wiki-file-001/issues"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].issueType").value("MISSING_SOURCE_REF"))
+        .andExpect(jsonPath("$").value(not(containsString("password"))));
+  }
+
+  @Test
+  void wikiPagesCanExplicitlyIncludeGeneratedDrafts() throws Exception {
+    when(reviewPublishService.listWikiPages("ibm-i-modernization", true))
+        .thenReturn(
+            List.of(
+                new WikiPageResponse(
+                    "wiki-auto-file-001",
+                    "ibm-i-modernization",
+                    null,
+                    "Generated Topic",
+                    "generated-topic",
+                    "TOPIC",
+                    "generated/wiki/ibm-i-modernization/generated-topic.md",
+                    List.of("file-001"),
+                    List.of(),
+                    List.of(new WikiReferenceResponse("FILE", "file-001", "file-001", null)),
+                    List.of(new WikiReferenceResponse("SOURCE_CHUNK", "chunk-file-001", "source chunk", "page 1")),
+                    List.of(),
+                    List.of(),
+                    1,
+                    "AUTO_GENERATED",
+                    "ON_SOURCE_CHANGE",
+                    new BigDecimal("0.910"),
+                    ReviewStatus.REVIEW_REQUIRED,
+                    "knowledge-manager",
+                    OffsetDateTime.parse("2026-07-05T00:00:00Z"))));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/wiki-pages?includeDrafts=true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].reviewStatus").value("REVIEW_REQUIRED"))
+        .andExpect(jsonPath("$.data[0].sourceMode").value("AUTO_GENERATED"))
+        .andExpect(jsonPath("$.data[0].refreshPolicy").value("ON_SOURCE_CHANGE"));
+
+    verify(reviewPublishService).listWikiPages("ibm-i-modernization", true);
   }
 
   @Test
@@ -169,5 +305,29 @@ class ReviewPublishApiContractIT {
                 ReviewStatus.REVIEW_REQUIRED,
                 new BigDecimal("0.100"),
                 false)));
+  }
+
+  private WikiPageResponse wikiPage(String id, String spaceId, String title, String slug) {
+    return new WikiPageResponse(
+        id,
+        spaceId,
+        null,
+        title,
+        slug,
+        "SOURCE_SUMMARY",
+        "generated/md/BRD.md",
+        List.of("file-001"),
+        List.of(),
+        List.of(new WikiReferenceResponse("FILE", "file-001", "file-001", "generated/md/BRD.md")),
+        List.of(new WikiReferenceResponse("SOURCE_CHUNK", "chunk-file-001-p12-b02", "source chunk", "page 12")),
+        List.of(),
+        List.of(),
+        1,
+        "PUBLISHED_FILE",
+        "MANUAL",
+        new BigDecimal("0.820"),
+        ReviewStatus.PUBLISHED,
+        "sme-team",
+        OffsetDateTime.parse("2026-07-03T12:00:00Z"));
   }
 }

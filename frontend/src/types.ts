@@ -355,14 +355,32 @@ export interface ApiReview {
   createdAt: string
 }
 
+export interface ApiWikiReference {
+  type: 'FILE' | 'SOURCE_CHUNK' | 'WIKI_PAGE' | 'GRAPH_NODE' | string
+  id: string
+  label: string | null
+  locator: string | null
+}
+
 export interface ApiWikiPage {
   id: string
   spaceId: string
+  folderId: string | null
   title: string
+  slug: string
+  pageType: 'INDEX' | 'TOPIC' | 'SOURCE_SUMMARY' | 'ENTITY' | 'CONCEPT' | 'MANUAL' | string
   markdownPath: string
   sourceDocumentIds: string[]
+  aliases: string[]
+  sourceRefs: ApiWikiReference[]
+  chunkRefs: ApiWikiReference[]
+  inLinks: string[]
+  outLinks: string[]
+  version: number
+  sourceMode: 'PUBLISHED_FILE' | 'AUTO_GENERATED' | 'MANUAL' | 'HYBRID' | string
+  refreshPolicy: 'MANUAL' | 'ON_SOURCE_CHANGE' | 'SCHEDULED' | 'LOCKED' | string
   confidence: number | null
-  reviewStatus: Extract<ApiReviewStatus, 'PUBLISHED'>
+  reviewStatus: Extract<ApiReviewStatus, 'REVIEW_REQUIRED' | 'PUBLISHED'>
   owner: string
   lastUpdated: string
 }

@@ -70,6 +70,12 @@ Before making changes, always read:
 ## Goal-Driven Slice Execution
 
 - When the user sets a goal for a slice, treat the goal as an execution contract from SDD docs to code to verification.
+- For Codex goal mode and loop-style execution, use `docs/00-context/agent-goal-loop-workflow.md` / `.zh-CN.md` plus an execution manifest under `docs/00-context/execution-manifests/`.
+- Use `docs/00-context/agent-goal-loop-quickstart.md` / `.zh-CN.md` to choose the lightest safe workflow tier before starting.
+- Generate new manifests with `npm run agent:manifest -- --slice <slice> --mode <single-slice|master>`.
+- Check SDD readiness with `npm run agent:check-sdd -- --slice <slice>` and use `docs/00-context/checklists/goal-closeout-gate.md` before close-out.
+- Run the closeout gate with `npm run agent:closeout`; the same workflow gate runs automatically on PR/push through the GitHub Actions workflow `Agent Workflow Gate`.
+- Use `docs/00-context/goal-prompts/master-goal-prompt.md` for roadmap or slice-queue goals, and `docs/00-context/goal-prompts/single-slice-goal-prompt.md` for one-slice goals.
 - Convert the goal into explicit scope, source documents, acceptance criteria, constraints, task checklist, and verification evidence before editing implementation files.
 - If required SDD artifacts are missing or stale, create or update them first, then continue into implementation when the scope is clear.
 - Execute tasks from `docs/06-tasks/{slice}-tasks.md` and keep implementation changes aligned with `docs/03-spec/{slice}-spec.md`.
@@ -95,6 +101,7 @@ Before making changes, always read:
 ## Agent Execution Context
 
 - Agents should consume explicit context rather than guessing. Use the current SDD profile, slice docs, task list, repository rules, and user-provided references as the execution manifest for the task.
+- Goal loops must resume from durable docs and manifests, not chat memory. Before resuming, read the relevant manifest, traceability/progress docs, and `git status --short`.
 - When creating prompts or instructions for another tool or agent, prefer lightweight pointers to existing repository files instead of duplicating long document content.
 - Search the repository before assuming file locations, especially for design docs, task docs, prompts, and prototype assets.
 - Do not assume runtime versions, framework choices, model providers, database engines, or parser engines beyond what `README.md`, `PROJECT_RULES.md`, and the relevant SDD docs state.

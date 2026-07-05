@@ -51,6 +51,17 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 | 4 (productization) | `full-stack-productization` | P0 browser-driven full-stack loop: space list, sample batch, review, publish Wiki, graph evidence, Ask citations | Full stack | ✅ Product Goal Batch 6 L3 API-backed checkpoint for I1-I7 (T-FSP-001→012; Phase J and final product acceptance pending; production upload/auth/provider hardening deferred) |
 | 4+ (acceptance) | `provider-backed-e2e` | Opt-in local third-layer E2E with DeepSeek-backed Ask through ModelAdapter, live API graph/publish/vector flow, and mock/sample data only | Acceptance + model adapter | ✅ implemented (provider run requires local `ATLAS_MODEL_API_KEY`) |
 
+## Current Next-Phase Wave Queue
+
+This queue records the current SDD-driven roadmap state after the historical productization slices. It does not redefine behavior owned by each slice spec, and it must not be used to skip the human SDD acceptance gate.
+
+| Wave | Slice slug | Scope summary | Current status | Next gate |
+|---|---|---|---|---|
+| Wave 1 / Wiki Foundation | `wiki-data-model` | Additive Wiki metadata fields, folder/run/log/issue read model, backend read APIs, repository/contract coverage, and Vue Wiki metadata rendering | ✅ Complete as Wiki Foundation data-model base; not Auto Wiki ingest completion and not production readiness | Closed for this maturity target |
+| Wave 1 / Wiki Foundation | `wiki-ingest-v0` | Deterministic-only Auto Wiki page candidate generation from approved source chunks, merged into the existing Wiki data model as review-required generated Markdown artifacts | ✅ Implementation verified as Auto Wiki ingest v0 foundation; not linkify/lint, review-gate, connector, model-assisted generation, or production readiness | Current maturity target closed; next recommended slice is `wiki-linkify-lint` SDD only after user direction |
+| Wave 1 / Wiki Foundation | `wiki-linkify-lint` | Deterministic Wiki link insertion, link metadata refresh, broken/orphan/source/thin-content linting, and review-facing warnings | 🔨 Bilingual SDD draft generated; product code not started | User review and acceptance of spec, API guide, and tasks before implementation |
+| Wave 2 / Runtime Integration | `real-office-parser-runtime` | Real internal converter/parser runtime integration behind existing adapter boundaries | 🔒 Gated by Wiki Foundation loop and explicit runtime approval | Generate bilingual SDD after Wave 1 gates and adapter/runtime constraints are accepted |
+
 Slice boundaries are guidance, not law: split a slice if its task list would exceed a reviewable single implementation pass, and record the split in traceability. Adapter slices in Phase 3 can each be an independent generate-all unit so contracts stay small.
 
 ---

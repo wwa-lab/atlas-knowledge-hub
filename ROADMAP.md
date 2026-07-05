@@ -301,6 +301,15 @@ Acceptance:
 
 Status: Batch 7 checkpoint complete at L4 readiness preparation for mock/sample-safe internal beta planning. The readiness report identifies controlled-trial entry criteria, safe configuration templates, L4-ready areas, L3/lower gaps, and residual P0/P1/P2 risks. Batch 8 Final evidence整理 is complete in `docs/07-acceptance/product-acceptance-report.zh-CN.md`; Atlas is ready for user acceptance review, but this is not production readiness or final product acceptance.
 
+## Current Next-Phase Wave Progress
+
+Status on 2026-07-05:
+
+- Wave 1 / `wiki-foundation` / `wiki-data-model`: complete as a Wiki Foundation data-model slice. Atlas now has additive `wiki_page` metadata fields, minimal folder/run/log/issue read models, backend read APIs, contract/repository coverage, and Vue Wiki metadata rendering.
+- Maturity statement: this is still a Wiki Foundation data base, not Auto Wiki ingest completion and not production readiness.
+- Wave 1 / `wiki-ingest-v0`: implementation is verified as an Auto Wiki ingest v0 foundation: deterministic review-required candidates, safe run/log/issue evidence, explicit draft listing, and full local verification. This is not linkify/lint, review-gate, connector, model-assisted generation, or production readiness.
+- Current active slice: Wave 1 / `wiki-linkify-lint`. The complete bilingual SDD draft has been generated for deterministic Wiki link insertion, link metadata refresh, lint issue recording, and Processing Center/Wiki warnings. Product code has not started; implementation remains gated by user acceptance of the spec, API guide, and tasks.
+
 ## Near-Term Execution Plan
 
 Do these next, in order:

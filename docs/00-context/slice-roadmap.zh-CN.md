@@ -51,6 +51,17 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | 4（产品化） | `full-stack-productization` | P0 浏览器驱动全栈闭环：space list、sample batch、review、publish Wiki、graph evidence、Ask citations | 全栈 | ✅ Product Goal Batch 6 的 I1-I7 L3 API-backed checkpoint（T-FSP-001→012；Phase J 与最终产品验收待定；production upload/auth/provider hardening 延后） |
 | 4+（验收） | `provider-backed-e2e` | Opt-in 本地第三层 E2E：DeepSeek-backed Ask 通过 ModelAdapter，覆盖 live API graph/publish/vector flow，且只使用 mock/sample data | 验收 + model adapter | ✅ 已实现（provider run 需要本地 `ATLAS_MODEL_API_KEY`） |
 
+## 当前下一阶段 Wave 队列
+
+本队列记录历史产品化切片之后的当前 SDD 驱动路线图状态。它不重新定义由各切片 spec 拥有的行为，也不能用于跳过人工 SDD 接受门。
+
+| Wave | 切片 slug | 范围概述 | 当前状态 | 下一门禁 |
+|---|---|---|---|---|
+| Wave 1 / Wiki Foundation | `wiki-data-model` | 增量 Wiki metadata 字段、folder/run/log/issue 读取模型、后端读取 APIs、repository/contract 覆盖，以及 Vue Wiki metadata 展示 | ✅ 已作为 Wiki Foundation 数据模型底座完成；不等于 Auto Wiki ingest 完成，也不代表生产就绪 | 当前成熟度目标已关闭 |
+| Wave 1 / Wiki Foundation | `wiki-ingest-v0` | 从 approved source chunks 进行 deterministic-only Auto Wiki page candidate 生成，并作为 review-required generated Markdown artifacts 合并进现有 Wiki data model | ✅ 已作为 Auto Wiki ingest v0 foundation 完成 implementation verification；不代表 linkify/lint、review-gate、connector、model-assisted generation 或 production readiness | 当前成熟度目标已关闭；下一推荐切片是 `wiki-linkify-lint`，需用户指示后再生成 SDD |
+| Wave 1 / Wiki Foundation | `wiki-linkify-lint` | 确定性 Wiki link insertion、link metadata refresh、broken/orphan/source/thin-content linting，以及面向审核的 warnings | 🔨 双语 SDD 草稿已生成；产品代码尚未开始 | 用户审阅并接受 spec、API guide、tasks 后再进入实现 |
+| Wave 2 / Runtime Integration | `real-office-parser-runtime` | 将真实 internal converter/parser runtime 集成到现有 adapter boundaries 之后 | 🔒 受 Wiki Foundation 循环和显式 runtime approval 门控 | Wave 1 门禁和 adapter/runtime constraints 接受后再生成双语 SDD |
+
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。
 
 ---

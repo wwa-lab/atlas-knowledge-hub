@@ -19,6 +19,10 @@ import com.atlas.metadata.exception.ConflictException;
 import com.atlas.metadata.repository.BatchRepository;
 import com.atlas.metadata.repository.FileItemRepository;
 import com.atlas.metadata.repository.SourceChunkRepository;
+import com.atlas.metadata.repository.WikiFolderRepository;
+import com.atlas.metadata.repository.WikiGenerationRunRepository;
+import com.atlas.metadata.repository.WikiLogEntryRepository;
+import com.atlas.metadata.repository.WikiPageIssueRepository;
 import com.atlas.metadata.repository.WikiPageRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -46,6 +50,10 @@ class ReviewPublishServiceTest {
   @Mock private FileItemRepository fileItemRepository;
   @Mock private SourceChunkRepository sourceChunkRepository;
   @Mock private WikiPageRepository wikiPageRepository;
+  @Mock private WikiFolderRepository wikiFolderRepository;
+  @Mock private WikiGenerationRunRepository wikiGenerationRunRepository;
+  @Mock private WikiLogEntryRepository wikiLogEntryRepository;
+  @Mock private WikiPageIssueRepository wikiPageIssueRepository;
 
   private ReviewPublishService service;
 
@@ -53,7 +61,16 @@ class ReviewPublishServiceTest {
   void setUp() {
     service =
         new ReviewPublishService(
-            spaceService, batchRepository, fileItemRepository, sourceChunkRepository, wikiPageRepository, CLOCK);
+            spaceService,
+            batchRepository,
+            fileItemRepository,
+            sourceChunkRepository,
+            wikiPageRepository,
+            wikiFolderRepository,
+            wikiGenerationRunRepository,
+            wikiLogEntryRepository,
+            wikiPageIssueRepository,
+            CLOCK);
   }
 
   @Test
@@ -109,6 +126,18 @@ class ReviewPublishServiceTest {
     var response = service.publishFile("file-003", new CreateWikiPublishRequest("Migration Boundary", "sme-team"));
 
     assertThat(response.id()).isEqualTo("wiki-file-003");
+    assertThat(response.slug()).isEqualTo("page");
+    assertThat(response.pageType()).isEqualTo("SOURCE_SUMMARY");
+    assertThat(response.aliases()).isEmpty();
+    assertThat(response.sourceRefs()).extracting("type", "id").containsExactly(org.assertj.core.groups.Tuple.tuple("FILE", "file-003"));
+    assertThat(response.chunkRefs())
+        .extracting("type", "id")
+        .containsExactly(org.assertj.core.groups.Tuple.tuple("SOURCE_CHUNK", "chunk-file-003"));
+    assertThat(response.inLinks()).isEmpty();
+    assertThat(response.outLinks()).isEmpty();
+    assertThat(response.version()).isEqualTo(1);
+    assertThat(response.sourceMode()).isEqualTo("PUBLISHED_FILE");
+    assertThat(response.refreshPolicy()).isEqualTo("MANUAL");
     assertThat(response.reviewStatus()).isEqualTo(ReviewStatus.PUBLISHED);
     assertThat(response.sourceDocumentIds()).containsExactly("file-003");
     assertThat(response.lastUpdated()).isEqualTo(OffsetDateTime.now(CLOCK));
@@ -143,7 +172,67 @@ class ReviewPublishServiceTest {
 
     assertThat(response.id()).isEqualTo("wiki-file-003");
     assertThat(response.title()).isEqualTo("Migration Boundary");
+    assertThat(response.slug()).isEqualTo("page");
+    assertThat(response.sourceMode()).isEqualTo("PUBLISHED_FILE");
     assertThat(response.reviewStatus()).isEqualTo(ReviewStatus.PUBLISHED);
+  }
+
+  @Test
+  void slugLookupIsScopedToSpaceAndPublishedStatus() {
+    WikiPage page =
+        WikiPage.publish(
+            "wiki-file-003",
+            "space",
+            "Migration Boundary",
+            "generated/md/page.md",
+            new String[] {"file-003"},
+            List.of(chunk("file-003")),
+            new BigDecimal("0.960"),
+            "sme-team",
+            OffsetDateTime.now(CLOCK));
+    when(wikiPageRepository.findBySpaceIdAndSlugAndReviewStatus("space", "page", ReviewStatus.PUBLISHED))
+        .thenReturn(Optional.of(page));
+
+    var response = service.getPublishedWikiPageBySlug("space", "page");
+
+    assertThat(response.id()).isEqualTo("wiki-file-003");
+    assertThat(response.slug()).isEqualTo("page");
+  }
+
+  @Test
+  void listWikiPagesIncludesDraftsOnlyWhenExplicitlyRequested() {
+    WikiPage published =
+        WikiPage.publish(
+            "wiki-file-003",
+            "space",
+            "Migration Boundary",
+            "generated/md/page.md",
+            new String[] {"file-003"},
+            new BigDecimal("0.960"),
+            "sme-team",
+            OffsetDateTime.now(CLOCK));
+    WikiPage draft =
+        WikiPage.generatedCandidate(
+            "wiki-auto-file-004",
+            "space",
+            "Generated Topic",
+            "generated-topic",
+            "generated/wiki/space/generated-topic.md",
+            new String[] {"file-004"},
+            List.of(chunk("file-004")),
+            new BigDecimal("0.910"),
+            "knowledge-manager",
+            OffsetDateTime.now(CLOCK));
+    when(wikiPageRepository.findBySpaceIdAndReviewStatusOrderByTitleAsc("space", ReviewStatus.PUBLISHED))
+        .thenReturn(List.of(published));
+    when(wikiPageRepository.findBySpaceIdOrderByTitleAsc("space")).thenReturn(List.of(draft, published));
+
+    assertThat(service.listWikiPages("space", false)).extracting("reviewStatus").containsExactly(ReviewStatus.PUBLISHED);
+    assertThat(service.listWikiPages("space", true))
+        .extracting("sourceMode", "reviewStatus")
+        .contains(
+            org.assertj.core.groups.Tuple.tuple("AUTO_GENERATED", ReviewStatus.REVIEW_REQUIRED),
+            org.assertj.core.groups.Tuple.tuple("PUBLISHED_FILE", ReviewStatus.PUBLISHED));
   }
 
   @Test

@@ -223,6 +223,19 @@ Codex 应报告：
 
 如果 Codex 同时负责生成或修复 SDD 文档，它必须先完成 SDD gate，再在 scope 清晰且已接受或可安全推断时进入实现。
 
+Codex goal mode 使用以下入口：
+
+- `docs/00-context/agent-goal-loop-workflow.md` / `.zh-CN.md` 作为 loop workflow contract。
+- `docs/00-context/agent-goal-loop-quickstart.md` / `.zh-CN.md` 用于选择 workflow tier。
+- `docs/00-context/execution-manifests/TEMPLATE.yaml` 作为 manifest 模板。
+- `docs/00-context/goal-prompts/master-goal-prompt.md` 用于 roadmap 或 slice-queue 执行。
+- `docs/00-context/goal-prompts/single-slice-goal-prompt.md` 用于单 slice 执行。
+- 接受 SDD 输出前使用 `docs/00-context/checklists/sdd-generation-gate.md` / `.zh-CN.md`。
+- 标记 goal complete 前使用 `docs/00-context/checklists/goal-closeout-gate.md` / `.zh-CN.md`。
+- 使用 `npm run agent:manifest -- --slice <slice> --mode <single-slice|master>` 创建 manifest。
+- 使用 `npm run agent:check-sdd -- --slice <slice>` 运行 SDD gate checker。
+- 使用 `npm run agent:closeout` 运行本地 closeout gate；GitHub Actions 的 `Agent Workflow Gate` 会在 PR/push 自动运行同一入口。
+
 ## 质量门禁
 
 SDD handoff 前，检查：

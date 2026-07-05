@@ -201,6 +201,19 @@ Codex should report documents read, code changed, tests and checks run, skipped 
 
 If Codex is also generating or repairing SDD documents, it must first complete the SDD gate, then proceed to implementation only when the scope is clear and accepted or safely inferable.
 
+For Codex goal mode, use:
+
+- `docs/00-context/agent-goal-loop-workflow.md` / `.zh-CN.md` as the loop workflow contract.
+- `docs/00-context/agent-goal-loop-quickstart.md` / `.zh-CN.md` to choose the workflow tier.
+- `docs/00-context/execution-manifests/TEMPLATE.yaml` as the manifest template.
+- `docs/00-context/goal-prompts/master-goal-prompt.md` for roadmap or slice-queue execution.
+- `docs/00-context/goal-prompts/single-slice-goal-prompt.md` for one-slice execution.
+- `docs/00-context/checklists/sdd-generation-gate.md` / `.zh-CN.md` before accepting SDD output.
+- `docs/00-context/checklists/goal-closeout-gate.md` / `.zh-CN.md` before marking a goal complete.
+- `npm run agent:manifest -- --slice <slice> --mode <single-slice|master>` to create a manifest.
+- `npm run agent:check-sdd -- --slice <slice>` to run the SDD gate checker.
+- `npm run agent:closeout` to run the local closeout gate; the GitHub Actions `Agent Workflow Gate` runs the same gate automatically on PR/push.
+
 ## Quality Gates
 
 Before SDD handoff, verify:

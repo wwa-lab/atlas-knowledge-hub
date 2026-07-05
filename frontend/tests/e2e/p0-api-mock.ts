@@ -221,9 +221,34 @@ function wikiPage() {
   return {
     id: 'wiki-file-p0',
     spaceId: 'ibm-i-modernization',
+    folderId: null,
     title: 'P0 Wiki',
+    slug: 'p0-wiki',
+    pageType: 'SOURCE_SUMMARY',
     markdownPath: 'generated/md/productization.md',
     sourceDocumentIds: ['file-p0'],
+    aliases: ['P0 Evidence'],
+    sourceRefs: [
+      {
+        type: 'FILE',
+        id: 'file-p0',
+        label: 'file-p0',
+        locator: 'generated/md/productization.md'
+      }
+    ],
+    chunkRefs: [
+      {
+        type: 'SOURCE_CHUNK',
+        id: 'chunk-p0',
+        label: 'source chunk',
+        locator: 'page 1'
+      }
+    ],
+    inLinks: [],
+    outLinks: ['p0-browser-evidence'],
+    version: 1,
+    sourceMode: 'PUBLISHED_FILE',
+    refreshPolicy: 'MANUAL',
     confidence: 0.93,
     reviewStatus: 'PUBLISHED',
     owner: 'p0-browser',

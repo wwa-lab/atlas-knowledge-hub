@@ -3,6 +3,10 @@
   "private": true,
   "scripts": {
     "setup": "npm --prefix frontend ci",
+    "agent:manifest": "node scripts/agent-workflow/atlas-new-goal-manifest.mjs",
+    "agent:check-sdd": "node scripts/agent-workflow/atlas-check-sdd-gate.mjs",
+    "agent:check-workflow": "node scripts/agent-workflow/atlas-check-workflow.mjs",
+    "agent:closeout": "node scripts/agent-workflow/atlas-check-workflow.mjs --changed-slices",
     "check:config": "bash scripts/e2e/check-required-config.sh",
     "e2e:first-layer": "bash scripts/e2e/run-first-layer.sh",
     "e2e:second-layer": "bash scripts/e2e/run-second-layer.sh",

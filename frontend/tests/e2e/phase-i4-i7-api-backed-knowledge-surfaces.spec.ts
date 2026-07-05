@@ -28,6 +28,10 @@ test('Phase I4-I7 real Vue product surfaces use API-backed Wiki, graph, Ask, and
   await page.getByTestId('vue-api-publish-file').click()
   await expect(page.getByTestId('vue-wiki-page')).toContainText('P0 Wiki')
   await expect(page.getByTestId('vue-wiki-page')).toContainText('API-backed published metadata')
+  await expect(page.getByTestId('vue-wiki-page')).toContainText('p0-wiki')
+  await expect(page.getByTestId('vue-wiki-page')).toContainText('SOURCE_SUMMARY')
+  await expect(page.getByTestId('vue-wiki-page')).toContainText('PUBLISHED_FILE')
+  await expect(page.getByTestId('vue-wiki-page')).toContainText('chunk-p0')
 
   await page.getByRole('button', { name: '图谱', exact: true }).click()
   await expect(page.getByTestId('vue-product-graph')).toContainText('P0 Browser Evidence')

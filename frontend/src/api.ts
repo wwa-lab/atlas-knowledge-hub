@@ -144,8 +144,9 @@ export async function publishFile(fileId: string, title: string) {
   })
 }
 
-export async function listWikiPages(spaceId: string) {
-  return atlasFetch<ApiWikiPage[]>(`/api/spaces/${spaceId}/wiki-pages`)
+export async function listWikiPages(spaceId: string, includeDrafts = false) {
+  const query = includeDrafts ? '?includeDrafts=true' : ''
+  return atlasFetch<ApiWikiPage[]>(`/api/spaces/${spaceId}/wiki-pages${query}`)
 }
 
 export async function createGraphProjection(spaceId: string) {
