@@ -60,6 +60,7 @@ This historical `knowledge-space` task document predates the bilingual SDD rule.
 | T-KS-029 | Add Phase 1 frontend verification baseline. | T-KS-028 | Frontend typecheck, build, unit/component tests, coverage, and E2E smoke test pass or skipped checks are explicitly reported with reasons. |
 | T-KS-030 | Align static HTML and SDD docs to current Phase 1 FE baseline. | T-KS-028, stakeholder review | `prototypes/index.html` mirrors `frontend/public/atlas-prototype.html`; spec, design, tasks, and frontend README describe the current FE layout and interactions. |
 | T-KS-031 | Align accepted IA refinement: global multi-Knowledge-Space chat, document management/detail drawer, processing center, Wiki index, and graph canvas. | Stakeholder IA review | Spec/design/tasks reflect the accepted IA; prototype mirror is byte-identical; build and E2E pass. |
+| T-KS-036 | Add Phase 1 Space Information settings panel with mock-safe metadata and local name/description editing. | T-KS-026, T-KS-032 | Vue tests and Phase H settings E2E cover space ID, status, storage metadata, edit/save state, and mock-only boundary copy. |
 
 ## Completion Matrix
 
@@ -99,6 +100,8 @@ This historical `knowledge-space` task document predates the bilingual SDD rule.
 | T-KS-032 | Complete | Product Goal Phase A verified the real Vue product shell as the default path, with Home, sidebar, Global Chat, Settings, and model management covered by Playwright and screenshots. |
 | T-KS-033 | Complete | Product Goal Phase B verified the real Vue `IBM i Modernization` detail page, default Wiki tab, and Documents/Processing Center/Wiki/Graph tab switching. |
 | T-KS-034 | Complete | Batch 1 roadmap, traceability, slice roadmap, progress ledger, and evidence references updated. |
+| T-KS-035 | Complete | Vue Settings now includes Message Management with mock-only message indexing switch, Embedding dependency empty state, optional mock statistics, and tests covering the panel. |
+| T-KS-036 | Complete | Vue Settings now includes Space Information with current-space metadata, storage quota/usage mock values, local name/description editing, and tests covering the panel. |
 
 ## T-KS-001 Review Result
 
@@ -179,8 +182,10 @@ Prototype phase:
 - Verify day/night mode on home and every space tab.
 - Verify Settings > Model Management renders without external calls and contains no real secrets.
 - Verify Settings > Registration renders without storing passwords or creating accounts.
+- Verify Settings > Space Information renders current-space ID, name, description, status, created time, storage quota, used storage, usage rate, and mock-only edit/save behavior.
 - Verify Settings > Member Management renders with mock members, roles, and invitations only.
 - Verify Settings > Account views render with mock user/API data and no raw secrets.
+- Verify Settings > Message Management renders with a disabled/unconfigured index state, can toggle mock indexing, shows Embedding dependency/status, and does not call providers or persist real chat history.
 - Verify Settings > Data and Extension engine views render with adapter-backed mock configs only.
 - Verify sidebar settings shortcuts and All Settings open a modal/sheet over the current view, and closing returns to the previous product view.
 - Verify responsive behavior at representative wide desktop, laptop, tablet, and narrow mobile widths.

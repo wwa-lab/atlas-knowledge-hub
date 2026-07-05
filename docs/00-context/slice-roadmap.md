@@ -37,7 +37,7 @@ Slugs are stable kebab-case identifiers. IDs follow the profile: `REQ-{SLICE}-##
 
 | Phase | Slice slug | Scope summary | Owner boundary | Status |
 |---|---|---|---|---|
-| 1 (FE) | `knowledge-space` | Vue 3 shell reproducing accepted IA: home library, global multi-Knowledge-Space chat, space shell, documents, processing center, wiki, graph, settings — mock data only | FE only, no API | ✅ L2 Vue parity checkpoint for Product Goal Batch 1 (T-KS-001→034; final product acceptance pending) |
+| 1 (FE) | `knowledge-space` | Vue 3 shell reproducing accepted IA: home library, global multi-Knowledge-Space chat, space shell, documents, processing center, wiki, graph, settings — mock data only | FE only, no API | ✅ L2 Vue parity checkpoint for Product Goal Batch 1 plus Message/Space settings (T-KS-001→036; final product acceptance pending) |
 | 1 (FE) | `folder-upload` | Folder/ZIP upload mock: file inventory, tree, batch creation, mock status/report | FE only, no API | ✅ L2 Vue parity checkpoint for Product Goal Batch 2 (T-FU-001→014; T-FU-011 deferred optional; final product acceptance pending) |
 | 2 (API) | `metadata-api` | Spring Boot metadata service: batch/file/space entities, PostgreSQL + Flyway, mock-free contract | Backend + DB | ✅ implemented (T-MA-001→013; T-MA-014 partially consumed by Product Goal Batch 5 L3 Vue cutover for spaces/batches/files/chunks; remaining final acceptance pending) |
 | 3 (adapter) | `converter-adapter` | `trinity-office` Office→PDF behind converter interface | Adapter, no direct call | ✅ implemented (T-CA-001→010; mock-engine verified; real runtime contract deferred) |

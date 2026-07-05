@@ -97,6 +97,23 @@ Behavior:
 - Switching settings sub-views must not reset the underlying product view.
 - Prototype actions remain visual-only.
 
+### Settings / Space Information
+
+Layout:
+
+- Space Information appears under the Space group in the Settings navigation.
+- The view uses a compact row-based detail layout rather than nested cards.
+- Rows show label, helper text, and value for space ID, name, description, status, created time, storage quota, used storage, and storage usage rate.
+- Status appears as a compact badge.
+- Name and description rows include small edit affordances with inline save/cancel controls.
+
+Behavior:
+
+- The view is scoped to the selected Knowledge Space and uses mock-safe metadata.
+- Editing name or description updates only local Vue mock state and should visibly update the row value.
+- Storage values are product-facing mock operational metadata and must not expose private bucket names, paths, endpoints, or credentials.
+- Future production implementation must move writes, RBAC checks, and audit logging behind backend APIs.
+
 ### Settings / Model Management
 
 Layout:
@@ -195,6 +212,7 @@ Views:
 - General Settings.
 - User Information.
 - API Information.
+- Message Management.
 
 General Settings should include:
 
@@ -218,6 +236,14 @@ API Information should include:
 - Last used time.
 - Rotate and revoke affordances.
 - Masked-secret guidance.
+
+Message Management should include:
+
+- Page title and helper text explaining that chat history can be indexed for semantic search.
+- A single switch row for `启用消息索引` with a concise explanation of automatic indexing for new conversations.
+- An `索引统计` section that shows a calm empty state when indexing is disabled or the Embedding model is not configured.
+- A mock configuration/statistics state when enabled, using compact rows for Embedding model, indexed messages, indexed conversations, and last indexed time.
+- Boundary copy explaining that real chat history, embeddings, and vector writes belong behind model/vector adapters and are not executed in prototype mode.
 
 ### Settings / Data And Extensions
 

@@ -77,7 +77,7 @@ For Phase 1, `frontend/public/atlas-prototype.html` is the current frontend base
 
 - The persistent sidebar is the primary navigation and utility surface.
 - The sidebar includes Knowledge, Agents, Shared Spaces, Chat, recent dialogue items, current workspace summary, common settings shortcuts, connected tool examples, and user/account footer information.
-- Common settings shortcuts may open directly to Member Management, Model Management, API Information, vector database engine, parsing engine, or storage engine.
+- Common settings shortcuts may open directly to Space Information, Member Management, Model Management, API Information, vector database engine, parsing engine, or storage engine.
 - The All Settings entry opens General Settings in a modal/sheet over the current product view rather than replacing Home or Knowledge Space detail.
 - The settings modal/sheet contains a left-side grouped settings navigation and a right-side content area.
 - Closing All Settings returns the user to the previously visible product view and preserves active tab, language, theme, selected model, and current settings panel.
@@ -115,6 +115,14 @@ For Phase 1, `frontend/public/atlas-prototype.html` is the current frontend base
 - The view may show policy hints such as approved email domain and invite-only mode.
 - Registration actions are visual-only in prototype mode and must not create a real account, send email, or call external services.
 
+### Knowledge Space Information
+
+- The Settings area includes a Space Information view in prototype mode.
+- The Space Information view is scoped to the currently selected Knowledge Space, defaulting to `IBM i Modernization` for the MVP demo.
+- It shows space ID, name, description, status, created time, storage quota, used storage, and storage usage rate.
+- Space name and description may be edited as local mock state for prototype review.
+- Prototype edits must not call a backend metadata update endpoint, persist production data, expose private storage paths, or bypass future backend RBAC/audit requirements.
+
 ### Knowledge Space Member Management
 
 - The Settings area includes a Member Management view in prototype mode.
@@ -133,6 +141,15 @@ For Phase 1, `frontend/public/atlas-prototype.html` is the current frontend base
 - User Information shows mock profile fields such as display name, email, organization, role, and recent activity.
 - API Information shows API key status, scopes, last used time, rotate/revoke affordances, and safety copy.
 - Prototype mode must never display real API keys or credentials.
+
+### Message Management
+
+- The Settings area includes a Message Management view for workspace-level chat history indexing.
+- Message Management shows whether automatic message indexing is enabled.
+- When disabled or not fully configured, it shows an empty index statistics state that explains an Embedding model is required before messages can be vector-indexed.
+- When enabled in prototype mode, it may show mock-safe index configuration and statistics, including selected Embedding model, indexed message count, indexed conversation count, and last indexed time.
+- Prototype mode must not persist real chat history, call an embedding provider, write vectors, or connect to a real vector database.
+- Future implementation must keep message embedding and vector indexing behind model and vector adapter boundaries and must respect review/privacy policy before indexing conversation content.
 
 ### Data And Extension Engines
 
@@ -255,6 +272,8 @@ See `docs/05-design/contracts/knowledge-space-API_IMPLEMENTATION_GUIDE.md`.
 | REQ-KS-021 | Settings shows vector database, parsing, and storage engine configuration as adapter-backed mock options. |
 | REQ-KS-022 | Sidebar settings shortcuts open the Settings modal/sheet, All Settings does not replace the current product view, and closing returns to the previous view. |
 | REQ-KS-023 | Prototype remains readable across wide desktop, laptop, tablet, and mobile viewport widths without incoherent text/control overlap. |
+| REQ-KS-024 | Settings shows Message Management for mock chat history indexing, including disabled/unconfigured empty state, enable switch, Embedding model dependency, and adapter-boundary safety copy. |
+| REQ-KS-025 | Settings shows Space Information with current-space metadata, storage quota/usage values, and mock-only name/description editing. |
 
 ## Product Goal Batch 1 Acceptance
 

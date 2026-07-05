@@ -7,6 +7,8 @@ Phase 1 前端已实现，当前 IA 细化已被原型基线接受。
 当前实现状态：
 
 - `T-KS-001` 至 `T-KS-031` 已按当前 Phase 1 前端/原型范围完成。
+- `T-KS-035` 补充 mock-only 消息管理设置页，用于展示工作区聊天历史索引配置。
+- `T-KS-036` 补充 mock-only 空间信息设置页，用于展示当前空间元数据和名称/描述本地编辑。
 - 已接受的知识库详情页标签为 `文档`、`处理中心`、`Wiki`、`图谱`。
 - Global Chat / Trusted Ask 位于单个知识库详情页之外，可选择一个或多个知识库作为回答上下文。
 - `frontend/public/atlas-prototype.html` 是当前 Phase 1 前端保真基线；`prototypes/index.html` 与其保持字节一致。
@@ -71,6 +73,8 @@ Phase 1 前端已实现，当前 IA 细化已被原型基线接受。
 | REQ-KS-021 Data and extension engines | US-KS-015 | Data And Extension Engines | T-KS-024, T-KS-025 |
 | REQ-KS-022 Sidebar settings shell | US-KS-016 | Sidebar And Settings Shell | T-KS-026 |
 | REQ-KS-023 Responsive layout | US-KS-017 | Responsive Layout | T-KS-027 |
+| REQ-KS-024 消息管理 | US-KS-008, US-KS-014 | Message Management, Global Chat, Account Settings | T-KS-035 |
+| REQ-KS-025 空间信息 | US-KS-013, US-KS-016 | Knowledge Space Information, Sidebar And Settings Shell | T-KS-036 |
 
 ## 门禁状态
 
@@ -79,8 +83,8 @@ Phase 1 前端已实现，当前 IA 细化已被原型基线接受。
 - Spec：已更新到当前 Phase 1 IA 基线。
 - Architecture：历史草稿基线已存在；Phase 1 IA 细化未新增后端/API 工作。
 - Design：已更新到当前 Phase 1 IA 基线。
-- Tasks：已更新到 `T-KS-031`。
-- Implementation：`T-KS-001` 至 `T-KS-031` 的 Phase 1 前端/原型基线已完成。
+- Tasks：已更新到 `T-KS-036`。
+- Implementation：`T-KS-001` 至 `T-KS-036` 的 Phase 1 前端/原型基线已完成。
 - Verification：`T-KS-031` 已通过 `npm run build`、`npm run e2e`、镜像 diff 和 `git diff --check`；此前 Phase 1 shell 检查记录在 `docs/06-tasks/knowledge-space-tasks.md`。
 
 ## Product Goal Batch 1 状态

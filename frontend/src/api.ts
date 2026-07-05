@@ -29,6 +29,8 @@ export class ApiError extends Error {
   }
 }
 
+const DEFAULT_DEV_API_BASE_URL = 'http://127.0.0.1:8080'
+
 const atlasApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
 
 const graphReadHeaders = {
@@ -51,6 +53,19 @@ export async function listSpaces() {
 
 export async function getSpace(spaceId: string) {
   return atlasFetch<ApiSpace>(`/api/spaces/${spaceId}`)
+}
+
+export async function createSpace(payload: {
+  name: string
+  description: string
+  type: 'document' | 'faq'
+  indexStrategy: 'rag' | 'wiki'
+  owner: string
+}) {
+  return atlasFetch<ApiSpace>('/api/spaces', {
+    method: 'POST',
+    body: payload
+  })
 }
 
 export async function listBatches(spaceId: string) {
@@ -303,5 +318,8 @@ function apiUrl(path: string) {
 
 function normalizeApiBaseUrl(value?: string) {
   const normalized = value?.trim()
-  return normalized ? normalized.replace(/\/+$/, '') : ''
+  if (normalized) {
+    return normalized.replace(/\/+$/, '')
+  }
+  return import.meta.env.DEV ? DEFAULT_DEV_API_BASE_URL : ''
 }

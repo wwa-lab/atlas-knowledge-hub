@@ -37,7 +37,7 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 
 | 阶段 | 切片 slug | 范围概述 | 归属边界 | 状态 |
 |---|---|---|---|---|
-| 1（前端） | `knowledge-space` | Vue 3 外壳复刻已接受 IA：首页知识库列表、全局多知识库对话、空间外壳、文档、处理中心、Wiki、图谱、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅ Product Goal Batch 1 的 L2 Vue parity checkpoint（T-KS-001→034；最终产品验收待用户决定） |
+| 1（前端） | `knowledge-space` | Vue 3 外壳复刻已接受 IA：首页知识库列表、全局多知识库对话、空间外壳、文档、处理中心、Wiki、图谱、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅ Product Goal Batch 1 加消息/空间设置的 L2 Vue parity checkpoint（T-KS-001→036；最终产品验收待用户决定） |
 | 1（前端） | `folder-upload` | 文件夹/ZIP 上传 mock：文件清单、树、批次创建、mock 状态/报告 | 仅前端，无 API | ✅ Product Goal Batch 2 的 L2 Vue parity checkpoint（T-FU-001→014；T-FU-011 可选推迟；最终产品验收待用户决定） |
 | 2（API） | `metadata-api` | Spring Boot 元数据服务：批次/文件/空间实体、PostgreSQL + Flyway、去 mock 契约 | 后端 + DB | ✅ 已实现（T-MA-001→013；T-MA-014 已被 Product Goal Batch 5 在 spaces/batches/files/chunks 的 L3 Vue 切换中部分消费；最终验收待定） |
 | 3（适配器） | `converter-adapter` | `trinity-office` Office→PDF 置于 converter 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-CA-001→010；mock-engine 已验证；真实 runtime contract 延后） |

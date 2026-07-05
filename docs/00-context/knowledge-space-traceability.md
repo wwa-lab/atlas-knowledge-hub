@@ -7,6 +7,8 @@ Phase 1 FE implemented and current IA refinement accepted in the prototype basel
 Current implementation status:
 
 - `T-KS-001` through `T-KS-031` are complete for the current Phase 1 frontend/prototype scope.
+- `T-KS-035` adds the mock-only Message Management settings panel for workspace chat history indexing.
+- `T-KS-036` adds the mock-only Space Information settings panel for current-space metadata and local name/description editing.
 - The accepted detail tabs are `文档`, `处理中心`, `Wiki`, and `图谱`.
 - Global Chat / Trusted Ask is outside individual Knowledge Space detail and can select one or more Knowledge Spaces as answer context.
 - `frontend/public/atlas-prototype.html` is the active Phase 1 fidelity baseline; `prototypes/index.html` mirrors it byte-identically.
@@ -71,6 +73,8 @@ Current implementation status:
 | REQ-KS-021 Data and extension engines | US-KS-015 | Data And Extension Engines | T-KS-024, T-KS-025 |
 | REQ-KS-022 Sidebar settings shell | US-KS-016 | Sidebar And Settings Shell | T-KS-026 |
 | REQ-KS-023 Responsive layout | US-KS-017 | Responsive Layout | T-KS-027 |
+| REQ-KS-024 Message Management | US-KS-008, US-KS-014 | Message Management, Global Chat, Account Settings | T-KS-035 |
+| REQ-KS-025 Space Information | US-KS-013, US-KS-016 | Knowledge Space Information, Sidebar And Settings Shell | T-KS-036 |
 
 ## Gate Status
 
@@ -79,8 +83,8 @@ Current implementation status:
 - Spec: Updated to current Phase 1 IA baseline.
 - Architecture: Historical draft baseline present; no backend/API work added by Phase 1 IA refinement.
 - Design: Updated to current Phase 1 IA baseline.
-- Tasks: Updated through `T-KS-031`.
-- Implementation: Phase 1 frontend/prototype baseline complete for `T-KS-001` through `T-KS-031`.
+- Tasks: Updated through `T-KS-036`.
+- Implementation: Phase 1 frontend/prototype baseline complete for `T-KS-001` through `T-KS-036`.
 - Verification: `npm run build`, `npm run e2e`, mirror diff, and `git diff --check` passed for `T-KS-031`; prior Phase 1 shell checks are recorded in `docs/06-tasks/knowledge-space-tasks.md`.
 
 ## Product Goal Batch 1 Status

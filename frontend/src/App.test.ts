@@ -78,6 +78,7 @@ describe('Atlas P0 full-stack productization shell', () => {
       modelName: 'deepseek-reasoner'
     })
     expect(wrapper.find('[data-testid="vue-model-editor"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="vue-model-save-status"]').text()).toContain('配置已更新')
     expect(wrapper.html()).not.toContain('runtime-secret')
   })
 
@@ -92,7 +93,72 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(settingsButton).toBeTruthy()
     await settingsButton!.trigger('click')
     expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('常规设置')
-    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('Mock workspace policy')
+    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain(
+      '配置语言、外观等基础选项'
+    )
+    expect(wrapper.get('[data-testid="vue-general-language"]').element).toHaveProperty(
+      'value',
+      'zh-CN'
+    )
+    expect(wrapper.get('[data-testid="vue-general-theme"]').element).toHaveProperty(
+      'value',
+      'light'
+    )
+    await wrapper.get('[data-testid="vue-general-font-size-large"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-general-font-size-large"]').classes()).toContain('active')
+    await wrapper.get('[data-testid="vue-general-memory"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-general-memory"]').attributes('aria-checked')).toBe(
+      'false'
+    )
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '用户信息')!
+      .trigger('click')
+    const userInfoText = wrapper.get('[data-testid="vue-user-info-panel"]').text()
+    expect(userInfoText).toContain('用户信息')
+    expect(userInfoText).toContain('用户 ID')
+    expect(userInfoText).toContain('用户名')
+    expect(userInfoText).toContain('邮箱')
+    expect(userInfoText).toContain('注册时间')
+    expect(userInfoText).toContain('atlas-demo-user-001')
+    expect(userInfoText).toContain('leo@example.com')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '空间信息')!
+      .trigger('click')
+    const spaceInfoPanel = wrapper.get('[data-testid="vue-space-info-panel"]')
+    expect(spaceInfoPanel.text()).toContain('空间信息')
+    expect(wrapper.get('[data-testid="vue-space-info-id"]').text()).toContain('ibm-i-modernization')
+    expect(wrapper.get('[data-testid="vue-space-info-name"]').text()).toContain(
+      'IBM i Modernization'
+    )
+    expect(wrapper.get('[data-testid="vue-space-info-status"]').text()).toContain('REVIEW_REQUIRED')
+    expect(wrapper.get('[data-testid="vue-space-info-storageQuota"]').text()).toContain('10 GB')
+    expect(wrapper.get('[data-testid="vue-space-info-storageUsed"]').text()).toContain('81.83 MB')
+    await wrapper.get('[data-testid="vue-space-info-edit-name"]').trigger('click')
+    await wrapper
+      .get('[data-testid="vue-space-info-name-input"]')
+      .setValue('IBM i Modernization Workspace')
+    await wrapper.get('[data-testid="vue-space-info-save"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-space-info-save-status"]').text()).toContain(
+      '空间信息已更新'
+    )
+    expect(wrapper.get('[data-testid="vue-space-info-name"]').text()).toContain(
+      'IBM i Modernization Workspace'
+    )
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '成员管理')!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-member-manager"]').text()).toContain('待接受的邀请 0')
+    expect(wrapper.get('[data-testid="vue-member-manager"]').text()).toContain('Atlas Admin')
+    await wrapper.get('[data-testid="vue-member-search"]').setValue('admin@example.com')
+    expect(wrapper.get('[data-testid="vue-member-manager"]').text()).toContain('Atlas Admin')
+    await wrapper.get('[aria-label="Atlas Admin 角色"]').setValue('reviewer')
+    expect(wrapper.get('[data-testid="vue-member-status"]').text()).toContain('审核者')
 
     await wrapper
       .findAll('button')
@@ -106,8 +172,87 @@ describe('Atlas P0 full-stack productization shell', () => {
       .find(button => button.text() === 'API 信息')!
       .trigger('click')
     expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('API 信息')
-    expect(wrapper.get('.atlas-settings-placeholder').text()).toContain('不显示 token')
-    expect(wrapper.html()).not.toContain('AKIA')
+    expect(wrapper.get('[data-testid="vue-api-info-panel"]').text()).toContain(
+      '查看和管理 Atlas API 调用信息'
+    )
+    expect(
+      (wrapper.get('[data-testid="vue-api-key-value"]').element as HTMLInputElement).value
+    ).toMatch(/^•{32}$/)
+    expect(wrapper.html()).not.toContain('atlas-mock-api-key-v001')
+    await wrapper.get('[data-testid="vue-api-key-reveal"]').trigger('click')
+    await flushAsync()
+    expect(
+      (wrapper.get('[data-testid="vue-api-key-value"]').element as HTMLInputElement).value
+    ).toMatch(/^•{32}$/)
+    expect(wrapper.get('[data-testid="vue-api-info-status"]').text()).toContain('API Key 保持隐藏')
+    await wrapper.get('[data-testid="vue-api-key-copy"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-api-info-status"]').text()).toContain('API Key 已复制')
+    await wrapper.get('[data-testid="vue-api-key-refresh"]').trigger('click')
+    await flushAsync()
+    expect(
+      (wrapper.get('[data-testid="vue-api-key-value"]').element as HTMLInputElement).value
+    ).toMatch(/^•{32}$/)
+    expect(wrapper.get('[data-testid="vue-api-info-status"]').text()).toContain('API Key 已刷新')
+    await wrapper.get('[data-testid="vue-api-base-copy"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-api-info-status"]').text()).toContain('API 地址已复制')
+    await wrapper.get('[data-testid="vue-api-doc-link"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-api-info-status"]').text()).toContain(
+      'API 文档入口已准备'
+    )
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '消息管理')!
+      .trigger('click')
+    const messagePanel = wrapper.get('[data-testid="vue-message-management"]')
+    expect(messagePanel.text()).toContain('消息管理')
+    expect(messagePanel.text()).toContain('启用消息索引')
+    expect(messagePanel.text()).toContain('索引统计')
+    expect(messagePanel.text()).toContain('消息索引未配置')
+    expect(wrapper.get('[data-testid="vue-message-index-toggle"]').attributes('aria-checked')).toBe(
+      'false'
+    )
+
+    await wrapper.get('[data-testid="vue-message-index-toggle"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-message-index-toggle"]').attributes('aria-checked')).toBe(
+      'true'
+    )
+    expect(wrapper.get('[data-testid="vue-message-management"]').text()).toContain(
+      'text-embedding-v4'
+    )
+    expect(wrapper.get('[data-testid="vue-message-index-stats"]').text()).toContain('已索引消息')
+    expect(wrapper.get('[data-testid="vue-message-management"]').text()).toContain(
+      '不执行真实 embedding'
+    )
+  })
+
+  it('opens the create Knowledge Space flow and adds the created space to the library', async () => {
+    const api = mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-create-space-open"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-create-space-panel"]').text()).toContain('新建知识库')
+
+    await wrapper.get('[data-testid="vue-create-space-name"]').setValue('Claims Ops Hub')
+    await wrapper
+      .get('[data-testid="vue-create-space-description"]')
+      .setValue('Claims operations review space.')
+    await wrapper.get('[data-testid="vue-create-space-submit"]').trigger('click')
+    await flushAsync()
+
+    expect(api.lastCreatedSpace).toMatchObject({
+      name: 'Claims Ops Hub',
+      description: 'Claims operations review space.',
+      type: 'document',
+      indexStrategy: 'rag',
+      owner: '我创建'
+    })
+    expect(wrapper.find('[data-testid="vue-create-space-panel"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="vue-space-create-status"]').text()).toContain('知识库已创建')
+    expect(wrapper.get('[data-testid="vue-space-card-claims-ops-hub"]').text()).toContain(
+      'Claims Ops Hub'
+    )
   })
 
   it('drives real Vue upload inventory into batch report and processing queues', async () => {
@@ -373,47 +518,38 @@ function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
     wikiPublished: false,
     graphProjectionCreated: false,
     vectorRunCreated: false,
-    lastModelConfigurationSave: null as unknown
+    lastModelConfigurationSave: null as unknown,
+    lastCreatedSpace: null as unknown,
+    createdSpaces: [] as ReturnType<typeof space>[]
   }
 
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input)
     const method = init?.method ?? 'GET'
 
+    if (url.endsWith('/api/spaces') && method === 'POST') {
+      const body = JSON.parse(String(init?.body ?? '{}'))
+      state.lastCreatedSpace = body
+      const created = space({
+        id: body.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, ''),
+        name: body.name,
+        description: body.description,
+        owner: body.owner,
+        status: 'REVIEW_REQUIRED'
+      })
+      state.createdSpaces = [created, ...state.createdSpaces]
+      return jsonOk(created, 201)
+    }
+
     if (url.endsWith('/api/spaces')) {
-      return jsonOk([
-        {
-          id: 'ibm-i-modernization',
-          name: 'IBM i Modernization',
-          description: 'Mock discovery package for modernization planning.',
-          type: 'document',
-          indexStrategy: 'rag',
-          owner: 'Platform Team',
-          status: 'REVIEW_REQUIRED',
-          documentCount: 6,
-          wikiPageCount: state.wikiPublished ? 1 : 0,
-          reviewCount: 1,
-          createdAt: '2026-06-01T09:00:00Z',
-          updatedAt: '2026-06-20T14:30:00Z'
-        }
-      ])
+      return jsonOk([space(), ...state.createdSpaces])
     }
 
     if (url.endsWith('/api/spaces/ibm-i-modernization')) {
-      return jsonOk({
-        id: 'ibm-i-modernization',
-        name: 'IBM i Modernization',
-        description: 'Mock discovery package for modernization planning.',
-        type: 'document',
-        indexStrategy: 'rag',
-        owner: 'Platform Team',
-        status: 'REVIEW_REQUIRED',
-        documentCount: 6,
-        wikiPageCount: state.wikiPublished ? 1 : 0,
-        reviewCount: 1,
-        createdAt: '2026-06-01T09:00:00Z',
-        updatedAt: '2026-06-20T14:30:00Z'
-      })
+      return jsonOk(space())
     }
 
     if (url.endsWith('/api/spaces/ibm-i-modernization/batches') && method === 'POST') {
@@ -564,6 +700,34 @@ function jsonOk(data: unknown, status = 200) {
     status,
     json: async () => ({ success: true, data, error: null, meta: null })
   } as Response)
+}
+
+function space(
+  overrides: Partial<{
+    id: string
+    name: string
+    description: string
+    owner: string
+    status: string
+    documentCount: number
+    wikiPageCount: number
+    reviewCount: number
+  }> = {}
+) {
+  return {
+    id: overrides.id ?? 'ibm-i-modernization',
+    name: overrides.name ?? 'IBM i Modernization',
+    description: overrides.description ?? 'Mock discovery package for modernization planning.',
+    type: 'document',
+    indexStrategy: 'rag',
+    owner: overrides.owner ?? 'Platform Team',
+    status: overrides.status ?? 'REVIEW_REQUIRED',
+    documentCount: overrides.documentCount ?? 6,
+    wikiPageCount: overrides.wikiPageCount ?? 0,
+    reviewCount: overrides.reviewCount ?? 1,
+    createdAt: '2026-06-01T09:00:00Z',
+    updatedAt: '2026-06-20T14:30:00Z'
+  }
 }
 
 function batch() {

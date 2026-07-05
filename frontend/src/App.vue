@@ -5,6 +5,7 @@ import {
   clearDeepSeekConfiguration,
   createAskRun,
   createSampleBatch,
+  createSpace as createSpaceApi,
   getAskRun,
   getDeepSeekConfiguration,
   getGraph,
@@ -47,7 +48,26 @@ type ThinkingFormat = 'none' | 'provider_default' | 'custom'
 type ProductView = 'home' | 'chat' | 'space'
 type SpaceTab = 'docs' | 'review' | 'wiki' | 'graph'
 type SettingsPanel =
-  'general' | 'members' | 'registration' | 'api' | 'models' | 'vector' | 'parser' | 'storage'
+  | 'general'
+  | 'profile'
+  | 'spaceInfo'
+  | 'members'
+  | 'messages'
+  | 'registration'
+  | 'api'
+  | 'models'
+  | 'vector'
+  | 'parser'
+  | 'storage'
+type PlaceholderSettingsPanel = Exclude<
+  SettingsPanel,
+  'general' | 'profile' | 'spaceInfo' | 'members' | 'messages' | 'api' | 'models'
+>
+type GeneralLanguage = 'zh-CN' | 'en-US'
+type GeneralThemeMode = 'light' | 'dark' | 'system'
+type GeneralInterfaceFont = 'system' | 'pingfang' | 'microsoft'
+type GeneralCodeFont = 'system-mono' | 'sf-mono' | 'jetbrains'
+type GeneralFontSize = 'small' | 'normal' | 'large'
 type MockUploadKind = 'folder' | 'zip'
 type ProductAskMode = 'answered' | 'refusal' | 'review-warning'
 type MockFileStatus =
@@ -126,6 +146,74 @@ interface SettingsSurface {
   rows: Array<{ label: string; value: string; note: string }>
 }
 
+interface GeneralSettingsState {
+  language: GeneralLanguage
+  themeMode: GeneralThemeMode
+  interfaceFont: GeneralInterfaceFont
+  codeFont: GeneralCodeFont
+  fontSize: GeneralFontSize
+  memoryEnabled: boolean
+}
+
+interface GeneralOption<T extends string> {
+  value: T
+  label: string
+}
+
+type MemberRole = 'owner' | 'admin' | 'reviewer' | 'viewer'
+
+interface SpaceMember {
+  id: string
+  name: string
+  email: string
+  role: MemberRole
+  joinedAt: string
+  removable: boolean
+}
+
+interface PendingInvitation {
+  id: string
+  email: string
+  role: MemberRole
+  invitedAt: string
+  inviter: string
+}
+
+interface ApiInfoState {
+  keyVersion: number
+  baseUrl: string
+  docsPath: string
+  status: string
+}
+
+interface MessageIndexStat {
+  label: string
+  value: string
+  note: string
+}
+
+interface SpaceInfoDraft {
+  name: string
+  description: string
+}
+
+type SpaceInfoEditableField = keyof SpaceInfoDraft | null
+
+interface SpaceInfoRow {
+  key: string
+  label: string
+  note: string
+  value: string
+  field?: keyof SpaceInfoDraft
+}
+
+interface SpaceOperationalMetadata {
+  createdAt: string
+  storageQuota: string
+  storageUsed: string
+  storageUsageRate: string
+}
+
 interface ProductSpaceCard {
   id: string
   name: string
@@ -165,6 +253,22 @@ const productView = ref<ProductView>('home')
 const activeSpaceTab = ref<SpaceTab>('wiki')
 const settingsOpen = ref(false)
 const settingsPanel = ref<SettingsPanel>('models')
+const generalSettings = ref<GeneralSettingsState>({
+  language: 'zh-CN',
+  themeMode: 'light',
+  interfaceFont: 'system',
+  codeFont: 'system-mono',
+  fontSize: 'normal',
+  memoryEnabled: true
+})
+const apiInfo = ref<ApiInfoState>({
+  keyVersion: 1,
+  baseUrl: '/api',
+  docsPath: '/docs/api',
+  status: ''
+})
+const messageIndexEnabled = ref(false)
+const messageEmbeddingModel = ref('text-embedding-v4')
 const spaces = ref<ApiSpace[]>([])
 const selectedSpace = ref<ApiSpace | null>(null)
 const selectedSpaceId = ref(defaultSpaceId)
@@ -182,12 +286,16 @@ const downstreamReady = ref(false)
 
 const isLoadingSpaces = ref(true)
 const isLoadingSpace = ref(false)
+const isCreateSpaceOpen = ref(false)
+const isCreatingSpace = ref(false)
 const isCreatingBatch = ref(false)
 const isReviewing = ref(false)
 const isPublishing = ref(false)
 const isRefreshingEvidence = ref(false)
 const isAsking = ref(false)
 const spacesError = ref('')
+const createSpaceError = ref('')
+const createSpaceStatus = ref('')
 const workflowError = ref('')
 const askError = ref('')
 
@@ -258,6 +366,14 @@ const models = ref<VueModelConfig[]>([
 const modelCapabilities = ref<ApiModelCapability[]>([])
 const deepSeekConfiguration = ref<ApiModelConfiguration | null>(null)
 const modelApiError = ref('')
+const modelSaveStatus = ref('')
+const createSpaceDraft = ref({
+  name: '',
+  description: '',
+  type: 'document' as 'document' | 'faq',
+  indexStrategy: 'rag' as 'rag' | 'wiki',
+  owner: '我创建'
+})
 const activeModelCategory = ref<ModelCategory>('all')
 const isModelAddMenuOpen = ref(false)
 const selectedModelId = ref('deepseek-flash')
@@ -310,6 +426,31 @@ const selectedProductGraphNodeId = ref('node-wiki')
 const productGraphSearch = ref('')
 const productAskQuestion = ref('哪些证据支持 IBM i 现代化知识空间可以发布到 Wiki？')
 const productAskMode = ref<ProductAskMode>('answered')
+const memberSearch = ref('')
+const memberActionStatus = ref('')
+const spaceInfoStatus = ref('')
+const activeSpaceInfoEditField = ref<SpaceInfoEditableField>(null)
+const spaceInfoDraft = ref<SpaceInfoDraft>({ name: '', description: '' })
+const spaceInfoOverrides = ref<Record<string, SpaceInfoDraft>>({})
+const pendingInvitations = ref<PendingInvitation[]>([])
+const spaceMembers = ref<SpaceMember[]>([
+  {
+    id: 'member-leo',
+    name: 'leo',
+    email: 'leo@example.com',
+    role: 'owner',
+    joinedAt: '2026/06/23 13:19',
+    removable: false
+  },
+  {
+    id: 'member-pkos-admin',
+    name: 'Atlas Admin',
+    email: 'admin@example.com',
+    role: 'owner',
+    joinedAt: '2026/06/26 15:44',
+    removable: true
+  }
+])
 
 const mockFolderInventory: MockInventoryFile[] = [
   {
@@ -552,35 +693,110 @@ const productGraphEdges: ProductGraphEdge[] = [
   }
 ]
 
-const settingsSurfaces: Record<Exclude<SettingsPanel, 'models'>, SettingsSurface> = {
-  general: {
-    title: '常规设置',
-    status: 'Mock workspace policy',
-    summary: '管理产品语言、默认知识空间、审核门禁提示和企业知识库基础策略。',
-    rows: [
-      {
-        label: '默认语言',
-        value: '中文 / English ready',
-        note: '仅影响当前 Vue shell display copy。'
-      },
-      { label: '默认空间', value: 'IBM i Modernization', note: 'Mock route，不读取真实租户配置。' },
-      { label: '发布策略', value: 'SME approved only', note: '未审核内容保持 review-required。' }
-    ]
+const languageOptions: Array<GeneralOption<GeneralLanguage>> = [
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'en-US', label: 'English' }
+]
+const themeOptions: Array<GeneralOption<GeneralThemeMode>> = [
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+  { value: 'system', label: '跟随系统' }
+]
+const interfaceFontOptions: Array<GeneralOption<GeneralInterfaceFont>> = [
+  { value: 'system', label: '系统默认' },
+  { value: 'pingfang', label: '苹方 / PingFang SC' },
+  { value: 'microsoft', label: '微软雅黑 / Microsoft YaHei' }
+]
+const codeFontOptions: Array<GeneralOption<GeneralCodeFont>> = [
+  { value: 'system-mono', label: '系统默认' },
+  { value: 'sf-mono', label: 'SF Mono' },
+  { value: 'jetbrains', label: 'JetBrains Mono' }
+]
+const fontSizeOptions: Array<GeneralOption<GeneralFontSize>> = [
+  { value: 'small', label: '小' },
+  { value: 'normal', label: '正常' },
+  { value: 'large', label: '大' }
+]
+const memberRoleOptions: Array<GeneralOption<MemberRole>> = [
+  { value: 'owner', label: '所有者' },
+  { value: 'admin', label: '管理员' },
+  { value: 'reviewer', label: '审核者' },
+  { value: 'viewer', label: '浏览者' }
+]
+const messageEmbeddingOptions: Array<GeneralOption<string>> = [
+  { value: 'text-embedding-v4', label: 'text-embedding-v4' },
+  { value: 'mock-embedding-1024', label: 'mock-embedding-1024' }
+]
+const accountProfileRows: Array<{
+  key: string
+  testId: string
+  label: string
+  value: string
+  note: string
+}> = [
+  {
+    key: 'id',
+    testId: 'vue-user-info-id',
+    label: '用户 ID',
+    value: 'atlas-demo-user-001',
+    note: '稳定 mock ID，用于前端设置页验收。'
   },
-  members: {
-    title: '成员管理',
-    status: 'RBAC deferred',
-    summary: '展示企业成员、角色意图和审核职责，但不实现生产身份认证或权限决策。',
-    rows: [
-      { label: 'Workspace Owner', value: 'Atlas Delivery', note: '可配置状态示例，非真实账号。' },
-      { label: 'SME Reviewer', value: '3 mock users', note: '用于解释 review workflow。' },
-      {
-        label: 'Consumer',
-        value: 'Read trusted Wiki / Graph / Ask',
-        note: '真实 RBAC 留给后续安全切片。'
-      }
-    ]
+  {
+    key: 'name',
+    testId: 'vue-user-info-name',
+    label: '用户名',
+    value: 'leo',
+    note: '用于设置页、审核记录和 mock 活动流展示。'
   },
+  {
+    key: 'email',
+    testId: 'vue-user-info-email',
+    label: '邮箱',
+    value: 'leo@example.com',
+    note: '示例账号信息，不代表真实身份系统。'
+  },
+  {
+    key: 'registered',
+    testId: 'vue-user-info-registered',
+    label: '注册时间',
+    value: '2026/06/23 13:19',
+    note: 'Mock registration timestamp for UI parity.'
+  },
+  {
+    key: 'role',
+    testId: 'vue-user-info-role',
+    label: '当前角色',
+    value: 'Workspace Owner',
+    note: '生产权限以后端 RBAC 为准。'
+  }
+]
+const spaceOperationalMetadata: Record<string, SpaceOperationalMetadata> = {
+  'ibm-i-modernization': {
+    createdAt: '2026-06-23T13:19:00Z',
+    storageQuota: '10 GB',
+    storageUsed: '81.83 MB',
+    storageUsageRate: '0.8%'
+  },
+  'legacy-spec-factory': {
+    createdAt: '2026-06-18T10:30:00Z',
+    storageQuota: '8 GB',
+    storageUsed: '296 MB',
+    storageUsageRate: '3.7%'
+  },
+  'ai-engineering-playbook': {
+    createdAt: '2026-06-12T16:10:00Z',
+    storageQuota: '6 GB',
+    storageUsed: '144 MB',
+    storageUsageRate: '2.4%'
+  }
+}
+const maskedApiKey = '••••••••••••••••••••••••••••••••'
+const apiKeyDisplayValue = computed(() => {
+  void apiInfo.value.keyVersion
+  return maskedApiKey
+})
+
+const settingsSurfaces: Record<PlaceholderSettingsPanel, SettingsSurface> = {
   registration: {
     title: '注册策略',
     status: 'Invite only',
@@ -589,16 +805,6 @@ const settingsSurfaces: Record<Exclude<SettingsPanel, 'models'>, SettingsSurface
       { label: '加入方式', value: '管理员邀请', note: '不开放自助注册。' },
       { label: '域名策略', value: 'example.internal masked', note: '不提交真实公司域名。' },
       { label: '审批', value: 'Workspace owner approval', note: '真实审批流未实现。' }
-    ]
-  },
-  api: {
-    title: 'API 信息',
-    status: 'Internal contract preview',
-    summary: '展示 API envelope、mock base path 和安全错误策略，不显示 token 或内部 endpoint。',
-    rows: [
-      { label: 'Envelope', value: 'ApiEnvelope<T>', note: 'success / data / error / meta。' },
-      { label: 'Base path', value: '/api', note: '仅展示相对路径，不显示私有 host。' },
-      { label: 'Auth', value: 'Deferred', note: '不生成或显示 token。' }
     ]
   },
   vector: {
@@ -725,6 +931,36 @@ const visibleModels = computed(() =>
 const modelApiStatus = computed(() =>
   modelCapabilities.value.length > 0 ? 'API-backed masked capabilities' : 'Sample model fallback'
 )
+const messageIndexConfigured = computed(
+  () => messageIndexEnabled.value && messageEmbeddingModel.value.length > 0
+)
+const selectedMessageEmbeddingModel = computed(
+  () =>
+    messageEmbeddingOptions.find(option => option.value === messageEmbeddingModel.value)?.label ??
+    '未选择'
+)
+const messageIndexStats = computed<MessageIndexStat[]>(() => [
+  {
+    label: 'Embedding 模型',
+    value: selectedMessageEmbeddingModel.value,
+    note: '用于消息语义搜索的 mock-safe 模型配置。'
+  },
+  {
+    label: '已索引消息',
+    value: '248',
+    note: '仅为演示统计，不读取真实聊天历史。'
+  },
+  {
+    label: '已索引对话',
+    value: '18',
+    note: '只表示本地 Vue 状态，不写入向量库。'
+  },
+  {
+    label: '最后索引',
+    value: '2026/07/05 10:30',
+    note: 'Mock timestamp for UI acceptance.'
+  }
+])
 const selectedProductSpace = computed(
   () =>
     productSpaceCards.value.find(space => space.id === selectedProductSpaceId.value) ??
@@ -737,8 +973,8 @@ const apiBackedProductSpace = computed(() => selectedProductApiSpace.value ?? se
 const productSpaceCards = computed<ProductSpaceCard[]>(() => {
   const apiCards = spaces.value.map(space => ({
     id: space.id,
-    name: space.name,
-    description: space.description,
+    name: spaceInfoOverrides.value[space.id]?.name ?? space.name,
+    description: spaceInfoOverrides.value[space.id]?.description ?? space.description,
     documents: space.documentCount,
     reviews: space.reviewCount,
     owner: space.owner,
@@ -747,7 +983,16 @@ const productSpaceCards = computed<ProductSpaceCard[]>(() => {
     source: 'api' as const
   }))
   const apiIds = new Set(apiCards.map(space => space.id))
-  return [...apiCards, ...productSpaceFallbacks.filter(space => !apiIds.has(space.id))]
+  return [
+    ...apiCards,
+    ...productSpaceFallbacks
+      .filter(space => !apiIds.has(space.id))
+      .map(space => ({
+        ...space,
+        name: spaceInfoOverrides.value[space.id]?.name ?? space.name,
+        description: spaceInfoOverrides.value[space.id]?.description ?? space.description
+      }))
+  ]
 })
 const apiBatchMetrics = computed(() => {
   const totals = batches.value.reduce(
@@ -934,9 +1179,97 @@ const productAskAnswer = computed(() => {
     warning: 'Generated answer remains REVIEW_REQUIRED until SME verification.'
   }
 })
+function isPlaceholderSettingsPanel(panel: SettingsPanel): panel is PlaceholderSettingsPanel {
+  return (
+    panel !== 'general' &&
+    panel !== 'profile' &&
+    panel !== 'spaceInfo' &&
+    panel !== 'members' &&
+    panel !== 'messages' &&
+    panel !== 'api' &&
+    panel !== 'models'
+  )
+}
+
 const currentSettingsSurface = computed(() =>
-  settingsPanel.value === 'models' ? null : settingsSurfaces[settingsPanel.value]
+  isPlaceholderSettingsPanel(settingsPanel.value) ? settingsSurfaces[settingsPanel.value] : null
 )
+const selectedSpaceInfoMetadata = computed<SpaceOperationalMetadata>(
+  () =>
+    spaceOperationalMetadata[selectedProductSpace.value.id] ?? {
+      createdAt: '2026-06-23T13:19:00Z',
+      storageQuota: '5 GB',
+      storageUsed: '0 MB',
+      storageUsageRate: '0%'
+    }
+)
+const selectedSpaceInfoRows = computed<SpaceInfoRow[]>(() => [
+  {
+    key: 'id',
+    label: '空间 ID',
+    note: '当前知识空间的唯一标识',
+    value: selectedProductSpace.value.id
+  },
+  {
+    key: 'name',
+    label: '空间名称',
+    note: '当前知识空间在 Atlas 中的显示名称',
+    value: selectedProductSpace.value.name,
+    field: 'name'
+  },
+  {
+    key: 'description',
+    label: '空间描述',
+    note: '帮助成员理解此空间的内容边界',
+    value: selectedProductSpace.value.description,
+    field: 'description'
+  },
+  {
+    key: 'status',
+    label: '空间状态',
+    note: '空间当前的运行与质量门禁状态',
+    value: spaceInfoStatus.value || selectedProductSpace.value.status
+  },
+  {
+    key: 'createdAt',
+    label: '空间创建时间',
+    note: '空间创建的 mock 时间戳',
+    value: formatSpaceTimestamp(
+      selectedProductApiSpace.value?.createdAt ?? selectedSpaceInfoMetadata.value.createdAt
+    )
+  },
+  {
+    key: 'storageQuota',
+    label: '存储配额',
+    note: '空间的总存储空间配额',
+    value: selectedSpaceInfoMetadata.value.storageQuota
+  },
+  {
+    key: 'storageUsed',
+    label: '已使用存储',
+    note: '已使用的 mock 存储空间',
+    value: selectedSpaceInfoMetadata.value.storageUsed
+  },
+  {
+    key: 'storageUsageRate',
+    label: '存储使用率',
+    note: '当前 mock 存储占用比例',
+    value: selectedSpaceInfoMetadata.value.storageUsageRate
+  }
+])
+const pendingInvitationCount = computed(() => pendingInvitations.value.length)
+const filteredSpaceMembers = computed(() => {
+  const query = memberSearch.value.trim().toLocaleLowerCase()
+  if (!query) {
+    return spaceMembers.value
+  }
+  return spaceMembers.value.filter(
+    member =>
+      member.name.toLocaleLowerCase().includes(query) ||
+      member.email.toLocaleLowerCase().includes(query) ||
+      memberRoleLabel(member.role).toLocaleLowerCase().includes(query)
+  )
+})
 const visibleProductBatchFiles = computed(() =>
   activeProductBatchFiles.value.length > 0 ? activeProductBatchFiles.value : mockFolderInventory
 )
@@ -1056,6 +1389,52 @@ async function loadSpaces() {
     await loadSpaceContext(defaultSpaceId)
   } finally {
     isLoadingSpaces.value = false
+  }
+}
+
+function openCreateSpacePanel() {
+  createSpaceDraft.value = {
+    name: '',
+    description: '',
+    type: 'document',
+    indexStrategy: 'rag',
+    owner: '我创建'
+  }
+  createSpaceError.value = ''
+  createSpaceStatus.value = ''
+  isCreateSpaceOpen.value = true
+}
+
+function closeCreateSpacePanel() {
+  isCreateSpaceOpen.value = false
+  createSpaceError.value = ''
+}
+
+async function createProductSpace() {
+  const draft = {
+    ...createSpaceDraft.value,
+    name: createSpaceDraft.value.name.trim(),
+    description: createSpaceDraft.value.description.trim(),
+    owner: createSpaceDraft.value.owner.trim() || '我创建'
+  }
+  if (draft.name.length === 0) {
+    createSpaceError.value = '请输入知识库名称。'
+    return
+  }
+  isCreatingSpace.value = true
+  createSpaceError.value = ''
+  createSpaceStatus.value = ''
+  try {
+    const created = await createSpaceApi(draft)
+    spaces.value = [created, ...spaces.value.filter(space => space.id !== created.id)]
+    selectedSpaceId.value = created.id
+    selectedProductSpaceId.value = created.id
+    createSpaceStatus.value = '知识库已创建'
+    isCreateSpaceOpen.value = false
+  } catch (error) {
+    createSpaceError.value = safeError(error, 'Knowledge Space creation failed safely.')
+  } finally {
+    isCreatingSpace.value = false
   }
 }
 
@@ -1494,6 +1873,132 @@ function openSettings(panel: SettingsPanel = 'general') {
 function closeSettings() {
   settingsOpen.value = false
   modelDraft.value = null
+  activeSpaceInfoEditField.value = null
+}
+
+function beginSpaceInfoEdit(field: keyof SpaceInfoDraft) {
+  activeSpaceInfoEditField.value = field
+  spaceInfoStatus.value = ''
+  spaceInfoDraft.value = {
+    name: selectedProductSpace.value.name,
+    description: selectedProductSpace.value.description
+  }
+}
+
+function cancelSpaceInfoEdit() {
+  activeSpaceInfoEditField.value = null
+  spaceInfoDraft.value = { name: '', description: '' }
+}
+
+function saveSpaceInfoEdit() {
+  const name = spaceInfoDraft.value.name.trim()
+  const description = spaceInfoDraft.value.description.trim()
+  if (name.length === 0) {
+    spaceInfoStatus.value = '空间名称不能为空。'
+    return
+  }
+  const spaceId = selectedProductSpace.value.id
+  const nextDraft = { name, description }
+  spaceInfoOverrides.value = {
+    ...spaceInfoOverrides.value,
+    [spaceId]: nextDraft
+  }
+  spaces.value = spaces.value.map(space =>
+    space.id === spaceId ? { ...space, name, description } : space
+  )
+  if (selectedSpace.value?.id === spaceId) {
+    selectedSpace.value = { ...selectedSpace.value, name, description }
+  }
+  activeSpaceInfoEditField.value = null
+  spaceInfoStatus.value = '空间信息已更新'
+}
+
+function formatSpaceTimestamp(value: string) {
+  const [datePart, timePart = ''] = value.replace('Z', '').split('T')
+  const date = datePart.replaceAll('-', '/')
+  const time = timePart.slice(0, 5)
+  return time ? `${date} ${time}` : date
+}
+
+function memberRoleLabel(role: MemberRole) {
+  return memberRoleOptions.find(option => option.value === role)?.label ?? role
+}
+
+function memberRoleClass(role: MemberRole) {
+  return `role-${role}`
+}
+
+function readSelectValue(event: unknown) {
+  const target =
+    event && typeof event === 'object' && 'target' in event
+      ? (event as { target?: unknown }).target
+      : null
+  if (!target || typeof target !== 'object' || !('value' in target)) {
+    return ''
+  }
+  const value = (target as { value?: unknown }).value
+  return typeof value === 'string' ? value : ''
+}
+
+function handleMemberRoleChange(memberId: string, event: unknown) {
+  const value = typeof event === 'string' ? event : readSelectValue(event)
+  const role = memberRoleOptions.find(option => option.value === value)?.value ?? 'viewer'
+  const target = spaceMembers.value.find(member => member.id === memberId)
+  spaceMembers.value = spaceMembers.value.map(member =>
+    member.id === memberId ? { ...member, role } : member
+  )
+  memberActionStatus.value = `${target?.name ?? '成员'} 的角色已更新为 ${memberRoleLabel(role)}（mock only）。`
+}
+
+function inviteMockMember() {
+  memberActionStatus.value = '邀请成员动作已记录为 mock，不发送邮件，也不创建真实账号。'
+}
+
+function copyInviteMockLink() {
+  memberActionStatus.value = '邀请链接已复制为 mock 状态，不包含真实 workspace token。'
+}
+
+function removeSpaceMember(memberId: string) {
+  const target = spaceMembers.value.find(member => member.id === memberId)
+  if (!target || !target.removable) {
+    memberActionStatus.value = '所有者账号不能在当前 mock 面板中移除。'
+    return
+  }
+  spaceMembers.value = spaceMembers.value.filter(member => member.id !== memberId)
+  memberActionStatus.value = `${target.name} 已从当前 mock 空间成员列表移除。`
+}
+
+function toggleApiKeyVisibility() {
+  apiInfo.value = {
+    ...apiInfo.value,
+    status: 'API Key 保持隐藏（mock）'
+  }
+}
+
+function copyApiInfoValue(successMessage: string) {
+  apiInfo.value = {
+    ...apiInfo.value,
+    status: successMessage
+  }
+}
+
+function refreshApiKey() {
+  apiInfo.value = {
+    ...apiInfo.value,
+    keyVersion: apiInfo.value.keyVersion + 1,
+    status: 'API Key 已刷新（mock）'
+  }
+}
+
+function openApiDocumentation() {
+  apiInfo.value = {
+    ...apiInfo.value,
+    status: 'API 文档入口已准备（mock）'
+  }
+}
+
+function toggleMessageIndexing() {
+  messageIndexEnabled.value = !messageIndexEnabled.value
 }
 
 function toggleChatSpace(name: string) {
@@ -1550,6 +2055,7 @@ function openModelEditor(model: VueModelConfig) {
   selectedModelId.value = model.id
   isModelAddMenuOpen.value = false
   modelTestStatus.value = ''
+  modelSaveStatus.value = ''
   modelDraft.value = { ...model, apiKeyEditing: false }
 }
 
@@ -1634,6 +2140,8 @@ function toggleModelMultimodal() {
 async function saveModelEditor() {
   const draft = modelDraft.value
   if (!draft || draft.name.trim().length === 0) return
+  modelApiError.value = ''
+  modelSaveStatus.value = ''
   const { apiKeyEditing, ...persisted } = {
     ...draft,
     name: draft.name.trim(),
@@ -1665,6 +2173,7 @@ async function saveModelEditor() {
   models.value = models.value.map(model => (model.id === persisted.id ? persisted : model))
   selectedModelId.value = persisted.id
   modelTestStatus.value = ''
+  modelSaveStatus.value = '配置已更新'
   apiKeyInput.value = ''
   modelDraft.value = null
 }
@@ -1698,6 +2207,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
       <span>选择知识库内容</span>
       <span>用户问候或打招呼</span>
       <p>工作区设置</p>
+      <button type="button" @click="openSettings('spaceInfo')">◎ 空间信息</button>
       <button type="button" @click="openSettings('members')">♙ 成员管理</button>
       <button type="button" @click="openSettings('models')">⬡ 模型管理</button>
       <button type="button" @click="openSettings('vector')">◎ 向量数据库引擎</button>
@@ -1713,8 +2223,24 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <h1>知识库</h1>
             <p>管理企业知识空间、文档包、Wiki、图谱和可信问答上下文。</p>
           </div>
-          <button class="atlas-icon-action" type="button" aria-label="新建知识库">□＋</button>
+          <button
+            class="atlas-icon-action"
+            data-testid="vue-create-space-open"
+            type="button"
+            aria-label="新建知识库"
+            @click="openCreateSpacePanel"
+          >
+            □＋
+          </button>
         </header>
+        <p
+          v-if="createSpaceStatus"
+          class="atlas-inline-success"
+          data-testid="vue-space-create-status"
+          role="status"
+        >
+          {{ createSpaceStatus }}
+        </p>
         <div class="atlas-library-toolbar">
           <button type="button">♙ 我创建的</button>
           <span>{{ productSpaceCards.length }}</span>
@@ -1744,6 +2270,69 @@ function isDeepSeekDraft(model: VueModelConfig) {
             </div>
           </button>
         </section>
+        <form
+          v-if="isCreateSpaceOpen"
+          class="atlas-create-space-panel"
+          data-testid="vue-create-space-panel"
+          aria-label="新建知识库"
+          @submit.prevent="createProductSpace"
+        >
+          <header>
+            <div>
+              <h2>新建知识库</h2>
+              <p>创建一个用于上传文档、生成 Wiki、图谱和可信问答的知识空间。</p>
+            </div>
+            <button type="button" aria-label="关闭新建知识库" @click="closeCreateSpacePanel">
+              ×
+            </button>
+          </header>
+          <label>
+            名称
+            <input
+              v-model="createSpaceDraft.name"
+              data-testid="vue-create-space-name"
+              autocomplete="off"
+              placeholder="例如 Claims Ops Hub"
+            />
+          </label>
+          <label>
+            描述
+            <textarea
+              v-model="createSpaceDraft.description"
+              data-testid="vue-create-space-description"
+              rows="3"
+              placeholder="说明这个知识库覆盖的项目、团队或文档范围"
+            ></textarea>
+          </label>
+          <div class="atlas-create-space-options">
+            <label>
+              类型
+              <select v-model="createSpaceDraft.type" data-testid="vue-create-space-type">
+                <option value="document">Document</option>
+                <option value="faq">FAQ</option>
+              </select>
+            </label>
+            <label>
+              索引策略
+              <select v-model="createSpaceDraft.indexStrategy" data-testid="vue-create-space-index">
+                <option value="rag">RAG</option>
+                <option value="wiki">Wiki</option>
+              </select>
+            </label>
+          </div>
+          <p v-if="createSpaceError" class="atlas-inline-warning">{{ createSpaceError }}</p>
+          <footer>
+            <button class="secondary" type="button" @click="closeCreateSpacePanel">取消</button>
+            <button
+              data-testid="vue-create-space-submit"
+              type="button"
+              :disabled="isCreatingSpace"
+              @click="createProductSpace"
+            >
+              {{ isCreatingSpace ? '创建中...' : '创建' }}
+            </button>
+          </footer>
+        </form>
       </template>
 
       <template v-else-if="productView === 'chat'">
@@ -2308,7 +2897,13 @@ function isDeepSeekDraft(model: VueModelConfig) {
           >
             常规设置
           </button>
-          <button type="button">用户信息</button>
+          <button
+            :class="{ active: settingsPanel === 'profile' }"
+            type="button"
+            @click="settingsPanel = 'profile'"
+          >
+            用户信息
+          </button>
           <button
             :class="{ active: settingsPanel === 'api' }"
             type="button"
@@ -2318,11 +2913,25 @@ function isDeepSeekDraft(model: VueModelConfig) {
           </button>
           <p>空间</p>
           <button
+            :class="{ active: settingsPanel === 'spaceInfo' }"
+            type="button"
+            @click="settingsPanel = 'spaceInfo'"
+          >
+            空间信息
+          </button>
+          <button
             :class="{ active: settingsPanel === 'members' }"
             type="button"
             @click="settingsPanel = 'members'"
           >
             成员管理
+          </button>
+          <button
+            :class="{ active: settingsPanel === 'messages' }"
+            type="button"
+            @click="settingsPanel = 'messages'"
+          >
+            消息管理
           </button>
           <button
             :class="{ active: settingsPanel === 'registration' }"
@@ -2363,7 +2972,630 @@ function isDeepSeekDraft(model: VueModelConfig) {
           </button>
         </aside>
 
-        <section v-if="settingsPanel !== 'models'" class="atlas-settings-placeholder">
+        <section v-if="settingsPanel === 'general'" class="atlas-general-settings">
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-general-head" data-testid="vue-admin-panel">
+            <h1>常规设置</h1>
+            <p>配置语言、外观等基础选项</p>
+          </header>
+
+          <div class="atlas-general-form">
+            <section class="atlas-general-row">
+              <div>
+                <h2>语言</h2>
+                <p>选择界面显示语言</p>
+              </div>
+              <select
+                v-model="generalSettings.language"
+                data-testid="vue-general-language"
+                aria-label="语言"
+              >
+                <option v-for="option in languageOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </section>
+
+            <section class="atlas-general-row">
+              <div>
+                <h2>主题模式</h2>
+                <p>选择界面的显示主题，支持跟随系统自动切换</p>
+              </div>
+              <select
+                v-model="generalSettings.themeMode"
+                data-testid="vue-general-theme"
+                aria-label="主题模式"
+              >
+                <option v-for="option in themeOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </section>
+
+            <section class="atlas-general-row">
+              <div>
+                <h2>界面字体</h2>
+                <p>用于菜单、正文、按钮等界面大部分文字的字体</p>
+              </div>
+              <div class="atlas-general-control-stack">
+                <select
+                  v-model="generalSettings.interfaceFont"
+                  data-testid="vue-general-interface-font"
+                  aria-label="界面字体"
+                >
+                  <option
+                    v-for="option in interfaceFontOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <p class="atlas-font-preview">示例 Sample 字体 Font — Aa Gg Oo 0123</p>
+              </div>
+            </section>
+
+            <section class="atlas-general-row">
+              <div>
+                <h2>代码字体</h2>
+                <p>用于代码块、终端命令、API 密钥、文件路径等技术内容</p>
+              </div>
+              <div class="atlas-general-control-stack">
+                <select
+                  v-model="generalSettings.codeFont"
+                  data-testid="vue-general-code-font"
+                  aria-label="代码字体"
+                >
+                  <option
+                    v-for="option in codeFontOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <code class="atlas-code-preview">const source_trace = 'chunk-001'</code>
+              </div>
+            </section>
+
+            <section class="atlas-general-row">
+              <div>
+                <h2>字体大小</h2>
+                <p>整体缩放界面文字、图标、间距等</p>
+              </div>
+              <div class="atlas-size-segment" role="group" aria-label="字体大小">
+                <button
+                  v-for="option in fontSizeOptions"
+                  :key="option.value"
+                  :class="{ active: generalSettings.fontSize === option.value }"
+                  type="button"
+                  :data-testid="`vue-general-font-size-${option.value}`"
+                  @click="generalSettings.fontSize = option.value"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
+            </section>
+
+            <section class="atlas-general-row">
+              <div>
+                <h2>开启记忆功能</h2>
+                <p>开启后，系统将记录对话历史，并在后续对话中自动回忆相关内容</p>
+              </div>
+              <button
+                class="atlas-switch"
+                :class="{ active: generalSettings.memoryEnabled }"
+                type="button"
+                role="switch"
+                :aria-checked="generalSettings.memoryEnabled"
+                data-testid="vue-general-memory"
+                @click="generalSettings.memoryEnabled = !generalSettings.memoryEnabled"
+              >
+                <span></span>
+              </button>
+            </section>
+          </div>
+
+          <section class="atlas-admin-boundary atlas-general-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              常规偏好仅作用于当前 Vue mock 会话；不写入真实账号配置、不执行生产 RBAC、
+              不保存真实密钥，也不会展示私有 endpoint 或本地绝对路径。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'profile'"
+          class="atlas-account-settings"
+          data-testid="vue-user-info-panel"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-admin-head" data-testid="vue-admin-panel">
+            <div>
+              <h1>用户信息</h1>
+              <p>查看当前 mock 账号资料、空间身份和最近活动。</p>
+            </div>
+            <span>Mock account</span>
+          </header>
+
+          <section class="atlas-profile-card">
+            <span class="atlas-profile-avatar" aria-hidden="true">L</span>
+            <div>
+              <strong>leo</strong>
+              <p>Atlas Delivery · Workspace Owner</p>
+            </div>
+          </section>
+
+          <section class="atlas-admin-grid">
+            <article v-for="row in accountProfileRows" :key="row.key" :data-testid="row.testId">
+              <strong>{{ row.label }}</strong>
+              <span>{{ row.value }}</span>
+              <p>{{ row.note }}</p>
+            </article>
+          </section>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              用户信息只用于当前 Vue mock 演示；不连接真实身份系统、不保存个人资料、
+              不展示真实组织目录，也不执行生产 RBAC。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'spaceInfo'"
+          class="atlas-space-info-panel"
+          data-testid="vue-space-info-panel"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-admin-head" data-testid="vue-admin-panel">
+            <div>
+              <h1>空间信息</h1>
+              <p>查看当前知识空间的详细配置与 mock 运营状态。</p>
+            </div>
+            <span>{{
+              selectedProductSpace.source === 'api' ? 'API-backed Space' : 'Mock Space'
+            }}</span>
+          </header>
+
+          <section class="atlas-space-info-list" aria-label="空间信息">
+            <article
+              v-for="row in selectedSpaceInfoRows"
+              :key="row.key"
+              class="atlas-space-info-row"
+              :data-testid="`vue-space-info-${row.key}`"
+            >
+              <div>
+                <strong>{{ row.label }}</strong>
+                <p>{{ row.note }}</p>
+              </div>
+
+              <div
+                v-if="row.field && activeSpaceInfoEditField === row.field"
+                class="atlas-space-info-edit"
+              >
+                <input
+                  v-if="row.field === 'name'"
+                  v-model="spaceInfoDraft.name"
+                  data-testid="vue-space-info-name-input"
+                  aria-label="空间名称"
+                />
+                <textarea
+                  v-else
+                  v-model="spaceInfoDraft.description"
+                  data-testid="vue-space-info-description-input"
+                  aria-label="空间描述"
+                  rows="2"
+                ></textarea>
+                <div class="atlas-space-info-actions">
+                  <button
+                    type="button"
+                    data-testid="vue-space-info-save"
+                    @click="saveSpaceInfoEdit"
+                  >
+                    保存
+                  </button>
+                  <button type="button" @click="cancelSpaceInfoEdit">取消</button>
+                </div>
+              </div>
+
+              <div v-else class="atlas-space-info-value">
+                <span :class="{ 'atlas-space-status': row.key === 'status' }">{{ row.value }}</span>
+                <button
+                  v-if="row.field"
+                  type="button"
+                  :aria-label="`编辑${row.label}`"
+                  :title="`编辑${row.label}`"
+                  :data-testid="`vue-space-info-edit-${row.field}`"
+                  @click="beginSpaceInfoEdit(row.field)"
+                >
+                  ✎
+                </button>
+              </div>
+            </article>
+          </section>
+
+          <p
+            v-if="spaceInfoStatus"
+            class="atlas-inline-success"
+            data-testid="vue-space-info-save-status"
+            role="status"
+          >
+            {{ spaceInfoStatus }}
+          </p>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              空间信息当前只更新 Vue mock
+              会话状态；真实空间元数据、存储额度、审计日志和权限校验必须由后端 API 与 RBAC 控制。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'members'"
+          class="atlas-member-settings"
+          data-testid="vue-member-manager"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-member-head" data-testid="vue-admin-panel">
+            <div>
+              <h1>
+                成员管理
+                <span title="当前为 mock RBAC 说明">ⓘ</span>
+                <button
+                  class="atlas-text-link"
+                  type="button"
+                  @click="memberActionStatus = '审计日志入口为 mock。'"
+                >
+                  审计日志
+                </button>
+              </h1>
+              <p>
+                邀请伙伴加入当前空间并分配角色。只有 Owner/Admin 后续才能新增或移除成员。
+                <a href="#" aria-label="了解 RBAC">了解 RBAC ↗</a>
+              </p>
+            </div>
+          </header>
+
+          <section class="atlas-member-block" aria-label="待接受的邀请">
+            <header class="atlas-member-section-head">
+              <div>
+                <h2>
+                  待接受的邀请 <span>{{ pendingInvitationCount }}</span>
+                </h2>
+                <p>发出后等待对方在站内确认。7 天未响应将自动过期。</p>
+              </div>
+            </header>
+            <div v-if="pendingInvitationCount === 0" class="atlas-member-empty">
+              暂无待接受的邀请。
+            </div>
+            <div v-else class="atlas-member-invite-list">
+              <article v-for="invite in pendingInvitations" :key="invite.id">
+                <strong>{{ invite.email }}</strong>
+                <span>{{ memberRoleLabel(invite.role) }} · {{ invite.invitedAt }}</span>
+                <small>邀请人：{{ invite.inviter }}</small>
+              </article>
+            </div>
+          </section>
+
+          <section class="atlas-member-block" aria-label="空间成员">
+            <header class="atlas-member-toolbar">
+              <div>
+                <h2>
+                  空间成员 <span>{{ spaceMembers.length }}</span>
+                </h2>
+              </div>
+              <div class="atlas-member-actions">
+                <label class="atlas-member-search">
+                  <span>搜索成员</span>
+                  <input
+                    v-model="memberSearch"
+                    data-testid="vue-member-search"
+                    placeholder="按姓名或邮箱搜索"
+                  />
+                </label>
+                <button
+                  class="atlas-icon-button"
+                  data-testid="vue-member-invite"
+                  type="button"
+                  aria-label="邀请成员"
+                  title="邀请成员"
+                  @click="inviteMockMember"
+                >
+                  +人
+                </button>
+                <button
+                  class="atlas-icon-button"
+                  data-testid="vue-member-copy-link"
+                  type="button"
+                  aria-label="复制邀请链接"
+                  title="复制邀请链接"
+                  @click="copyInviteMockLink"
+                >
+                  ⌁
+                </button>
+              </div>
+            </header>
+
+            <div class="atlas-member-table-wrap">
+              <table class="atlas-member-table">
+                <thead>
+                  <tr>
+                    <th>姓名与邮箱</th>
+                    <th>角色</th>
+                    <th>加入时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="member in filteredSpaceMembers" :key="member.id">
+                    <td>
+                      <strong>{{ member.name }}</strong>
+                      <span>{{ member.email }}</span>
+                    </td>
+                    <td>
+                      <span
+                        v-if="!member.removable"
+                        class="atlas-role-badge"
+                        :class="memberRoleClass(member.role)"
+                      >
+                        {{ memberRoleLabel(member.role) }}
+                      </span>
+                      <select
+                        v-else
+                        :value="member.role"
+                        :aria-label="`${member.name} 角色`"
+                        @change="handleMemberRoleChange(member.id, readSelectValue($event))"
+                      >
+                        <option
+                          v-for="option in memberRoleOptions"
+                          :key="option.value"
+                          :value="option.value"
+                        >
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </td>
+                    <td>{{ member.joinedAt }}</td>
+                    <td>
+                      <button
+                        class="atlas-member-remove"
+                        type="button"
+                        :disabled="!member.removable"
+                        :aria-label="`移除 ${member.name}`"
+                        @click="removeSpaceMember(member.id)"
+                      >
+                        移除
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="filteredSpaceMembers.length === 0">
+                    <td colspan="4">没有匹配的成员。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p
+              v-if="memberActionStatus"
+              class="atlas-inline-success"
+              data-testid="vue-member-status"
+              role="status"
+            >
+              {{ memberActionStatus }}
+            </p>
+          </section>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              当前成员管理为 mock-only：不发送邀请、不提交真实公司域名、不保存真实账号、 不执行生产
+              RBAC，后续权限与审计必须由后端强制执行。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'api'"
+          class="atlas-api-info-panel"
+          data-testid="vue-api-info-panel"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-admin-head" data-testid="vue-admin-panel">
+            <div>
+              <h1>API 信息</h1>
+              <p>查看和管理 Atlas API 调用信息，密钥默认为脱敏显示。</p>
+            </div>
+            <span>Mock-safe API</span>
+          </header>
+
+          <section class="atlas-api-info-list">
+            <article class="atlas-api-info-row">
+              <div>
+                <strong>API Key</strong>
+                <p>用于 API 调用的密钥，请妥善保管；当前仅展示 mock key 状态。</p>
+              </div>
+              <div class="atlas-api-control">
+                <input
+                  :key="apiKeyDisplayValue"
+                  :value="apiKeyDisplayValue"
+                  data-testid="vue-api-key-value"
+                  readonly
+                  aria-label="API Key"
+                />
+                <div class="atlas-api-icon-row">
+                  <button
+                    data-testid="vue-api-key-reveal"
+                    type="button"
+                    aria-label="确认 API Key 保持隐藏"
+                    title="确认 API Key 保持隐藏"
+                    @click="toggleApiKeyVisibility"
+                  >
+                    ◉
+                  </button>
+                  <button
+                    data-testid="vue-api-key-copy"
+                    type="button"
+                    aria-label="复制 API Key"
+                    title="复制 API Key"
+                    @click="copyApiInfoValue('API Key 已复制')"
+                  >
+                    ⧉
+                  </button>
+                  <button
+                    data-testid="vue-api-key-refresh"
+                    type="button"
+                    aria-label="刷新 API Key"
+                    title="刷新 API Key"
+                    @click="refreshApiKey"
+                  >
+                    ↻
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="atlas-api-info-row">
+              <div>
+                <strong>API 地址</strong>
+                <p>REST API 的基础路径，请求时在末尾拼接具体接口路径。</p>
+              </div>
+              <div class="atlas-api-control">
+                <input
+                  :value="apiInfo.baseUrl"
+                  data-testid="vue-api-base-url"
+                  readonly
+                  aria-label="API 地址"
+                />
+                <div class="atlas-api-icon-row">
+                  <button
+                    data-testid="vue-api-base-copy"
+                    type="button"
+                    aria-label="复制 API 地址"
+                    title="复制 API 地址"
+                    @click="copyApiInfoValue('API 地址已复制')"
+                  >
+                    ⧉
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="atlas-api-info-row">
+              <div>
+                <strong>API 文档</strong>
+                <p>查看完整的 API 调用文档和示例。</p>
+              </div>
+              <div class="atlas-api-doc-actions">
+                <a
+                  :href="apiInfo.docsPath"
+                  data-testid="vue-api-doc-link"
+                  @click.prevent="openApiDocumentation"
+                >
+                  打开文档 ↗
+                </a>
+              </div>
+            </article>
+          </section>
+
+          <p
+            v-if="apiInfo.status"
+            class="atlas-inline-success"
+            data-testid="vue-api-info-status"
+            role="status"
+          >
+            {{ apiInfo.status }}
+          </p>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              API Key 仍是前端 mock 信息；真实密钥必须由后端生成、脱敏返回并审计刷新。
+              当前界面不会连接外部 provider、不会保存明文 token，也不会展示公司内网 endpoint。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'messages'"
+          class="atlas-message-settings"
+          data-testid="vue-message-management"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-general-head" data-testid="vue-admin-panel">
+            <h1>消息管理</h1>
+            <p>配置聊天历史知识库，将对话消息自动向量化索引，实现语义搜索</p>
+          </header>
+
+          <div class="atlas-message-form">
+            <section class="atlas-message-row">
+              <div>
+                <h2>启用消息索引</h2>
+                <p>开启后，新的对话消息将自动索引到知识库，支持向量搜索</p>
+              </div>
+              <button
+                class="atlas-switch"
+                :class="{ active: messageIndexEnabled }"
+                type="button"
+                role="switch"
+                :aria-checked="messageIndexEnabled"
+                data-testid="vue-message-index-toggle"
+                @click="toggleMessageIndexing"
+              >
+                <span></span>
+              </button>
+            </section>
+
+            <section v-if="messageIndexEnabled" class="atlas-message-row">
+              <div>
+                <h2>Embedding 模型</h2>
+                <p>选择用于聊天历史语义检索的 Embedding 模型</p>
+              </div>
+              <select
+                :value="messageEmbeddingModel"
+                data-testid="vue-message-embedding-model"
+                aria-label="消息索引 Embedding 模型"
+                @change="messageEmbeddingModel = readSelectValue($event)"
+              >
+                <option
+                  v-for="option in messageEmbeddingOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </section>
+          </div>
+
+          <section class="atlas-message-stats" data-testid="vue-message-index-stats">
+            <h2>索引统计</h2>
+            <div v-if="!messageIndexConfigured" class="atlas-message-empty">
+              <strong>消息索引未配置</strong>
+              <p>启用并选择 Embedding 模型后，对话消息将自动向量化索引</p>
+            </div>
+            <div v-else class="atlas-admin-grid">
+              <article v-for="stat in messageIndexStats" :key="stat.label">
+                <strong>{{ stat.label }}</strong>
+                <span>{{ stat.value }}</span>
+                <p>{{ stat.note }}</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              当前消息管理仅保存本地 mock 开关；不持久化真实聊天历史、不执行真实 embedding、
+              不写入真实向量库，也不会绕过 ModelAdapter 或 VectorAdapter 边界。
+            </p>
+          </section>
+        </section>
+
+        <section v-else-if="currentSettingsSurface" class="atlas-settings-placeholder">
           <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
           <header class="atlas-admin-head" data-testid="vue-admin-panel">
             <div>
@@ -2423,6 +3655,14 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <strong>内置模型</strong>
             <span data-testid="vue-api-model-status">{{ modelApiStatus }}</span>
             <p>内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。</p>
+            <p
+              v-if="modelSaveStatus"
+              class="atlas-inline-success"
+              data-testid="vue-model-save-status"
+              role="status"
+            >
+              {{ modelSaveStatus }}
+            </p>
             <p v-if="modelApiError" class="atlas-inline-warning">{{ modelApiError }}</p>
             <a href="#" aria-label="查看内置模型管理指南">查看内置模型管理指南 ↗</a>
           </section>
