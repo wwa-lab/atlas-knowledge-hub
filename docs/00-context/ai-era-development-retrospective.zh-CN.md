@@ -20,10 +20,10 @@ Atlas 的经验刚好相反。这个项目最重要的早期资产，不是 Vue�
 
 这些文件的作用，是把团队的口头共识变成机器可读的项目规则。
 
-`AGENTS.md` 告诉 agent 怎么工作。  
-`PROJECT_RULES.md` 定义产品、架构、安全、SDD 的硬约束。  
-`DEVELOPMENT_STANDARDS.md` 定义工程质量、测试、CI、review 的标准。  
-`sdd-profile.md` 定义这个项目自己的 SDD 形态。  
+`AGENTS.md` 告诉 agent 怎么工作。
+`PROJECT_RULES.md` 定义产品、架构、安全、SDD 的硬约束。
+`DEVELOPMENT_STANDARDS.md` 定义工程质量、测试、CI、review 的标准。
+`sdd-profile.md` 定义这个项目自己的 SDD 形态。
 `.github/copilot-instructions.md` 则给公司内部默认使用的 GitHub Copilot Chat 一个稳定入口。
 
 这一步很关键。
@@ -112,8 +112,8 @@ Loop Engineering 的价值在这里体现出来：
 
 > Goal 决定边界，Loop 负责推进，Gate 负责刹车。
 
-没有 Goal，agent 会越做越散。  
-没有 Loop，SDD 只是一堆静态文档。  
+没有 Goal，agent 会越做越散。
+没有 Loop，SDD 只是一堆静态文档。
 没有 Gate，自动化会变成失控的自动化。
 
 Atlas 现在用 `npm run agent:closeout` 和 GitHub Actions 的 `Agent Workflow Gate` 把 closeout 变成红灯/绿灯。agent 可以循环修复，但最终要接受 gate 的裁判。
@@ -220,8 +220,8 @@ Copilot Chat 应该做的是：
 
 这不是降低标准，而是把责任边界说清楚。
 
-Codex Agent 是更强的自动执行模式。  
-Copilot Chat 是更普遍的团队协作模式。  
+Codex Agent 是更强的自动执行模式。
+Copilot Chat 是更普遍的团队协作模式。
 两者共享同一套 SDD、规则、gate 和 lesson learned。
 
 ## 七、这个项目形成的开发模式
@@ -250,12 +250,12 @@ Project Rules
 
 每一环都不是装饰。
 
-Project Rules 让模型知道边界。  
-SDD 让模型知道事实。  
-Goal 让模型知道本次任务。  
-Loop 让模型能推进和修复。  
-Verification 让结果有证据。  
-CI Gate 让失败变红灯。  
+Project Rules 让模型知道边界。
+SDD 让模型知道事实。
+Goal 让模型知道本次任务。
+Loop 让模型能推进和修复。
+Verification 让结果有证据。
+CI Gate 让失败变红灯。
 Lessons Learned 让系统持续变好。
 
 ## 八、如果要在团队大规模推广

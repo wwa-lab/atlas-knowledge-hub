@@ -1,7 +1,7 @@
 # Specification: Runtime Smoke Config And Runbook
 
-> **Source stories:** US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-001 to US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-005  
-> **Spec status:** Accepted and implemented on 2026-07-05. Runtime smoke readiness only; not production operations readiness.  
+> **Source stories:** US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-001 to US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-005
+> **Spec status:** Accepted and implemented on 2026-07-05. Runtime smoke readiness only; not production operations readiness.
 > **Last updated:** 2026-07-05
 
 ## Overview

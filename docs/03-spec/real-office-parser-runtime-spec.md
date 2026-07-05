@@ -1,7 +1,7 @@
 # Specification: Real Office Parser Runtime
 
-> **Source stories:** US-REAL-OFFICE-PARSER-RUNTIME-001 to US-REAL-OFFICE-PARSER-RUNTIME-005  
-> **Spec status:** Draft for user review. Product code must wait for explicit user acceptance.  
+> **Source stories:** US-REAL-OFFICE-PARSER-RUNTIME-001 to US-REAL-OFFICE-PARSER-RUNTIME-005
+> **Spec status:** Draft for user review. Product code must wait for explicit user acceptance.
 > **Last updated:** 2026-07-05
 
 ## Overview

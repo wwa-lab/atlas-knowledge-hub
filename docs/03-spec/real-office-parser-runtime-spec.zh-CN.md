@@ -1,7 +1,7 @@
 # 规格：真实 Office 解析 Runtime
 
-> **Source stories:** US-REAL-OFFICE-PARSER-RUNTIME-001 to US-REAL-OFFICE-PARSER-RUNTIME-005  
-> **Spec status:** 供用户审阅的草稿。产品代码必须等待用户明确接受。  
+> **Source stories:** US-REAL-OFFICE-PARSER-RUNTIME-001 to US-REAL-OFFICE-PARSER-RUNTIME-005
+> **Spec status:** 供用户审阅的草稿。产品代码必须等待用户明确接受。
 > **Last updated:** 2026-07-05
 
 ## 概述

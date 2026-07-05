@@ -8,19 +8,19 @@ Draft for user review. Implementation remains blocked until the SDD is accepted.
 
 ### US-REAL-OFFICE-PARSER-RUNTIME-001: Start Runtime Integration From An Accepted SDD
 
-**Story:**  
-As a knowledge platform owner,  
-I want real runtime integration to start from an accepted SDD,  
+**Story:**
+As a knowledge platform owner,
+I want real runtime integration to start from an accepted SDD,
 so that Atlas does not bypass adapter, safety, and trust boundaries while moving beyond mocks.
 
 #### Acceptance Criteria
 
-1. **Given** the slice is requested  
-   **When** the SDD is generated  
+1. **Given** the slice is requested
+   **When** the SDD is generated
    **Then** requirements, stories, spec, architecture, data flow, data model, design, API guide, tasks, and traceability exist in English and Simplified Chinese.
 
-2. **Given** product code changes are proposed  
-   **When** the SDD has not been accepted  
+2. **Given** product code changes are proposed
+   **When** the SDD has not been accepted
    **Then** implementation remains blocked and the traceability file says so.
 
 #### Notes / Assumptions
@@ -41,23 +41,23 @@ so that Atlas does not bypass adapter, safety, and trust boundaries while moving
 
 ### US-REAL-OFFICE-PARSER-RUNTIME-002: Run Office Conversion Through The Adapter
 
-**Story:**  
-As a knowledge base administrator,  
-I want Office-to-PDF conversion to use a configured internal runtime through the converter adapter,  
+**Story:**
+As a knowledge base administrator,
+I want Office-to-PDF conversion to use a configured internal runtime through the converter adapter,
 so that real conversion can be introduced without coupling product workflows to `trinity-office`.
 
 #### Acceptance Criteria
 
-1. **Given** `trinity-office` runtime is configured and available  
-   **When** a conversion run requests configured execution  
+1. **Given** `trinity-office` runtime is configured and available
+   **When** a conversion run requests configured execution
    **Then** Atlas resolves the converter adapter, executes within the adapter boundary, and records safe per-file results.
 
-2. **Given** runtime configuration is missing or disabled  
-   **When** a conversion run requests configured execution  
+2. **Given** runtime configuration is missing or disabled
+   **When** a conversion run requests configured execution
    **Then** the run fails safely as unavailable or misconfigured and file metadata remains unchanged unless safe per-file results exist.
 
-3. **Given** runtime output includes a PDF path or error text  
-   **When** Atlas persists or returns the result  
+3. **Given** runtime output includes a PDF path or error text
+   **When** Atlas persists or returns the result
    **Then** paths are safe relative paths and errors are sanitized.
 
 #### Notes / Assumptions
@@ -78,23 +78,23 @@ so that real conversion can be introduced without coupling product workflows to 
 
 ### US-REAL-OFFICE-PARSER-RUNTIME-003: Run PDF Parsing Through The Adapter
 
-**Story:**  
-As a delivery lead,  
-I want PDF-to-Markdown parsing to use a configured internal runtime through the parser adapter,  
+**Story:**
+As a delivery lead,
+I want PDF-to-Markdown parsing to use a configured internal runtime through the parser adapter,
 so that real Markdown and source chunks can be generated while preserving review and trace metadata.
 
 #### Acceptance Criteria
 
-1. **Given** `document-normalize` runtime is configured and available  
-   **When** a parser run targets eligible `PDF_CONVERTED` files  
+1. **Given** `document-normalize` runtime is configured and available
+   **When** a parser run targets eligible `PDF_CONVERTED` files
    **Then** Atlas resolves the parser adapter, executes within the adapter boundary, and records Markdown path, assets path, confidence, source chunks, and safe messages.
 
-2. **Given** parser output confidence is below the accepted threshold  
-   **When** the result is persisted  
+2. **Given** parser output confidence is below the accepted threshold
+   **When** the result is persisted
    **Then** the file maps to `LOW_CONFIDENCE` and remains `REVIEW_REQUIRED`.
 
-3. **Given** parser output is invalid or unsafe  
-   **When** Atlas validates the result  
+3. **Given** parser output is invalid or unsafe
+   **When** Atlas validates the result
    **Then** unsafe output is rejected before persistence and the API returns a safe validation error.
 
 #### Notes / Assumptions
@@ -115,19 +115,19 @@ so that real Markdown and source chunks can be generated while preserving review
 
 ### US-REAL-OFFICE-PARSER-RUNTIME-004: Inspect Runtime Capability Safely
 
-**Story:**  
-As a platform administrator,  
-I want capability endpoints to show whether runtime adapters are configured, available, disabled, or misconfigured,  
+**Story:**
+As a platform administrator,
+I want capability endpoints to show whether runtime adapters are configured, available, disabled, or misconfigured,
 so that I can diagnose setup without exposing command paths, endpoints, or credentials.
 
 #### Acceptance Criteria
 
-1. **Given** runtime settings are configured  
-   **When** capability endpoints are requested  
+1. **Given** runtime settings are configured
+   **When** capability endpoints are requested
    **Then** responses include adapter key, display name, version/status, default marker, supported inputs/outputs, and masked configuration summary.
 
-2. **Given** runtime settings contain sensitive values  
-   **When** capability metadata is returned  
+2. **Given** runtime settings contain sensitive values
+   **When** capability metadata is returned
    **Then** raw paths, endpoints, tokens, passwords, command arguments, and hostnames are not exposed.
 
 #### Notes / Assumptions
@@ -148,23 +148,23 @@ so that I can diagnose setup without exposing command paths, endpoints, or crede
 
 ### US-REAL-OFFICE-PARSER-RUNTIME-005: Preserve CI And Safety Gates
 
-**Story:**  
-As an implementation agent,  
-I want runtime integration to remain mock-safe and statically guarded,  
+**Story:**
+As an implementation agent,
+I want runtime integration to remain mock-safe and statically guarded,
 so that normal verification does not require local internal binaries and product layers cannot drift into direct tool calls.
 
 #### Acceptance Criteria
 
-1. **Given** no real runtime binary is installed  
-   **When** normal backend verification runs  
+1. **Given** no real runtime binary is installed
+   **When** normal backend verification runs
    **Then** tests pass using mocks/fakes and do not require internal tools.
 
-2. **Given** a direct tool call is added outside an allowed adapter/runtime package  
-   **When** seam guard tests run  
+2. **Given** a direct tool call is added outside an allowed adapter/runtime package
+   **When** seam guard tests run
    **Then** the tests fail.
 
-3. **Given** changed files are scanned  
-   **When** secret/private-path and network/dependency scans run  
+3. **Given** changed files are scanned
+   **When** secret/private-path and network/dependency scans run
    **Then** no raw credentials, private paths, real data, or new external cloud calls are found.
 
 #### Notes / Assumptions

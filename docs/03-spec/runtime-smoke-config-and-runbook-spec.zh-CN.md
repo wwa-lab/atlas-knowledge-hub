@@ -1,7 +1,7 @@
 # 规格：Runtime Smoke Config And Runbook
 
-> **来源故事:** US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-001 到 US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-005  
-> **Spec 状态:** 已于 2026-07-05 接受并实现。仅代表 runtime smoke readiness，不代表 production operations readiness。  
+> **来源故事:** US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-001 到 US-RUNTIME-SMOKE-CONFIG-AND-RUNBOOK-005
+> **Spec 状态:** 已于 2026-07-05 接受并实现。仅代表 runtime smoke readiness，不代表 production operations readiness。
 > **最后更新:** 2026-07-05
 
 ## 概述
