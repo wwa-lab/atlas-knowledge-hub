@@ -37,6 +37,7 @@ A slice goal is complete only when the relevant documents, implementation, verif
 - If implementation behavior changes, update spec, design, and tasks before or with the code change.
 - If slice implementation or acceptance status changes, update `docs/00-context/{slice}-traceability.md` and the slice row in `docs/00-context/slice-roadmap.md` / `.zh-CN.md` before close-out.
 - Roadmap and close-out status must distinguish task completion from product acceptance. Report whether the user-facing outcome is prototype-only, Vue parity, API-backed, internal beta-ready, or production-ready.
+- Product readiness language must match product evidence. Do not call a feature or release ready to test, ready to try, accepted, done, out-of-the-box, or product-ready unless the actual user-facing workflow has been run locally from the documented startup path. If only automated tests, mock paths, scripted API setup, or fallback/demo surfaces were verified, label the status accordingly.
 - Do not create parallel planning systems for the same change.
 
 ## Coding Standards
@@ -148,6 +149,7 @@ Phase 1+ verification:
 - Add component tests for meaningful UI behavior.
 - Add integration tests for APIs, persistence, and adapter contracts.
 - Add Playwright E2E tests for critical user flows.
+- Before making a product-readiness claim, run a local first-run smoke through the primary user-facing UI: start the documented services, confirm the frontend is connected to the expected backend rather than an unintended fallback, verify there are no unexpected `Failed to fetch` errors, complete the core workflow using UI controls only, and report which steps are real, mock-only, scripted-only, or blocked.
 - Report skipped checks with reasons. Do not imply skipped checks passed.
 
 ## Review Standards

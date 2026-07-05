@@ -106,13 +106,14 @@ Use `DEVELOPMENT_STANDARDS.md` as the detailed engineering standard for coding, 
 Required gates:
 
 1. Goal gate: scope, exclusions, acceptance criteria, verification, and constraints are clear enough to execute without hidden assumptions.
-2. SDD gate: required slice docs exist or are updated, English and Simplified Chinese copies are synchronized for touched SDD documents, requirement IDs are traceable, and tasks map back to the spec.
-3. Implementation gate: changed behavior is represented in `docs/03-spec/`, and code changes are limited to the active goal and slice.
-4. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
-5. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
-6. Verification gate: the checks listed in the task plan are run, or any skipped check is named with a reason.
-7. Context status gate: `docs/00-context/{slice}-traceability.md` and, when slice status changes, `docs/00-context/slice-roadmap.md` plus its `.zh-CN.md` companion reflect the final status, task range, verification evidence, and deferred work.
-8. Evidence gate: the final response includes documents changed, code changed, verification evidence, residual risks, and whether `docs/00-context` status was checked or updated.
+2. Product readiness claim gate: status language must match the verified user outcome. Do not describe work as "ready to test", "usable", "accepted", "done", "out-of-the-box", or product-ready unless the actual user-facing workflow was run from the documented local startup path. If only automated gates, mock surfaces, scripted API setup, or prototype flows were verified, say that explicitly.
+3. SDD gate: required slice docs exist or are updated, English and Simplified Chinese copies are synchronized for touched SDD documents, requirement IDs are traceable, and tasks map back to the spec.
+4. Implementation gate: changed behavior is represented in `docs/03-spec/`, and code changes are limited to the active goal and slice.
+5. Security and data gate: no real company data, secrets, private paths, confidential screenshots, external cloud calls, or raw credentials are introduced.
+6. Adapter gate: parser, converter, model, vector database, storage, and search integrations stay behind product-facing adapter boundaries.
+7. Verification gate: the checks listed in the task plan are run, or any skipped check is named with a reason.
+8. Context status gate: `docs/00-context/{slice}-traceability.md` and, when slice status changes, `docs/00-context/slice-roadmap.md` plus its `.zh-CN.md` companion reflect the final status, task range, verification evidence, and deferred work.
+9. Evidence gate: the final response includes documents changed, code changed, verification evidence, residual risks, and whether `docs/00-context` status was checked or updated.
 
 Prototype-phase verification should include, when relevant:
 

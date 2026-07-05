@@ -46,6 +46,20 @@ Status:
 
 ## Lessons
 
+### LL-20260705-003 Test-Ready Must Not Be Claimed As Product-Ready
+
+ID: LL-20260705-003
+Date: 2026-07-05
+Slice: product acceptance / local run readiness
+Source: User feedback after Atlas was described as ready to test while the next-phase plan still listed core product gaps.
+Expectation: The user expects an out-of-the-box product, not only a green engineering baseline. When the agent says the product can be tested or tried, that claim must mean a first-time user can run the local product and complete the intended product workflow, or the agent must clearly label the scope as mock, prototype, API-backed demo, or regression-only.
+Observed: The agent treated completed Phase A-J verification and passing E2E gates as enough to say Atlas could be tested. A manual run showed that the default frontend dev command fell back to mock data when the backend API was not configured on the expected port, the upload buttons opened a mock review panel rather than a real file picker or ingest flow, and the browser-only path did not automatically connect publish, graph projection, vector indexing, and Ask into one product workflow.
+Root cause: Review blind spot and communication drift. Automated verification was interpreted as product readiness without a fresh manual "open the box" run through the primary user workflow. The status language did not separate test readiness, API-backed demo readiness, internal beta readiness, and product readiness.
+Decision: Never use broad phrases such as "ready to test", "can be tried", "usable", "accepted", or "done" without naming the readiness level and the verified workflow. A test gate passing only proves that gate. Product-ready language requires a manual first-run smoke through the real user-facing surface and an explicit list of any mock-only, scripted-only, or missing core capabilities.
+Durable updates: Updated `PROJECT_RULES.md` quality gates with a product readiness claim gate. Updated `DEVELOPMENT_STANDARDS.md` verification standards so product-readiness statements require a local first-run smoke and must distinguish automated test readiness from out-of-the-box usability.
+New verification: Before telling the user a product is ready to test or try, run or explicitly decline a local product smoke: start the documented services from a clean command path, open the primary UI, confirm there is no unexpected `Failed to fetch` or fallback mode, complete the core user workflow from UI controls only, and report which parts are real, mock-only, API-scripted, or blocked. If the workflow cannot be completed from the UI, the final status must say "not product-ready" even when automated tests pass.
+Status: Applied.
+
 ### LL-20260705-002 Roadmap Done Must Not Mean Product Accepted
 
 ID: LL-20260705-002
