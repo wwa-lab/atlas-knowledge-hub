@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for user review. Do not implement until accepted.
+Accepted by the current user and implemented/verified for the deterministic Wave 1 `wiki-linkify-lint` maturity target.
 
 ## Task Checklist
 

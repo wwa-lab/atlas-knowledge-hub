@@ -310,7 +310,10 @@ Atlas 应成为一个真实的 Vue 3 + Spring Boot 内部产品，用于管理�
 - Wave 1 / `wiki-foundation` / `wiki-data-model`：已作为 Wiki Foundation 数据模型切片完成。Atlas 现在具备 additive `wiki_page` metadata 字段、最小 folder/run/log/issue 读取模型、后端读取 APIs、contract/repository 覆盖，以及 Vue Wiki metadata 展示。
 - 成熟度说明：这仍只是 Wiki Foundation 数据底座，不等于 Auto Wiki ingest 完成，也不代表生产就绪。
 - Wave 1 / `wiki-ingest-v0`：Implementation 已作为 Auto Wiki ingest v0 foundation 完成验证：deterministic review-required candidates、safe run/log/issue evidence、显式 draft listing 和完整本地验证。本切片不代表 linkify/lint、review-gate、connector、model-assisted generation 或 production readiness。
-- 当前 active slice：Wave 1 / `wiki-linkify-lint`。完整双语 SDD 草稿已生成，范围包括 deterministic Wiki link insertion、link metadata refresh、lint issue recording，以及 Processing Center/Wiki warnings。产品代码尚未开始；实现仍需用户先接受 spec、API guide 和 tasks。
+- Wave 1 / `wiki-linkify-lint`：Implementation 已作为 Wiki Foundation linkify/lint base 完成验证：deterministic Wiki link insertion、link metadata refresh、lint issue recording，以及 Processing Center/Wiki warnings。本切片不代表 review-gate、refresh/retract、connector、model-assisted generation 或 production readiness。
+- 当前 active slice 已完成：Wave 2 / `real-office-parser-runtime` 已实现并验证。受控内部 `trinity-office` 与 `document-normalize` runtime execution 已位于现有 adapter boundaries 之后，默认 CI 仍保持 mock-safe。Optional runtime smoke tests 会在缺少 approved local runtime env vars 和 binaries 时 self-skip。
+- Wave 3 / `runtime-smoke-config-and-runbook`：已作为 command-level runtime smoke readiness 实现。双语 runbook 记录 smoke env vars、Spring adapter property distinctions、skip/pass/fail outcomes、safe evidence rules、troubleshooting 与 rollback。默认 CI 仍保持 mock-safe；approved local pass evidence 在提供 approved runtime command values 前保持 skipped。这不代表 production operations readiness。
+- Wave 3 / `auth-space-rbac`：已生成双语 SDD 草案，覆盖后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI。该切片在人工接受 spec 和 tasks 前不实现产品代码。
 
 ## 近期执行顺序
 

@@ -2,7 +2,7 @@
 
 ## 状态
 
-SDD 草稿已生成，等待用户审阅。产品代码尚未实现，且在用户接受前保持阻塞。
+当前用户已接受。Implementation 仅在已接受的 `wiki-linkify-lint` 范围内解锁。
 
 ## 切片契约
 
@@ -119,10 +119,10 @@ SDD skill chain used: yes.
 
 ## SDD 门禁接受说明
 
-- **SDD gate result:** 草稿已生成；等待用户接受。
-- **User acceptance required before code:** yes.
-- **Product code changed:** no.
-- **Decision:** pending.
+- **SDD gate result:** 用户已接受；implementation 仅在已接受范围内解锁。
+- **User acceptance required before code:** satisfied.
+- **Product code changed after acceptance:** yes.
+- **Decision:** 已接受，并按 deterministic Wave 1 成熟度目标完成实现。
 
 接受后的推荐实现交接：
 
@@ -130,9 +130,51 @@ SDD skill chain used: yes.
 Implement the wiki-linkify-lint slice strictly against docs/03-spec/wiki-linkify-lint-spec.md and docs/06-tasks/wiki-linkify-lint-tasks.md: complete every task in ID order, respect the stated constraints and verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
 
+## 实现完成证据
+
+| Task | Result | Evidence |
+|---|---|---|
+| T-WIKI-LINKIFY-LINT-001 | Completed | 产品代码改动前已记录用户接受。 |
+| T-WIKI-LINKIFY-LINT-002 | Completed | 新增 `V12__wiki_linkify_lint.sql`；扩展 issue repository query paths 和 run mode response mapping。 |
+| T-WIKI-LINKIFY-LINT-003 | Completed | 新增 `POST /api/spaces/{spaceId}/wiki-linkify-lint-runs` 与 `GET /api/spaces/{spaceId}/wiki-page-issues` 的 DTO/controller/service 路径，并覆盖 API contract tests。 |
+| T-WIKI-LINKIFY-LINT-004 | Completed | 实现同空间 slug/alias target index；有歧义 term 不自动 link，并记录 `REVIEW_REQUIRED` issue。 |
+| T-WIKI-LINKIFY-LINT-005 | Completed | 新增 protected-region-aware `WikiMarkdownLinkifier`，unit tests 覆盖 frontmatter、code、Markdown links/images、existing Wiki links、self links、one-link-per-target。 |
+| T-WIKI-LINKIFY-LINT-006 | Completed | `WikiPage.applyLinkMetadata` 仅在 link metadata 或 artifact content 变化时更新 sorted unique `inLinks`/`outLinks`。 |
+| T-WIKI-LINKIFY-LINT-007 | Completed | 实现 broken link、orphan page、missing source、stale source、thin content、unreadable artifact、ambiguous alias warnings。 |
+| T-WIKI-LINKIFY-LINT-008 | Completed | Run/log/issue evidence 使用安全 summary 和确定性 issue id，避免重复膨胀。 |
+| T-WIKI-LINKIFY-LINT-009 | Completed | Vue Processing Center 和 Wiki page detail 展示 space/page 级 Wiki issue warnings。 |
+| T-WIKI-LINKIFY-LINT-010 | Completed | publish/list/ingest 回归已包含在聚焦和完整 backend verification 中。 |
+| T-WIKI-LINKIFY-LINT-011 | Completed | 已运行 backend、frontend、E2E、second-layer E2E、diff hygiene、secret/path、network/dependency scans。 |
+| T-WIKI-LINKIFY-LINT-012 | Completed | 实现后已更新 traceability、roadmap、spec 和 task status。 |
+
+## 验证结果
+
+| Check | Result | Notes |
+|---|---|---|
+| TDD RED | 按预期失败 | `cd backend && mvn -q -Dtest=WikiMarkdownLinkifierTest,WikiLinkifyLintServiceTest,WikiLinkifyLintApiContractIT -DfailIfNoTests=false test` 在实现前因 linkify/lint classes 尚不存在而失败。 |
+| Focused backend | Passed | `cd backend && mvn -q -Dtest=WikiMarkdownLinkifierTest,WikiLinkifyLintServiceTest,WikiLinkifyLintApiContractIT,ReviewPublishApiContractIT -DfailIfNoTests=false test` |
+| Full backend tests | Passed | `cd backend && mvn -q test`；出现既有 `GlobalExceptionHandlerTest` 预期 stack trace，但 exit code 为 0。 |
+| Backend verify | Passed | `cd backend && mvn -q verify`；Flyway 校验到 V12。 |
+| Focused frontend unit | Passed | `cd frontend && npm run test -- App.test.ts`；12 个聚焦 tests 通过。 |
+| Frontend quality gate | Passed | `cd frontend && npm run typecheck && npm run test && npm run build`；18 个 Vitest tests 通过。 |
+| Frontend E2E | 修复 mock route 后 Passed | 第一次 run 暴露 `/wiki-page-issues` E2E mock 缺口；补 mock route 后 `cd frontend && npm run e2e` 13 个 tests 通过。 |
+| Second-layer E2E | Passed | `npm run e2e:second-layer` 通过，包含本地 Postgres/backend/frontend 和 2 个 Playwright tests。 |
+| Diff hygiene | Passed | documentation closeout 前 `git diff --check` 无发现。 |
+| Secret/private-path scan | Passed | broad scan 命中既有 frontend 名称如 `safeToken`/`apiKeyInput`；diff-only scan 未发现新增 secret 或 private-path hit。 |
+| Network/dependency scan | Passed | broad scan 命中既有 API base/fetch/Ollama/DeepSeek references；diff-only scan 未发现新增 external call 或 dependency。 |
+| Design fidelity review | 已应用 minor correction 后 Passed | Review 发现 ambiguous alias auto-linking 风险和 `updatedPageIds` 过宽；均已修正并由聚焦 backend tests 覆盖。 |
+
+## Code vs Design Review Result
+
+- **Alignment rating:** 96%.
+- **Verdict:** 与已接受 deterministic 成熟度边界对齐。
+- **Corrections applied:** ambiguous aliases 不再 auto-link，相关页面记录 `REVIEW_REQUIRED`，`updatedPageIds` 只报告实际变化或 dry-run 会变化的 pages。
+- **Blockers before next Wave 1 closeout:** accepted deterministic linkify/lint 范围内未发现 blocker。
+- **Not included by design:** SME approval workflow、refresh/retract automation、connector/runtime integration、model-assisted linking、production RBAC、production readiness。
+
 ## 残留风险
 
 - Markdown linkification 有意保持确定性和保守；复杂自然语言 entity linking 延后。
 - 复用现有 issue taxonomy；ambiguous alias 与 unsafe artifact cases 映射为 `REVIEW_REQUIRED`。
-- 实现阶段需要为 `linkify-lint` 增加一个小的 schema mode constraint update。
-- 本 SDD pass 没有改产品代码。
+- 实现保持本地 deterministic；更完整的 parser/runtime integration 仍由后续 `real-office-parser-runtime` 切片门控。
+- UI 暴露的是面向审核的 warnings，不是最终 SME approval 或 trust-state transition。

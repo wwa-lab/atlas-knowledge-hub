@@ -2,7 +2,7 @@
 
 ## 状态
 
-供用户审阅的草稿。接受前不要实现。
+当前用户已接受，并已按 Wave 1 `wiki-linkify-lint` 的 deterministic 成熟度目标实现和验证。
 
 ## 任务清单
 

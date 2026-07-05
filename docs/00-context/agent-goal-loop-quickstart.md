@@ -2,6 +2,8 @@
 
 Use this one-page guide to choose the right workflow tier and start a Codex goal without rereading every workflow document.
 
+For company environments where GitHub Copilot Chat is the primary tool, read `docs/00-context/agent-execution-modes.md` first. Copilot Chat uses the same gates, but the human developer acts as the loop operator.
+
 ## 1. Choose A Tier
 
 | Task | Tier |

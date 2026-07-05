@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft SDD generated for user review. Product code is not implemented and remains blocked until user acceptance.
+Accepted by the current user. Implementation is unlocked for the accepted `wiki-linkify-lint` scope only.
 
 ## Slice Contract
 
@@ -119,10 +119,10 @@ Acceptance means approving deterministic linkify/lint, safe issue recording, lin
 
 ## SDD Gate Acceptance Note
 
-- **SDD gate result:** Draft generated; awaiting user acceptance.
-- **User acceptance required before code:** yes.
-- **Product code changed:** no.
-- **Decision:** pending.
+- **SDD gate result:** Accepted by user; implementation is unlocked for the accepted scope only.
+- **User acceptance required before code:** satisfied.
+- **Product code changed after acceptance:** yes.
+- **Decision:** accepted and implemented for the deterministic Wave 1 maturity target.
 
 Recommended implementation handoff after acceptance:
 
@@ -130,9 +130,51 @@ Recommended implementation handoff after acceptance:
 Implement the wiki-linkify-lint slice strictly against docs/03-spec/wiki-linkify-lint-spec.md and docs/06-tasks/wiki-linkify-lint-tasks.md: complete every task in ID order, respect the stated constraints and verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
 
+## Implementation Completion Evidence
+
+| Task | Result | Evidence |
+|---|---|---|
+| T-WIKI-LINKIFY-LINT-001 | Completed | User acceptance was recorded before product code changes. |
+| T-WIKI-LINKIFY-LINT-002 | Completed | Added `V12__wiki_linkify_lint.sql`; extended issue repository query paths and run mode response mapping. |
+| T-WIKI-LINKIFY-LINT-003 | Completed | Added `POST /api/spaces/{spaceId}/wiki-linkify-lint-runs` and `GET /api/spaces/{spaceId}/wiki-page-issues` DTO/controller/service paths with API contract coverage. |
+| T-WIKI-LINKIFY-LINT-004 | Completed | Implemented same-space slug/alias target indexing with ambiguous term suppression and `REVIEW_REQUIRED` issue recording. |
+| T-WIKI-LINKIFY-LINT-005 | Completed | Added protected-region-aware `WikiMarkdownLinkifier` with unit tests for frontmatter, code, Markdown links/images, existing Wiki links, self links, and one-link-per-target behavior. |
+| T-WIKI-LINKIFY-LINT-006 | Completed | `WikiPage.applyLinkMetadata` updates sorted unique `inLinks`/`outLinks` only when link metadata or artifact content changes. |
+| T-WIKI-LINKIFY-LINT-007 | Completed | Implemented broken link, orphan page, missing source, stale source, thin content, unreadable artifact, and ambiguous alias warnings. |
+| T-WIKI-LINKIFY-LINT-008 | Completed | Run/log/issue evidence uses safe summaries and deterministic issue ids to avoid duplicate explosion. |
+| T-WIKI-LINKIFY-LINT-009 | Completed | Vue Processing Center and Wiki page detail show space/page Wiki issue warnings. |
+| T-WIKI-LINKIFY-LINT-010 | Completed | Publish/list/ingest regression coverage was included in focused and full backend verification. |
+| T-WIKI-LINKIFY-LINT-011 | Completed | Backend, frontend, E2E, second-layer E2E, diff hygiene, secret/path, and network/dependency scans were run. |
+| T-WIKI-LINKIFY-LINT-012 | Completed | Traceability, roadmap, spec, and task status were updated after implementation. |
+
+## Verification Results
+
+| Check | Result | Notes |
+|---|---|---|
+| TDD RED | Failed as expected before implementation | `cd backend && mvn -q -Dtest=WikiMarkdownLinkifierTest,WikiLinkifyLintServiceTest,WikiLinkifyLintApiContractIT -DfailIfNoTests=false test` failed because linkify/lint classes did not yet exist. |
+| Focused backend | Passed | `cd backend && mvn -q -Dtest=WikiMarkdownLinkifierTest,WikiLinkifyLintServiceTest,WikiLinkifyLintApiContractIT,ReviewPublishApiContractIT -DfailIfNoTests=false test` |
+| Full backend tests | Passed | `cd backend && mvn -q test`; expected existing `GlobalExceptionHandlerTest` stack trace appeared with exit code 0. |
+| Backend verify | Passed | `cd backend && mvn -q verify`; Flyway validated through V12. |
+| Focused frontend unit | Passed | `cd frontend && npm run test -- App.test.ts`; 12 focused tests passed. |
+| Frontend quality gate | Passed | `cd frontend && npm run typecheck && npm run test && npm run build`; 18 Vitest tests passed. |
+| Frontend E2E | Passed after mock-route fix | First run exposed a missing E2E mock for `/wiki-page-issues`; after adding the mock route, `cd frontend && npm run e2e` passed with 13 tests. |
+| Second-layer E2E | Passed | `npm run e2e:second-layer` passed with local Postgres/backend/frontend and 2 Playwright tests. |
+| Diff hygiene | Passed | `git diff --check` returned no findings before documentation closeout. |
+| Secret/private-path scan | Passed | Broad scan hit existing frontend names such as `safeToken`/`apiKeyInput`; diff-only scan found no new secret or private-path hits. |
+| Network/dependency scan | Passed | Broad scan hit existing API base/fetch/Ollama/DeepSeek references; diff-only scan found no new external call or dependency. |
+| Design fidelity review | Passed with minor correction applied | Review found ambiguous alias auto-linking risk and over-broad `updatedPageIds`; both were corrected and covered by focused backend tests. |
+
+## Code vs Design Review Result
+
+- **Alignment rating:** 96%.
+- **Verdict:** Aligned with acceptable maturity boundaries.
+- **Corrections applied:** ambiguous aliases are no longer auto-linked, affected pages receive `REVIEW_REQUIRED`, and `updatedPageIds` now reports changed or would-change pages rather than every scanned page.
+- **Blockers before next Wave 1 closeout:** none identified for the accepted deterministic linkify/lint scope.
+- **Not included by design:** SME approval workflow, refresh/retract automation, connector/runtime integration, model-assisted linking, production RBAC, and production readiness.
+
 ## Residual Risks
 
 - Markdown linkification is intentionally deterministic and conservative; complex natural-language entity linking is deferred.
 - Existing issue taxonomy is reused; ambiguous alias and unsafe artifact cases map to `REVIEW_REQUIRED`.
-- The schema requires a small additive mode constraint update for `linkify-lint` during implementation.
-- No product code has been changed in this SDD pass.
+- The implementation is local and deterministic; richer parser/runtime integration remains gated behind a later `real-office-parser-runtime` slice.
+- The UI exposes review-facing warnings, not final SME approval or trust-state transitions.

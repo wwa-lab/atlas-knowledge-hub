@@ -71,6 +71,7 @@ Before making changes, always read:
 
 - When the user sets a goal for a slice, treat the goal as an execution contract from SDD docs to code to verification.
 - For Codex goal mode and loop-style execution, use `docs/00-context/agent-goal-loop-workflow.md` / `.zh-CN.md` plus an execution manifest under `docs/00-context/execution-manifests/`.
+- For mixed Codex and GitHub Copilot usage, use `docs/00-context/agent-execution-modes.md` / `.zh-CN.md` to choose the execution surface before starting.
 - Use `docs/00-context/agent-goal-loop-quickstart.md` / `.zh-CN.md` to choose the lightest safe workflow tier before starting.
 - Generate new manifests with `npm run agent:manifest -- --slice <slice> --mode <single-slice|master>`.
 - Check SDD readiness with `npm run agent:check-sdd -- --slice <slice>` and use `docs/00-context/checklists/goal-closeout-gate.md` before close-out.

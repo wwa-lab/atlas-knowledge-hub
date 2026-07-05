@@ -2,6 +2,8 @@
 
 这是一页版操作指南，用来快速选择 workflow tier，并启动 Codex goal，而不需要每次重读所有 workflow 文档。
 
+如果公司内部主要使用 GitHub Copilot Chat，先阅读 `docs/00-context/agent-execution-modes.zh-CN.md`。Copilot Chat 使用同一套 gates，但由人作为 loop operator。
+
 ## 1. 选择 Tier
 
 | 任务 | Tier |

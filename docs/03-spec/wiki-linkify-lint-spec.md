@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for user review. Product code must wait for explicit user acceptance.
+ Accepted by the current user and implemented for the deterministic Wave 1 `wiki-linkify-lint` maturity target. This status does not claim production readiness.
 
 ## Overview
 

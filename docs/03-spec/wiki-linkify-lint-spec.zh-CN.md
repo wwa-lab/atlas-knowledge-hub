@@ -2,7 +2,7 @@
 
 ## 状态
 
-供用户审阅的草稿。产品代码必须等待用户明确接受。
+当前用户已接受，并已按 Wave 1 `wiki-linkify-lint` 的 deterministic 成熟度目标实现。本状态不代表 production readiness。
 
 ## 概述
 

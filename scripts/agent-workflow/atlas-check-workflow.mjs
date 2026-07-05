@@ -21,6 +21,7 @@ const STATIC_FILES = [
   "AGENTS.md",
   "PROJECT_RULES.md",
   "DEVELOPMENT_STANDARDS.md",
+  ".github/copilot-instructions.md",
   "docs/SDD-BOOTSTRAP.md",
   "docs/SDD-BOOTSTRAP.zh-CN.md",
   "package.json",
@@ -37,6 +38,7 @@ const STATIC_DIRS = [
 
 const STATIC_GLOBS = [
   /^docs\/00-context\/agent-goal-loop-.*\.md$/,
+  /^docs\/00-context\/agent-execution-modes(?:\.zh-CN)?\.md$/,
 ];
 
 function parseArgs(argv) {
