@@ -255,6 +255,24 @@ public class ReviewPublishService {
         .toList();
   }
 
+  /** Lists safe issue metadata for one Knowledge Space. */
+  @Transactional(readOnly = true)
+  public List<WikiPageIssueResponse> listWikiSpaceIssues(
+      String spaceId, String status, String issueType) {
+    spaceService.findSpace(spaceId);
+    List<com.atlas.metadata.domain.WikiPageIssue> issues;
+    if (issueType != null && !issueType.isBlank() && status != null && !status.isBlank()) {
+      issues =
+          wikiPageIssueRepository.findBySpaceIdAndIssueTypeAndStatusOrderByCreatedAtDescIdAsc(
+              spaceId, issueType, status);
+    } else if (status != null && !status.isBlank()) {
+      issues = wikiPageIssueRepository.findBySpaceIdAndStatusOrderByCreatedAtDescIdAsc(spaceId, status);
+    } else {
+      issues = wikiPageIssueRepository.findBySpaceIdOrderByCreatedAtDescIdAsc(spaceId);
+    }
+    return issues.stream().map(WikiPageMapper::toResponse).toList();
+  }
+
   private ReviewQueueItemResponse queue(
       ReviewQueueType type,
       List<FileItem> files,

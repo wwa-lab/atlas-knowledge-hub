@@ -63,6 +63,27 @@ public class LocalArtifactStorageService {
     return relativePath;
   }
 
+  /** Reads a stored UTF-8 text artifact from a safe relative path. */
+  public String readText(String relativePath) {
+    Path target = resolveForWrite(relativePath);
+    try {
+      return Files.readString(target, StandardCharsets.UTF_8);
+    } catch (IOException ex) {
+      throw new IllegalStateException("Failed to read text artifact safely.");
+    }
+  }
+
+  /** Rewrites a stored UTF-8 text artifact at a safe relative path. */
+  public void writeText(String relativePath, String content) {
+    Path target = resolveForWrite(relativePath);
+    try {
+      Files.createDirectories(target.getParent());
+      Files.writeString(target, content == null ? "" : content, StandardCharsets.UTF_8);
+    } catch (IOException ex) {
+      throw new IllegalStateException("Failed to write text artifact safely.");
+    }
+  }
+
   /** Resolves a stored relative path inside the artifact root. */
   public Path resolve(String relativePath) {
     return resolveForWrite(relativePath);

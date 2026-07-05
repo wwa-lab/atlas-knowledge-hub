@@ -114,6 +114,41 @@ public class WikiGenerationRun {
     return run;
   }
 
+  /** Creates a completed deterministic Wiki maintenance run metadata record. */
+  public static WikiGenerationRun maintenance(
+      String id,
+      String spaceId,
+      String status,
+      String mode,
+      String requestedBy,
+      String[] updatedPageIds,
+      String[] issueIds,
+      String safeSummary,
+      String safeError,
+      OffsetDateTime startedAt,
+      OffsetDateTime finishedAt) {
+    WikiGenerationRun run = new WikiGenerationRun();
+    run.id = id;
+    run.spaceId = spaceId;
+    run.pageId = firstPageId(null, updatedPageIds);
+    run.status = status;
+    run.mode = mode == null || mode.isBlank() ? "linkify-lint" : mode;
+    run.sourceMode = "AUTO_GENERATED";
+    run.refreshPolicy = "ON_SOURCE_CHANGE";
+    run.requestedBy = requestedBy;
+    run.inputSourceRefs = List.of();
+    run.createdPageIds = new String[0];
+    run.updatedPageIds = updatedPageIds == null ? new String[0] : updatedPageIds.clone();
+    run.issueIds = issueIds == null ? new String[0] : issueIds.clone();
+    run.eligibleChunkCount = 0;
+    run.excludedChunkCount = 0;
+    run.safeSummary = safeSummary;
+    run.safeError = safeError;
+    run.startedAt = startedAt;
+    run.finishedAt = finishedAt;
+    return run;
+  }
+
   public String getId() {
     return id;
   }

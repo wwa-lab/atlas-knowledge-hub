@@ -132,6 +132,7 @@ class ReviewPublishApiContractIT {
                     "ibm-i-modernization",
                     "wiki-file-001",
                     "SUCCEEDED",
+                    "deterministic",
                     "PUBLISHED_FILE",
                     "MANUAL",
                     "system-sample",
@@ -198,6 +199,32 @@ class ReviewPublishApiContractIT {
         .perform(get("/api/wiki-pages/wiki-file-001/issues"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].issueType").value("MISSING_SOURCE_REF"))
+        .andExpect(jsonPath("$").value(not(containsString("password"))));
+  }
+
+  @Test
+  void wikiSpaceIssuesReturnSafeLintWarnings() throws Exception {
+    when(reviewPublishService.listWikiSpaceIssues("ibm-i-modernization", "OPEN", "BROKEN_LINK"))
+        .thenReturn(
+            List.of(
+                new WikiPageIssueResponse(
+                    "wiki-issue-broken-link-001",
+                    "ibm-i-modernization",
+                    "wiki-file-001",
+                    "BROKEN_LINK",
+                    "MEDIUM",
+                    "OPEN",
+                    List.of(new WikiReferenceResponse("WIKI_PAGE", "wiki-file-001", "p0-wiki", null)),
+                    "Wiki link target does not exist in this Knowledge Space.",
+                    OffsetDateTime.parse("2026-07-05T00:00:00Z"),
+                    null)));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/wiki-page-issues?status=OPEN&issueType=BROKEN_LINK"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].issueType").value("BROKEN_LINK"))
+        .andExpect(jsonPath("$.data[0].severity").value("MEDIUM"))
+        .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
         .andExpect(jsonPath("$").value(not(containsString("password"))));
   }
 

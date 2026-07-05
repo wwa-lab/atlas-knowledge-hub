@@ -93,4 +93,13 @@ public class ReviewPublishController {
       @PathVariable String wikiPageId) {
     return ApiEnvelope.ok(reviewPublishService.listWikiPageIssues(wikiPageId));
   }
+
+  /** Lists safe issues for a Knowledge Space. */
+  @GetMapping("/spaces/{spaceId}/wiki-page-issues")
+  public ApiEnvelope<List<WikiPageIssueResponse>> listWikiSpaceIssues(
+      @PathVariable String spaceId,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) String issueType) {
+    return ApiEnvelope.ok(reviewPublishService.listWikiSpaceIssues(spaceId, status, issueType));
+  }
 }

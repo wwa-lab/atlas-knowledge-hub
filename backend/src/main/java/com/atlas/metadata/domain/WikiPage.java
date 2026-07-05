@@ -249,6 +249,23 @@ public class WikiPage {
     this.lastUpdated = lastUpdated;
   }
 
+  /** Applies deterministic Wiki link metadata while preserving trust and source evidence fields. */
+  public void applyLinkMetadata(
+      String[] inLinks, String[] outLinks, boolean artifactChanged, OffsetDateTime lastUpdated) {
+    String[] nextInLinks = inLinks == null ? new String[0] : inLinks.clone();
+    String[] nextOutLinks = outLinks == null ? new String[0] : outLinks.clone();
+    boolean changed =
+        artifactChanged
+            || !Arrays.equals(this.inLinks == null ? new String[0] : this.inLinks, nextInLinks)
+            || !Arrays.equals(this.outLinks == null ? new String[0] : this.outLinks, nextOutLinks);
+    this.inLinks = nextInLinks;
+    this.outLinks = nextOutLinks;
+    if (changed) {
+      this.version = version == null || version < 1 ? 1 : version + 1;
+      this.lastUpdated = lastUpdated;
+    }
+  }
+
   public String getId() {
     return id;
   }

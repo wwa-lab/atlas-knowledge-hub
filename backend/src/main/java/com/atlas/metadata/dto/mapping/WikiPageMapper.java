@@ -67,6 +67,7 @@ public final class WikiPageMapper {
         run.getSpaceId(),
         run.getPageId(),
         run.getStatus(),
+        run.getMode(),
         run.getSourceMode(),
         run.getRefreshPolicy(),
         run.getRequestedBy(),
