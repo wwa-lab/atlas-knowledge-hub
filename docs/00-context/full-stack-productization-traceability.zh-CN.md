@@ -68,3 +68,32 @@
 - 生产认证/RBAC。
 - 生产 storage/vector/model providers。
 - 真实公司数据摄取。
+
+## Product Goal Batch 5 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I1-I3 API-backed Vue 切换 | `T-FSP-011`；消费 `T-MA-014` 中 space/batch/file/chunk metadata 范围，以及 `review-publish` review queue API | L3 API-backed | `frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`；`docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`；真实 Vue 首页、空间页头、Documents tab 与 Processing Center 消费 Atlas API responses，覆盖 Knowledge Space metadata、batch/file/chunk metadata 与 review queues。 |
+
+2026-07-05 验证：`cd frontend && npm run typecheck && npm run test && npm run build`；focused Phase I1-I3 Playwright；Batch 1-5 Playwright regression；`cd backend && mvn verify`。该状态不代表最终产品验收通过，也不新增后端/API 契约。
+
+## Product Goal Batch 6 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I4-I7 API-backed Vue 切换 | `T-FSP-012`；消费既有 review-publish、knowledge-graph、ask-rag 与 model-adapter APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`；真实 Vue Wiki、Graph、全局 Ask 与 model settings surfaces 消费 Atlas API responses。 |
+
+2026-07-05 验证：`cd frontend && npm run typecheck && npm run test && npm run build`；focused Phase I4-I7 Playwright；Batch 1-6 Playwright regression；`cd backend && mvn verify`。该状态不代表最终产品验收通过，也不新增生产 provider 调用、明文 secret、真实公司数据或新的后端/API 契约。
+
+## Core Knowledge Loop v1 Traceability 补充
+
+| Requirement | Stories | Tasks | Verification |
+|---|---|---|---|
+| REQ-FSP-013 | 用户可正常配置 model key | T-FSP-014, T-FSP-019 | Masked configuration API/UI checks；backend adapter tests |
+| REQ-FSP-014 | 用户可上传真实文档 | T-FSP-015, T-FSP-019 | Multipart PDF/ZIP ingestion tests；manual UI upload |
+| REQ-FSP-015 | 上传文档通过 adapter boundary 解析 | T-FSP-016 | Parser adapter tests；source trace inspection |
+| REQ-FSP-016 | File 与 chunks review state 一致 | T-FSP-017 | Review service tests 与 queue inspection |
+| REQ-FSP-017 | 后端刷新 downstream evidence | T-FSP-018, T-FSP-019 | Downstream refresh tests；graph/vector evidence checks |
+| REQ-FSP-018 | Ask 在 publish/refresh 后可运行 | T-FSP-014, T-FSP-018, T-FSP-019 | Ask API/UI smoke with citations or safe state |
+| REQ-FSP-019 | 未支持功能可见 disabled | T-FSP-019 | Frontend disabled-state checks |
+| REQ-FSP-020 | 闭环安全门有记录 | T-FSP-020 | Final verification report |

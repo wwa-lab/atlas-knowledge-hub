@@ -31,7 +31,7 @@ Provider-backed third-layer only:
 ```bash
 export ATLAS_MODEL_PROVIDER=deepseek
 export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_API_KEY='<local-provider-api-key>'
 export ATLAS_MODEL_NAME=deepseek-chat
 npm run e2e:third-layer
 ```

@@ -52,3 +52,9 @@ Review date: 2026-07-03.
 - Frontend acceptance correction applied: the Vue `[data-tab="graph"]` surface now owns the API-backed graph data path with search, node/edge filters, evidence-only toggle, SVG canvas, legend, hover/focus affordances, node/edge selection, source-trace evidence detail, empty state, fallback state, and unauthorized state.
 - Verification correction applied: `frontend/tests/e2e/knowledge-graph.spec.ts` asserts API-backed graph data, search/filter behavior, node and edge selection, source trace/confidence/review status, unauthorized state, and empty state on the real `[data-tab="graph"]` surface.
 - Follow-up prevention: future T-KG-010/T-KG-011 close-out must keep E2E assertions on the actual spec-named user-facing surface, not on an adjacent transition panel or smoke-only prototype SVG check.
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-KG-014 | Complete | Product Goal Batch 3 added the real Vue Knowledge Space Graph product surface with graph canvas, node types, search, legend, node selection, detail panel, confidence, review status, and evidence/source trace. Evidence: `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`, `docs/00-context/evidence/phase-f-knowledge-graph.png`, frontend typecheck/test/build/E2E. |

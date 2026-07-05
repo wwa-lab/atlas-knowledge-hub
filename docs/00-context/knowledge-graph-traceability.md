@@ -100,3 +100,19 @@ Implemented; code-against-design findings resolved. Phase 4 hardening. Last upda
 ```text
 Implement the knowledge-graph slice strictly against docs/03-spec/knowledge-graph-spec.md and docs/06-tasks/knowledge-graph-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 3 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase F Knowledge Graph | `T-KG-014` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-f-knowledge-graph.png`; real Vue Knowledge Space Graph tab shows a graph canvas, node types, search, legend, selected node detail, confidence, review status, and evidence/source trace. |
+
+This status updates product-surface maturity only. It does not add production graph database/layout behavior, real data ingestion, or new backend/API contracts.
+
+## Product Goal Batch 6 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I5 Graph evidence API-backed Vue cutover | `T-FSP-012` consuming existing graph read/detail APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`; real Vue Graph tab maps API graph nodes and source-trace evidence into the product graph surface. |
+
+This status upgrades the product graph surface only. It does not add production graph extraction, real graph layout engines, real company data, or new backend/API contracts.

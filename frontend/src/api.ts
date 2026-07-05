@@ -6,10 +6,14 @@ import type {
   ApiGraphNodeDetail,
   ApiGraphProjectionRun,
   ApiGraphView,
+  ApiIngestionResponse,
+  ApiModelCapability,
+  ApiModelConfiguration,
   ApiReview,
   ApiReviewQueues,
   ApiSourceChunk,
   ApiSpace,
+  ApiDownstreamRefreshResponse,
   ApiVectorRun,
   ApiWikiPage
 } from '@/types'
@@ -161,6 +165,33 @@ export async function createVectorRun(spaceId: string, batchId: string, chunkIds
   })
 }
 
+export async function uploadDocuments(spaceId: string, files: File[], owner = 'frontend-user') {
+  const formData = new FormData()
+  for (const file of files) {
+    formData.append('files', file)
+  }
+  formData.append('owner', owner)
+  return atlasFetch<ApiIngestionResponse>(`/api/spaces/${spaceId}/ingestions`, {
+    method: 'POST',
+    body: formData
+  })
+}
+
+export async function refreshDownstreamEvidenceApi(
+  spaceId: string,
+  batchId?: string,
+  fileItemId?: string
+) {
+  return atlasFetch<ApiDownstreamRefreshResponse>(`/api/spaces/${spaceId}/downstream-refresh`, {
+    method: 'POST',
+    body: {
+      batchId,
+      fileItemId,
+      requestedBy: 'p0-browser'
+    }
+  })
+}
+
 export async function getGraph(spaceId: string, query = '') {
   const params = new URLSearchParams({ limit: '50', evidenceOnly: 'true' })
   if (query.trim()) {
@@ -200,20 +231,52 @@ export async function getAskRun(runId: string) {
   return atlasFetch<ApiAskRun>(`/api/ask-runs/${runId}`)
 }
 
+export async function listModelAdapters() {
+  return atlasFetch<ApiModelCapability[]>('/api/model-adapters')
+}
+
+export async function getDeepSeekConfiguration() {
+  return atlasFetch<ApiModelConfiguration>('/api/model-configurations/deepseek')
+}
+
+export async function saveDeepSeekConfiguration(payload: {
+  endpoint?: string
+  modelName?: string
+  apiKey?: string
+}) {
+  return atlasFetch<ApiModelConfiguration>('/api/model-configurations/deepseek', {
+    method: 'PUT',
+    body: {
+      provider: 'deepseek',
+      endpoint: payload.endpoint,
+      modelName: payload.modelName,
+      apiKey: payload.apiKey
+    }
+  })
+}
+
+export async function clearDeepSeekConfiguration() {
+  return atlasFetch<ApiModelConfiguration>('/api/model-configurations/deepseek', {
+    method: 'DELETE'
+  })
+}
+
 interface AtlasFetchOptions {
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
   headers?: Record<string, string>
 }
 
 async function atlasFetch<T>(path: string, options: AtlasFetchOptions = {}): Promise<T> {
+  const isFormData = options.body instanceof FormData
+  const requestBody = buildRequestBody(options.body)
   const response = await globalThis.fetch(apiUrl(path), {
     method: options.method ?? 'GET',
     headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers
     },
-    body: options.body ? JSON.stringify(options.body) : undefined
+    body: requestBody
   })
   const envelope = (await response.json().catch(() => null)) as ApiEnvelope<T> | null
   if (!response.ok || !envelope?.success || envelope.data == null) {
@@ -222,6 +285,16 @@ async function atlasFetch<T>(path: string, options: AtlasFetchOptions = {}): Pro
     throw new ApiError(message, response.status, code)
   }
   return envelope.data
+}
+
+function buildRequestBody(body: unknown): BodyInit | undefined {
+  if (body == null) {
+    return undefined
+  }
+  if (body instanceof FormData) {
+    return body
+  }
+  return JSON.stringify(body)
 }
 
 function apiUrl(path: string) {

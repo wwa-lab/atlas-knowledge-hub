@@ -148,3 +148,19 @@ for f in docs/01-requirements/ask-rag-requirements.md docs/01-requirements/ask-r
 ```text
 Implement the ask-rag slice strictly against docs/03-spec/ask-rag-spec.md and docs/06-tasks/ask-rag-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 3 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase G Trusted Ask | `T-ASKRAG-011` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-g-trusted-ask.png`; real Vue global Chat shows multi-space context selection, question input, model selector, evidence citations, no-approved-evidence refusal, and review-required warning. |
+
+This status updates product-surface maturity only. It does not add real external model calls, production RAG optimization, raw prompt/vector/provider payload storage, or new backend/API contracts.
+
+## Product Goal Batch 6 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I6 Ask runs and citations API-backed Vue cutover | `T-FSP-012` consuming existing Ask create/read APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`; real Vue global Ask submits through Atlas API and displays answer status, model run id, and citations. |
+
+This status upgrades the product Ask surface only. It does not add production retrieval governance, real provider calls, real company data, or new backend/API contracts.

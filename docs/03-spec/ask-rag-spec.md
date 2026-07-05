@@ -141,3 +141,13 @@ Full request/response details live in `docs/05-design/contracts/ask-rag-API_IMPL
 - OQ-ASKRAG-001: Role-specific visibility of review-required evidence.
 - OQ-ASKRAG-002: Future path for turning Ask answers into review queue items.
 - OQ-ASKRAG-003: Whether reranking is a separate follow-up.
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 extends Trusted Ask into the real Vue product shell without invoking real model or vector providers.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase G Trusted Ask | The real Vue global Chat surface provides multi-Knowledge-Space context selection, a question input, model selector, answer panel, evidence citations, review-required warning, and no-approved-evidence refusal state using mock/sample-safe data. |
+
+This addendum changes only the Vue product surface maturity. It does not add production RAG optimization, raw prompt persistence, raw vector/provider payload storage, real external model calls, or new backend/API behavior.

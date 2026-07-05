@@ -121,3 +121,10 @@ Updated on 2026-07-03 after implementation verification.
 | T-REVIEW-PUBLISH-007 | Complete | Added published Wiki metadata mock data and visible source/confidence/published status in the prototype. |
 | T-REVIEW-PUBLISH-008 | Complete | Added Playwright E2E coverage for ready-to-publish and missing-trace blocked states; `npm run e2e` passed. |
 | T-REVIEW-PUBLISH-009 | Complete | `git diff --check`, network scan, secret/private-path scan, backend targeted tests, frontend typecheck, frontend unit tests, E2E, full `cd backend && mvn verify`, and `cd frontend && npm run build` passed after ask/knowledge-graph and `App.vue` lint blockers were resolved. |
+| T-REVIEW-PUBLISH-010 | Complete | Product Goal Batch 2 added the real Vue Processing Center parity surface with metrics and queue explanations for parse failures, OCR required, low confidence, missing source trace, LLM-generated review, and ready-to-publish content. Evidence: `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`, `docs/00-context/evidence/phase-d-processing-center.png`, frontend typecheck/test/build/E2E. |
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-REVIEW-PUBLISH-011 | Complete | Product Goal Batch 3 added the real Vue LM Wiki product surface with a browsable page index, Markdown-like content sections, entity links, metadata, confidence, review status, and visible source trace blocks. Evidence: `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`, `docs/00-context/evidence/phase-e-lm-wiki.png`, frontend typecheck/test/build/E2E. |

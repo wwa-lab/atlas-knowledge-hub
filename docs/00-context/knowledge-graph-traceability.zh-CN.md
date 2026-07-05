@@ -100,3 +100,19 @@
 ```text
 Implement the knowledge-graph slice strictly against docs/03-spec/knowledge-graph-spec.md and docs/06-tasks/knowledge-graph-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 3 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase F 知识图谱 | `T-KG-014` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-f-knowledge-graph.png`；真实 Vue 知识空间 Graph 标签页展示 graph canvas、node types、search、legend、selected node detail、confidence、review status 和 evidence/source trace。 |
+
+该状态仅更新产品界面成熟度，不新增生产 graph database/layout 行为、真实数据 ingestion 或新的 backend/API contract。
+
+## Product Goal Batch 6 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I5 Graph evidence API-backed Vue 切换 | `T-FSP-012`，消费既有 graph read/detail APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`；真实 Vue Graph tab 将 API graph nodes 与 source-trace evidence 映射到产品图谱界面。 |
+
+该状态只升级产品图谱界面，不新增生产 graph extraction、真实 graph layout engine、真实公司数据或新的后端/API 契约。

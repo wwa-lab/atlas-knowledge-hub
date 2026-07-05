@@ -234,7 +234,7 @@ public class AskService {
             .toList();
     boolean configuredMode = "configured".equals(validated.mode());
     return new CreateModelRunRequest(
-        configuredMode ? "deepseek" : null,
+        configuredMode ? configuredModelProvider() : null,
         configuredMode ? null : "deepseek-flash",
         ModelOperation.CHAT,
         "trusted-ask",
@@ -245,6 +245,12 @@ public class AskService {
             + validated.question()
             + "\nAnswer the trusted ask question using only the referenced Atlas evidence.",
         references);
+  }
+
+  private String configuredModelProvider() {
+    String provider = System.getenv().getOrDefault("ATLAS_MODEL_PROVIDER", "deepseek");
+    String normalized = provider.trim().toLowerCase().replace('_', '-');
+    return normalized.isBlank() ? "deepseek" : normalized;
   }
 
   private String safeLabel(AskEvidence evidence) {

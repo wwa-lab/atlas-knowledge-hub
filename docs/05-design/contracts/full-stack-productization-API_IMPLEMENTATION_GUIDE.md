@@ -126,3 +126,32 @@ X-Atlas-Role: ADMIN
 - Existing backend contract tests must still pass under `mvn verify`.
 - New frontend E2E must use browser controls to call the endpoint sequence.
 - No frontend code may call provider/vector/parser/storage/converter engines directly.
+
+## Core Knowledge Loop v1 API Addendum
+
+### Runtime Model Configuration
+
+```http
+GET /api/model-configurations/deepseek
+PUT /api/model-configurations/deepseek
+DELETE /api/model-configurations/deepseek
+```
+
+`PUT` accepts provider, endpoint, model name, and raw API key. Responses never include the raw key; they expose `CONFIGURED`, `ENV_CONFIGURED`, or `MISSING` credential state plus safe masked metadata.
+
+### Real Upload Ingestion
+
+```http
+POST /api/spaces/{spaceId}/ingestions
+Content-Type: multipart/form-data
+```
+
+Supported v1 files are PDF and ZIP archives containing PDF files. The backend stores bytes under the configured Atlas artifact root, creates batch/file metadata, runs the local PDF parser adapter, and returns the created batch, files, chunks, and parser run summary.
+
+### Downstream Refresh
+
+```http
+POST /api/spaces/{spaceId}/downstream-refresh
+```
+
+The backend refreshes graph projection and vector index evidence for approved or published chunks in the requested scope. The frontend must not call vector, parser, model, or storage engines directly.

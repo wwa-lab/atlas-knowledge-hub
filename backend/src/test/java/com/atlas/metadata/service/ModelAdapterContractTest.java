@@ -81,7 +81,7 @@ class ModelAdapterContractTest {
                 "configured-test-value",
                 "ATLAS_MODEL_NAME",
                 "deepseek-test"),
-            request -> new ConfiguredModelAdapter.DeepSeekChatResponse("Provider answer from evidence.", 12, 7));
+            request -> new ConfiguredModelAdapter.ChatCompletionResponse("Provider answer from evidence.", 12, 7));
 
     var capability = adapter.capabilities().getFirst();
     assertThat(capability.adapterKey()).isEqualTo("deepseek");
@@ -103,6 +103,45 @@ class ModelAdapterContractTest {
     assertThat(result.outputs()).singleElement().satisfies(output -> {
       assertThat(output.kind()).isEqualTo(ModelOutputKind.TEXT_SUMMARY);
       assertThat(output.safeSummary()).contains("Provider answer");
+      assertThat(output.reviewStatus()).isEqualTo(ReviewStatus.REVIEW_REQUIRED);
+    });
+  }
+
+  @Test
+  void configuredGitHubModelsAdapterExecutesChatWithMaskedCapability() {
+    ConfiguredModelAdapter adapter =
+        new ConfiguredModelAdapter(
+            Map.of(
+                "ATLAS_MODEL_PROVIDER",
+                "github-models",
+                "ATLAS_MODEL_ENDPOINT",
+                "https://models.github.ai/inference",
+                "ATLAS_MODEL_API_KEY",
+                "configured-test-value",
+                "ATLAS_MODEL_NAME",
+                "openai/gpt-4.1"),
+            request -> new ConfiguredModelAdapter.ChatCompletionResponse("GitHub Models answer.", 8, 5));
+
+    var capability = adapter.capabilities().getFirst();
+    assertThat(capability.adapterKey()).isEqualTo("github-models");
+    assertThat(capability.modelKey()).isEqualTo("openai/gpt-4.1");
+    assertThat(capability.displayName()).isEqualTo("GitHub Models Chat");
+    assertThat(capability.status()).isEqualTo(ModelAdapterStatus.AVAILABLE);
+    assertThat(capability.maskedConfigSummary())
+        .containsEntry("provider", "github-models")
+        .containsEntry("credential", "configured")
+        .containsEntry("endpoint", "configured");
+    assertThat(capability.maskedConfigSummary().values())
+        .allSatisfy(value -> assertThat(value).doesNotContain("configured-test-value", "models.github.ai"));
+
+    ModelResult result = adapter.execute(request(ModelOperation.CHAT, "openai/gpt-4.1", "configured"));
+
+    assertThat(result.adapterKey()).isEqualTo("github-models");
+    assertThat(result.modelKey()).isEqualTo("openai/gpt-4.1");
+    assertThat(result.safeMessage()).contains("Provider chat operation completed");
+    assertThat(result.outputs()).singleElement().satisfies(output -> {
+      assertThat(output.kind()).isEqualTo(ModelOutputKind.TEXT_SUMMARY);
+      assertThat(output.safeSummary()).contains("GitHub Models answer");
       assertThat(output.reviewStatus()).isEqualTo(ReviewStatus.REVIEW_REQUIRED);
     });
   }

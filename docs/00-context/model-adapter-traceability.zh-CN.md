@@ -135,3 +135,19 @@ API guide 已包含。`model-adapter` 是 Phase 3 backend/API adapter contract �
 ```text
 Implement the model-adapter slice strictly against docs/03-spec/model-adapter-spec.md and docs/06-tasks/model-adapter-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 4 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase H 设置与管理 | `T-MODA-011` | L2 Vue parity | `frontend/tests/e2e/phase-h-settings-administration.spec.ts`；`docs/00-context/evidence/phase-h-settings-administration.png`；真实 Vue settings modal 展示非空 administration panels，以及模型 list/add/edit/cancel/save/key/test 状态，并保持 credential masked/status-only。 |
+
+该状态仅更新产品界面成熟度，不新增生产 secret management、生产 RBAC、真实 provider 调用、外部网络调用或新的 backend/API contract。
+
+## Product Goal Batch 6 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I7 Model configuration metadata API-backed Vue 切换 | `T-FSP-012`，消费既有 model adapter capability API | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`；真实 Vue model settings surface 读取 `GET /api/model-adapters` 并展示 masked capability status。 |
+
+该状态只升级 masked model metadata 展示，不新增生产 secret management、provider calls、credential writes、真实公司数据或新的后端/API 契约。

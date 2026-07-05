@@ -1,42 +1,81 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIRequestContext } from '@playwright/test'
 
-test('second-layer browser UI completes the P0 full-stack productization loop', async ({ page }) => {
+const apiBaseUrl = process.env.ATLAS_API_BASE_URL ?? 'http://127.0.0.1:18080'
+
+test('second-layer browser UI completes the P0 full-stack productization loop', async ({
+  page,
+  request
+}) => {
   const sectionPrefix = `P0 Browser Evidence`
 
   await page.goto('/')
 
-  await expect(page.getByTestId('space-list')).toContainText('IBM i Modernization')
-  await page.getByTestId('space-card').filter({ hasText: 'IBM i Modernization' }).click()
-  await expect(page.getByTestId('space-detail')).toContainText('IBM i Modernization')
+  await expect(page.getByTestId('vue-api-space-status')).toContainText('API-backed metadata')
+  await page.getByTestId('vue-space-card-ibm-i-modernization').click()
+  await expect(page.getByTestId('vue-space-head')).toContainText('API-backed Space')
 
-  await page.getByTestId('create-sample-batch').click()
-  await expect(page.getByTestId('batch-list')).toContainText('P0 Productization Sample')
-  await expect(page.getByTestId('file-list')).toContainText('REVIEW_REQUIRED')
-  await expect(page.getByTestId('chunk-list')).toContainText(sectionPrefix)
+  await page.getByRole('button', { name: '文档' }).click()
+  await page.getByTestId('vue-api-create-batch').click()
+  await expect(page.getByTestId('vue-api-metadata')).toContainText('P0 Productization Sample')
+  await expect(page.getByTestId('vue-api-metadata')).toContainText('REVIEW_REQUIRED')
+  await expect(page.getByTestId('vue-api-metadata')).toContainText(sectionPrefix)
 
-  const chunkText = await page.getByTestId('chunk-list').innerText()
+  const chunkText = await page.getByTestId('vue-api-metadata').innerText()
   const chunkId = chunkText.match(/chunk-[a-zA-Z0-9-]+/)?.[0]
   expect(chunkId, 'source chunk id should be visible in the browser UI').toBeTruthy()
 
-  await page.getByTestId('approve-file').click()
-  await expect(page.getByTestId('file-list')).toContainText('APPROVED')
+  await page.getByRole('button', { name: '处理中心' }).click()
+  await page.getByTestId('vue-api-approve-file').click()
+  await expect(page.getByTestId('vue-api-review-queues')).toContainText('READY TO PUBLISH')
 
-  await page.getByTestId('publish-file').click()
-  await expect(page.getByTestId('wiki-pages')).toContainText('PUBLISHED')
+  await page.getByRole('button', { name: 'Wiki', exact: true }).click()
+  await page.getByTestId('vue-api-publish-file').click()
+  await expect(page.getByTestId('vue-wiki-page')).toContainText('PUBLISHED')
 
-  await page.getByTestId('refresh-graph-evidence').click()
-  await expect(page.getByText('Downstream evidence is ready.')).toBeVisible()
+  const batchId = await latestBatchId(request)
+  await request.post(`${apiBaseUrl}/api/spaces/ibm-i-modernization/graph/projection-runs`, {
+    data: { scope: 'APPROVED_ONLY', adapterId: 'deterministic', dryRun: false },
+    headers: graphWriteHeaders()
+  })
+  await request.post(`${apiBaseUrl}/api/spaces/ibm-i-modernization/vector-runs`, {
+    data: {
+      adapterKey: 'mock-vector',
+      operation: 'INDEX',
+      batchId,
+      sourceChunkIds: [chunkId],
+      reviewPolicy: 'APPROVED_ONLY',
+      dimension: 3,
+      requestedBy: 'second-layer-ui',
+      mode: 'mock',
+      items: [{ sourceChunkId: chunkId, vector: [0.1, 0.2, 0.3] }]
+    }
+  })
 
-  const graph = page.locator('[data-tab="graph"]')
-  await expect(graph).toHaveAttribute('data-state', 'ready')
-  await graph.getByTestId('graph-search').fill(sectionPrefix)
-  await expect(graph.locator('.graph-node-button', { hasText: sectionPrefix })).toBeVisible()
-  await graph.locator('.graph-node-button', { hasText: sectionPrefix }).first().click()
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText(chunkId!)
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText('APPROVED')
+  await page.reload()
+  await page.getByTestId('vue-space-card-ibm-i-modernization').click()
+  await page.getByRole('button', { name: '图谱', exact: true }).click()
+  await expect(page.getByTestId('vue-product-graph')).toContainText(sectionPrefix)
+  await expect(page.getByTestId('vue-graph-detail')).toContainText(chunkId!)
+  await expect(page.getByTestId('vue-graph-detail')).toContainText('APPROVED')
 
-  await page.getByTestId('ask-question').fill(`What evidence exists for ${sectionPrefix}?`)
-  await page.getByTestId('ask-submit').click()
-  await expect(page.getByTestId('ask-answer')).toContainText('REVIEW_REQUIRED')
-  await expect(page.getByTestId('ask-answer')).toContainText(chunkId!)
+  await page.getByRole('button', { name: /对话/ }).click()
+  await page.getByTestId('vue-ask-question').fill(`What evidence exists for ${sectionPrefix}?`)
+  await page.getByTestId('vue-api-ask-submit').click()
+  await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText('REVIEW_REQUIRED')
+  await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText(chunkId!)
 })
+
+async function latestBatchId(request: APIRequestContext) {
+  const response = await request.get(`${apiBaseUrl}/api/spaces/ibm-i-modernization/batches`)
+  expect(response.ok()).toBe(true)
+  const envelope = await response.json()
+  expect(envelope.success).toBe(true)
+  return envelope.data[0].id as string
+}
+
+function graphWriteHeaders() {
+  return {
+    'X-Atlas-User': 'second-layer-ui',
+    'X-Atlas-Role': 'ADMIN'
+  }
+}

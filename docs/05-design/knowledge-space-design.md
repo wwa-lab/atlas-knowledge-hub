@@ -290,6 +290,14 @@ Elements:
 - Default tab: `Wiki`.
 - No Ask tab appears inside Knowledge Space detail; dialogue is handled by Global Chat.
 
+### Product Goal Batch 1 Design Close-Out
+
+Phase A and Phase B use the existing `knowledge-space` slice as the SDD source of truth.
+
+- Phase A verifies the Vue product shell, sidebar, Home library, Global Chat, Settings overlay, and model management entry without using `iframe.product-frame` as the primary path.
+- Phase B verifies the real Vue `IBM i Modernization` detail page, including breadcrumb, back action, upload folder/ZIP affordances, default Wiki tab, and tab switching across Documents, Processing Center, Wiki, and Graph.
+- Screenshot evidence should capture the Home library and the Space Detail page from the Vite-served Vue app.
+
 ### Documents Tab
 
 Elements:

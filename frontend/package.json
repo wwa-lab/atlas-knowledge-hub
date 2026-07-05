@@ -13,7 +13,7 @@
     "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test tests/e2e/acceptance tests/e2e/folder-upload.spec.ts tests/e2e/full-stack-productization.spec.ts tests/e2e/knowledge-graph.spec.ts tests/e2e/phase1-smoke.spec.ts tests/e2e/review-publish.spec.ts",
+    "e2e": "playwright test tests/e2e/acceptance tests/e2e/folder-upload.spec.ts tests/e2e/full-stack-productization.spec.ts tests/e2e/knowledge-graph.spec.ts tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts tests/e2e/phase-h-settings-administration.spec.ts tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts tests/e2e/phase1-smoke.spec.ts tests/e2e/review-publish.spec.ts",
     "e2e:acceptance": "playwright test tests/e2e/acceptance",
     "e2e:second-layer": "playwright test tests/e2e/second-layer --workers=1",
     "e2e:third-layer": "playwright test tests/e2e/third-layer --timeout 120000",

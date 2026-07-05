@@ -68,3 +68,32 @@
 - Production auth/RBAC.
 - Production storage/vector/model providers.
 - Real company data ingestion.
+
+## Product Goal Batch 5 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I1-I3 API-backed Vue cutover | `T-FSP-011`; consumes `T-MA-014` scope for space/batch/file/chunk metadata and `review-publish` review queue API | L3 API-backed | `frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`; `docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`; real Vue home, space header, Documents tab, and Processing Center consume Atlas API responses for Knowledge Space metadata, batch/file/chunk metadata, and review queues. |
+
+Verification on 2026-07-05: `cd frontend && npm run typecheck && npm run test && npm run build`; focused Phase I1-I3 Playwright; Batch 1-5 Playwright regression; `cd backend && mvn verify`. This status does not mark final product acceptance and does not add new backend/API contracts.
+
+## Product Goal Batch 6 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I4-I7 API-backed Vue cutover | `T-FSP-012`; consumes existing review-publish, knowledge-graph, ask-rag, and model-adapter APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`; real Vue Wiki, Graph, global Ask, and model settings surfaces consume Atlas API responses. |
+
+Verification on 2026-07-05: `cd frontend && npm run typecheck && npm run test && npm run build`; focused Phase I4-I7 Playwright; Batch 1-6 Playwright regression; `cd backend && mvn verify`. This status does not mark final product acceptance and does not add production provider calls, raw secrets, real company data, or new backend/API contracts.
+
+## Core Knowledge Loop v1 Traceability Addendum
+
+| Requirement | Stories | Tasks | Verification |
+|---|---|---|---|
+| REQ-FSP-013 | User can configure model key normally | T-FSP-014, T-FSP-019 | Masked configuration API/UI checks; backend adapter tests |
+| REQ-FSP-014 | User can upload real documents | T-FSP-015, T-FSP-019 | Multipart PDF/ZIP ingestion tests; manual UI upload |
+| REQ-FSP-015 | Uploaded documents parse through adapter boundary | T-FSP-016 | Parser adapter tests; source trace inspection |
+| REQ-FSP-016 | Review state is consistent across file and chunks | T-FSP-017 | Review service tests and queue inspection |
+| REQ-FSP-017 | Backend refreshes downstream evidence | T-FSP-018, T-FSP-019 | Downstream refresh tests; graph/vector evidence checks |
+| REQ-FSP-018 | Ask runs after publish/refresh | T-FSP-014, T-FSP-018, T-FSP-019 | Ask API/UI smoke with citations or safe state |
+| REQ-FSP-019 | Unsupported features are visibly disabled | T-FSP-019 | Frontend disabled-state checks |
+| REQ-FSP-020 | Closed-loop safety gates are recorded | T-FSP-020 | Final verification report |

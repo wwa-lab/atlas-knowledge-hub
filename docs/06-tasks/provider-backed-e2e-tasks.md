@@ -14,7 +14,7 @@ Draft implementation checklist for future work. This documentation pass does not
 
 - Third-layer provider-backed E2E must be opt-in and isolated from first-layer, second-layer, default frontend E2E, backend verification, setup, and default CI.
 - Continue using mock/sample knowledge data only.
-- DeepSeek API key must come only from environment variables.
+- Provider API key must come only from environment variables.
 - Provider execution must stay behind the ModelAdapter boundary.
 - Do not log, persist, screenshot, trace, return, or commit raw keys, raw auth headers, raw provider responses, private paths, or real company data.
 - Missing key, network failure, provider 429, provider 5xx, timeout, and malformed output must fail safely.
@@ -61,13 +61,13 @@ Draft implementation checklist for future work. This documentation pass does not
   # Implementation must include a missing-key preflight test that proves no provider call starts.
   ```
 
-### T-PBE2E-003: Implement DeepSeek Provider Behind ModelAdapter
+### T-PBE2E-003: Implement Configured Provider Behind ModelAdapter
 
 - **Maps to:** REQ-PBE2E-004, REQ-PBE2E-005, REQ-PBE2E-006, REQ-PBE2E-012; spec sections `ModelAdapter Boundary`, `Provider Configuration`.
 - **Owner type:** backend
 - **Priority:** Must
 - **Dependencies:** T-PBE2E-002
-- **Scope:** Add or extend a DeepSeek-capable ModelAdapter implementation that reads runtime environment configuration server-side, calls the provider, normalizes output into the existing model result shape, and preserves review-required output status.
+- **Scope:** Add or extend a configured-provider ModelAdapter implementation that reads runtime environment configuration server-side, calls DeepSeek or GitHub Models, normalizes output into the existing model result shape, and preserves review-required output status.
 - **Constraints:** Provider-specific client/request/response parsing stays inside adapter implementation; no raw provider payload persistence.
 - **Verification:**
   ```bash
@@ -155,6 +155,6 @@ T-PBE2E-006 failure simulations may be developed alongside T-PBE2E-005 after the
 
 ## Open Questions
 
-- OQ-PBE2E-001: Exact environment variable name for the DeepSeek key.
+- OQ-PBE2E-001: Exact environment variable name for the provider key.
 - OQ-PBE2E-002: Trace/video retention policy for third-layer failures.
 - OQ-PBE2E-003: Whether protected CI with managed secrets is ever desired.

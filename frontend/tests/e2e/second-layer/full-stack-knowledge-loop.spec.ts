@@ -127,8 +127,12 @@ test('second-layer local stack publishes trusted knowledge, projects graph, and 
   expect(askEnvelope.data.evidence[0].sourceChunkId).toBe(chunkId)
 
   await page.goto('/')
-  await expect(page.getByTestId('space-list')).toContainText('IBM i Modernization')
-  await expect(page.getByTestId('coming-soon')).toHaveCount(3)
+  await expect(page.getByTestId('vue-api-space-status')).toContainText('API-backed metadata')
+  await expect(page.getByTestId('vue-space-card-ibm-i-modernization')).toContainText(
+    'IBM i Modernization'
+  )
+  await page.getByTestId('vue-space-card-ibm-i-modernization').click()
+  await expect(page.getByTestId('vue-space-head')).toContainText('API-backed Space')
 })
 
 async function expectApiOk(

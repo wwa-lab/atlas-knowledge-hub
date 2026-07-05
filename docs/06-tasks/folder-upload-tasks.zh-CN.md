@@ -80,3 +80,4 @@ diff frontend/public/atlas-prototype.html prototypes/index.html   # 须为空
 | T-FU-011 | 推迟（可选） | 本切片未排期提取。 |
 | T-FU-012 | 完成 | 已同步 `prototypes/index.html`；`diff frontend/public/atlas-prototype.html prototypes/index.html` 为空。溯源已记录省略 API guide 与适配器中立未来。 |
 | T-FU-013 | 完成 | `frontend/tests/e2e/folder-upload.spec.ts`；`cd frontend && npm run e2e` 通过。 |
+| T-FU-014 | Complete | Product Goal Batch 2 已把 upload inventory、create batch、file status mapping、source trace 和 batch report 延展到真实 Vue 产品路径。证据：`frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`、`docs/00-context/evidence/phase-c-upload-batch.png`、frontend typecheck/test/build/E2E。 |

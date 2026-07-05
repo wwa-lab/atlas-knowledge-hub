@@ -96,6 +96,9 @@ This historical `knowledge-space` task document predates the bilingual SDD rule.
 | T-KS-029 | Complete | Typecheck, build, Vitest coverage, and Playwright E2E smoke checks passed for the Phase 1 shell. |
 | T-KS-030 | Complete | Current FE baseline mirrored from `frontend/public/atlas-prototype.html` to `prototypes/index.html`; SDD docs updated to current home library, create Knowledge Space, General Settings language/theme, and list-style model management behavior. |
 | T-KS-031 | Complete | Global Chat moved outside Knowledge Space detail with multi-space selection; detail tabs are Documents, Processing Center, Wiki, and Graph; Documents, Processing Center, Wiki, and Graph layouts updated; `npm run build`, `npm run e2e`, mirror diff, and `git diff --check` passed. |
+| T-KS-032 | Complete | Product Goal Phase A verified the real Vue product shell as the default path, with Home, sidebar, Global Chat, Settings, and model management covered by Playwright and screenshots. |
+| T-KS-033 | Complete | Product Goal Phase B verified the real Vue `IBM i Modernization` detail page, default Wiki tab, and Documents/Processing Center/Wiki/Graph tab switching. |
+| T-KS-034 | Complete | Batch 1 roadmap, traceability, slice roadmap, progress ledger, and evidence references updated. |
 
 ## T-KS-001 Review Result
 
@@ -188,6 +191,28 @@ Future implementation phase:
 - Unit tests for data mappers, status mapping, and component behavior.
 - Integration tests for API contracts when backend exists.
 - E2E tests for create space, upload batch, review content, publish Wiki, graph exploration, and Ask evidence flow.
+
+## Product Goal Batch 1 Result
+
+Completed for Phase A and Phase B on 2026-07-05.
+
+Implemented and verified scope:
+
+- Real Vue product page is the default Vite app experience.
+- Primary product path does not render `iframe.product-frame`.
+- Home, persistent sidebar, Global Chat, Settings overlay, and model management are visible and interactive in Vue.
+- Clicking `IBM i Modernization` opens the real Vue detail page.
+- Detail page defaults to Wiki and supports Documents, Processing Center, Wiki, and Graph tab switching.
+- Batch 1 screenshots are generated at `docs/00-context/evidence/phase-a-product-home.png` and `docs/00-context/evidence/phase-b-space-detail.png`.
+
+Verification:
+
+- `cd frontend && npm run typecheck`
+- `cd frontend && npm run test`
+- `cd frontend && npm run build`
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts --project=chromium`
+- `git diff --check`
+- Secret, private-path, external-network, and dependency scans.
 
 ## Phase 1 Frontend Shell Result
 

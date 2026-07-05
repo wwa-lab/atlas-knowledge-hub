@@ -46,6 +46,34 @@ Status:
 
 ## Lessons
 
+### LL-20260705-002 Roadmap Done Must Not Mean Product Accepted
+
+ID: LL-20260705-002
+Date: 2026-07-05
+Slice: product roadmap / Vue productization
+Source: User feedback after reviewing the real Vue frontend direction and earlier completed slice roadmap.
+Expectation: The roadmap should explain progress toward the user's actual target: an enterprise-grade internal knowledge-base management product inspired by modern AI-native knowledge products, with real Vue product pages for Knowledge Spaces, upload/batch workflow, Processing Center, LM Wiki, Graph, Ask, and settings.
+Observed: The existing slice roadmap showed many slices as implemented or done, but those statuses often meant SDD completion, mock adapter contract completion, static prototype behavior, or adjacent workbench/API implementation. The real Vue user-facing product did not yet match the accepted prototype or the user's product goal, so the product still felt incomplete despite many green roadmap items.
+Root cause: Roadmap status mixed task closure with product maturity. It did not clearly separate prototype, Vue parity, API-backed UI, internal beta readiness, and production readiness. Verification also sometimes accepted adjacent/debug surfaces instead of the primary user-facing product surface.
+Decision: Maintain `ROADMAP.md` as the product-maturity roadmap and use `docs/00-context/slice-roadmap.md` only for SDD/task execution status. Roadmap entries must state the product maturity level and must not be called product-complete without real user-facing Vue evidence.
+Durable updates: Replaced `ROADMAP.md` with a product-focused roadmap, current-state snapshot, retrospective, maturity scale, corrected phases, near-term execution plan, and roadmap rules. Updated `DEVELOPMENT_STANDARDS.md` so roadmap status must distinguish task completion from product acceptance.
+New verification: Future roadmap close-out must report whether the work is L1 prototype, L2 Vue parity, L3 API-backed, L4 internal beta, or L5 production-ready, and must include screenshot or E2E evidence for the actual user-facing Vue surface.
+Status: Applied.
+
+### LL-20260705-001 Sample-Driven UI Fixes Must Cover The Full Interaction Chain
+
+ID: LL-20260705-001
+Date: 2026-07-05
+Slice: model-settings prototype
+Source: User acceptance feedback on the model management sample parity fix.
+Expectation: When a user provides a UI sample for a prototype behavior, the implementation should match the complete visible interaction pattern, including entry points, menus, item selection, edit surfaces, save/cancel behavior, list updates, and visual layout.
+Observed: The first fix addressed the visible Add Model button, dropdown, tab counts, and card styling, but missed the sample's card-click edit drawer. The user had to point out that model cards still could not be edited.
+Root cause: Review blind spot and incomplete verification. The implementation treated the user's text request as isolated button/list behavior instead of using the sample screenshot as the acceptance target for the whole model-management workflow.
+Decision: For sample-driven prototype work, infer and verify the full interaction chain represented by the sample before close-out, not only the most explicit textual defect.
+Durable updates: Updated `DEVELOPMENT_STANDARDS.md` Phase 0 frontend verification guidance so sample-driven UI changes require a manual or automated interaction checklist covering trigger, navigation/open state, edit/input state, save/cancel or close behavior, visible state update, and responsive layout parity.
+New verification: Future sample-driven UI prototype fixes must include evidence for the complete interaction chain; for model settings specifically, verify Add Model menu, category tabs, model card click, edit drawer, save/cancel, and list update behavior.
+Status: Applied.
+
 ### LL-20260703-008 Queue Response Shape Must Be Contract-Tested
 
 ID: LL-20260703-008

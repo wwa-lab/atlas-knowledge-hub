@@ -11,7 +11,7 @@
 | Mock E2E 闭环 | 本地第一层自动验收，不需要真实公司环境。 | Node.js/npm、Playwright 浏览器。 |
 | 后端测试 | API、adapter、Flyway、PostgreSQL 合约。 | Java 21、Maven、Docker Desktop。 |
 | 第二层 E2E | 本地浏览器 + Spring Boot API + PostgreSQL 全栈闭环。 | Node.js/npm、Java 21、Maven、Docker Desktop。 |
-| 第三层 E2E | Opt-in provider-backed Ask，通过 DeepSeek + ModelAdapter 验证真实 provider 调用，知识数据仍只用 mock/sample。 | Node.js/npm、Java 21、Maven、Docker Desktop、当前 shell 里的本地 DeepSeek API key。 |
+| 第三层 E2E | Opt-in provider-backed Ask，通过 configured ModelAdapter provider 验证真实 provider 调用，知识数据仍只用 mock/sample。 | Node.js/npm、Java 21、Maven、Docker Desktop、本地 `.env` 或 shell 里的 provider key。 |
 | 后端本地 API | Spring Boot API 连接你自己的 PostgreSQL。 | Java 21、Maven、本地 PostgreSQL 配置。 |
 
 最快看产品：打开静态原型。
@@ -20,7 +20,7 @@
 
 如果你要验证前端浏览器确实连到本地 Spring Boot API：运行 `npm run e2e:second-layer`。
 
-如果你要验证真实 DeepSeek-backed Ask 调用：只在本机已准备好批准使用的 DeepSeek key 时运行 `npm run e2e:third-layer`。
+如果你要验证真实 provider-backed Ask 调用：只在本机已准备好批准使用的 provider key 时运行 `npm run e2e:third-layer`。
 
 ## 1. 在 VS Code 打开项目
 
@@ -291,32 +291,44 @@ KEEP_ATLAS_E2E_STACK=1 npm run e2e:second-layer
 - 不要把真实 key 写进 frontend 代码、Playwright spec、文档、截图、trace、报告或 git。
 - `.env` 和 shell 里的真实 key 都是本地敏感配置，不要提交。
 
-### 10.1 在 VS Code integrated terminal 里设置 DeepSeek 环境变量
+### 10.1 在本地 `.env` 里设置 provider 配置
 
-打开：
-
-```text
-Terminal -> New Terminal
-```
-
-确认当前目录是仓库根目录，然后设置环境变量：
+在仓库根目录复制本地配置模板：
 
 ```bash
-export ATLAS_MODEL_PROVIDER=deepseek
-export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
-export ATLAS_MODEL_NAME=deepseek-chat
+cp configs/atlas.company.example.env .env
 ```
+
+然后只在本机编辑 `.env`，填入 DeepSeek 配置：
+
+```bash
+ATLAS_MODEL_PROVIDER=deepseek
+ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+ATLAS_MODEL_API_KEY=<local-deepseek-api-key>
+ATLAS_MODEL_NAME=deepseek-chat
+```
+
+或者使用 GitHub Models：
+
+```bash
+ATLAS_MODEL_PROVIDER=github-models
+ATLAS_MODEL_ENDPOINT=https://models.github.ai/inference
+ATLAS_MODEL_API_KEY=<local-github-token-with-models-access>
+ATLAS_MODEL_NAME=openai/gpt-4.1
+```
+
+不要使用或导出 IDE Copilot session token。`github-models` provider 需要批准用于 GitHub Models inference 的 GitHub token。
 
 说明：
 
-- `ATLAS_MODEL_API_KEY` 只能来自当前 shell/env。
-- 关闭这个 terminal 后，变量会失效，需要重新设置。
+- `npm run e2e:third-layer` 会先读取仓库根目录 `.env`。
+- `.env` 已被 `.gitignore` 忽略，仍然不要截图、上传或提交。
 - 不要在共享录屏、截图或 issue 里显示真实 key。
 
 你可以只检查是否已设置，不要打印 key 内容：
 
 ```bash
+set -a; . .env; set +a
 if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then echo "ATLAS_MODEL_API_KEY is set"; else echo "ATLAS_MODEL_API_KEY is missing"; fi
 ```
 
@@ -664,12 +676,12 @@ ATLAS_E2E_POSTGRES_PORT=55435 ATLAS_E2E_BACKEND_PORT=18083 npm run e2e:third-lay
 
 ### 第三层提示缺少 `ATLAS_MODEL_API_KEY`
 
-这表示 third-layer 没有拿到本地 DeepSeek key。它会在启动 Docker 和 Spring Boot 前退出。
+这表示 third-layer 没有拿到本地 provider key。它会在启动 Docker 和 Spring Boot 前退出。
 
 在同一个 VS Code terminal 里设置后重试：
 
 ```bash
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_API_KEY='<local-provider-api-key>'
 npm run e2e:third-layer
 ```
 

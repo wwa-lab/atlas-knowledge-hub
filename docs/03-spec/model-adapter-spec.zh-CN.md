@@ -191,3 +191,13 @@ Atlas 必须通过产品面的模型 adapter contract 支持模型 provider 能�
 | OQ-MODA-001 | mock implementation 后首个真实 provider。 | 影响 adapter 实现选择，不影响 model adapter contract。 |
 | OQ-MODA-002 | 原始 prompt 保留策略。 | 本 spec 承诺只保留 reference 与 safe summary。 |
 | OQ-MODA-003 | Usage/cost governance 的时机。 | 本 spec 只记录 usage counts，额度/成本策略延后。 |
+
+## Product Goal Batch 4 Vue Parity Addendum
+
+Product Goal Batch 4 将模型与适配器管理扩展到真实 Vue 设置表面。
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase H 设置与管理 | 真实 Vue settings modal 为常规设置、成员、注册策略、API 信息、模型管理、向量适配器、解析适配器和存储适配器提供非空企业管理面板。模型管理支持 list、add、edit、cancel、save、masked API key state、replace/remove，以及 mock-safe 测试连接反馈。 |
+
+该 addendum 仅更新 Vue 产品界面成熟度，不新增生产 secret management、生产 RBAC、真实 provider 调用、外部网络调用或新的 backend/API contract 行为。

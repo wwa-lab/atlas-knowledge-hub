@@ -1012,12 +1012,12 @@
     }
 
     .model-info-panel {
-      padding: 18px 20px;
-      margin: 18px 0 36px;
+      padding: 14px 16px;
+      margin: 8px 0 34px;
       color: var(--muted);
       background: var(--panel-soft);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: 6px;
     }
 
     .model-info-panel strong {
@@ -1030,10 +1030,46 @@
     .model-info-panel a {
       display: inline-flex;
       gap: 6px;
-      margin-top: 12px;
+      margin-top: 10px;
       color: var(--primary-dark);
       font-weight: 800;
       text-decoration: none;
+    }
+
+    .model-add-control {
+      position: relative;
+      display: inline-flex;
+      justify-content: flex-end;
+    }
+
+    .model-add-menu {
+      position: absolute;
+      z-index: 4;
+      top: calc(100% + 10px);
+      right: 0;
+      display: grid;
+      width: 160px;
+      padding: 8px 0;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: 0 16px 30px rgba(24, 33, 31, 0.16);
+    }
+
+    .model-add-menu button {
+      min-height: 40px;
+      padding: 0 18px;
+      color: var(--ink);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    .model-add-menu button:hover {
+      color: var(--primary-dark);
+      background: var(--primary-soft);
     }
 
     .model-config-panel {
@@ -1125,13 +1161,13 @@
 
     .model-list-tabs {
       display: flex;
-      gap: 34px;
-      margin-bottom: 24px;
+      gap: 28px;
+      margin-bottom: 16px;
       border-bottom: 1px solid var(--line);
     }
 
     .model-list-tab {
-      min-height: 46px;
+      min-height: 42px;
       padding: 0 0 12px;
       color: var(--muted);
       background: transparent;
@@ -1150,19 +1186,20 @@
     .model-list-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: 12px;
     }
 
     .model-list-card {
       display: grid;
-      grid-template-columns: 56px minmax(0, 1fr);
-      gap: 16px;
-      min-height: 118px;
-      padding: 24px;
+      grid-template-columns: 40px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      min-height: 76px;
+      padding: 16px;
       text-align: left;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: 8px;
       box-shadow: none;
     }
 
@@ -1172,24 +1209,25 @@
 
     .model-icon {
       display: grid;
-      width: 50px;
-      height: 50px;
+      width: 36px;
+      height: 36px;
       place-items: center;
       color: var(--primary-dark);
       background: var(--primary-soft);
-      border-radius: var(--radius);
-      font-size: 24px;
+      border-radius: 8px;
+      font-size: 18px;
       font-weight: 800;
     }
 
     .model-list-card h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
+      margin: 0 0 6px;
+      font-size: 15px;
     }
 
     .model-list-card p {
       margin: 0;
       color: var(--muted);
+      font-size: 13px;
       line-height: 1.45;
     }
 
@@ -1197,6 +1235,285 @@
       color: var(--primary-dark);
       background: var(--panel);
       border-color: var(--primary);
+    }
+
+    .model-editor-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      background: rgba(0, 0, 0, 0.56);
+    }
+
+    .model-editor-drawer {
+      position: fixed;
+      z-index: 31;
+      top: 0;
+      right: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: min(548px, 100vw);
+      height: 100vh;
+      color: var(--ink);
+      background: var(--panel);
+      box-shadow: -18px 0 42px rgba(0, 0, 0, 0.18);
+    }
+
+    .model-editor-head {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      padding: 20px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .model-editor-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .model-editor-head h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    .model-editor-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .model-editor-body {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .model-editor-section {
+      display: grid;
+      gap: 12px;
+      padding-top: 2px;
+      border-top: 1px solid var(--line);
+    }
+
+    .model-editor-section:first-child {
+      border-top: 0;
+    }
+
+    .model-editor-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .model-editor-title::before {
+      width: 3px;
+      height: 16px;
+      content: "";
+      background: var(--primary);
+      border-radius: 99px;
+    }
+
+    .model-source-toggle,
+    .model-key-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-source-toggle {
+      padding: 4px;
+      width: fit-content;
+      background: var(--panel-soft);
+      border-radius: 8px;
+    }
+
+    .model-source-toggle button {
+      min-height: 32px;
+      padding: 0 14px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+    }
+
+    .model-source-toggle button.active {
+      color: var(--primary-dark);
+      background: var(--panel);
+      border-color: var(--primary);
+      font-weight: 800;
+    }
+
+    .model-editor-field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .model-editor-field label {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .model-editor-field.required label::before {
+      margin-right: 3px;
+      color: var(--red);
+      content: "*";
+    }
+
+    .model-editor-field input,
+    .model-editor-field select {
+      width: 100%;
+      min-height: 32px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .model-editor-field input:focus,
+    .model-editor-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .field-help {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .model-key-row {
+      justify-content: space-between;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+    }
+
+    .model-key-editor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .model-key-editor input {
+      min-height: 32px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .model-key-editor input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .model-key-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .model-key-status::before {
+      display: grid;
+      width: 16px;
+      height: 16px;
+      place-items: center;
+      color: white;
+      content: "✓";
+      background: var(--primary-dark);
+      border-radius: 50%;
+      font-size: 11px;
+    }
+
+    .model-key-status.empty::before {
+      content: "";
+      background: var(--line);
+    }
+
+    .text-action {
+      color: var(--primary-dark);
+      background: transparent;
+      border: 0;
+      border-radius: 4px;
+    }
+
+    .text-action.danger {
+      color: var(--red);
+    }
+
+    .model-switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .switch-track {
+      position: relative;
+      width: 34px;
+      height: 20px;
+      padding: 0;
+      background: #d1d5db;
+      border: 0;
+      border-radius: 99px;
+    }
+
+    .switch-track::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      content: "";
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.16s ease;
+    }
+
+    .switch-track.active {
+      background: var(--primary);
+    }
+
+    .switch-track.active::after {
+      transform: translateX(14px);
+    }
+
+    .model-editor-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .model-editor-foot .right-actions {
+      display: flex;
+      gap: 10px;
     }
 
     .model-card {
@@ -2847,19 +3164,8 @@
       .split,
       .ask-grid,
       .settings-layout,
-      .settings-window,
       .registration-grid {
         grid-template-columns: 1fr;
-      }
-
-      .settings-window {
-        height: min(820px, calc(100vh - 32px));
-      }
-
-      .settings-rail {
-        max-height: 220px;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
       }
 
       .config-panel {
@@ -2929,8 +3235,15 @@
       }
 
       .settings-window {
+        grid-template-columns: 1fr;
         width: min(100vw - 28px, 780px);
         height: min(840px, calc(100vh - 28px));
+      }
+
+      .settings-rail {
+        max-height: 220px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
       }
 
       .settings-content {
@@ -2956,6 +3269,7 @@
       .cards,
       .library-cards,
       .model-grid,
+      .model-list-grid,
       .engine-grid,
       .metric-grid,
       .stats {
@@ -3123,6 +3437,10 @@
       selectedIndexStrategy: "rag",
       settingsPanel: "members",
       selectedModelId: "deepseek-flash",
+      modelCategory: "all",
+      modelMenuOpen: false,
+      modelEditorOpen: false,
+      modelEditorDraft: null,
       selectedChatSpaces: ["English Learning Studio", "IBM i Modernization"],
       uploadFlowState: "IDLE",
       pendingInventory: null,
@@ -3232,7 +3550,7 @@
         evidenceChunks: "Evidence chunks",
         reviewRequired: "Review required",
         modelSettingsTitle: "模型配置",
-        modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型、远程 API、GitHub Models / Copilot 可用模型和自定义 provider。",
+        modelSettingsSubtitle: "管理不同类型的 AI 模型，支持 Ollama 本地模型和远程 API。",
         builtinModel: "内置模型",
         builtinModelHelp: "内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。",
         providerBackedTitle: "Provider-backed E2E 配置",
@@ -3459,7 +3777,7 @@
         evidenceChunks: "Evidence chunks",
         reviewRequired: "Review required",
         modelSettingsTitle: "Model Configuration",
-        modelSettingsSubtitle: "Manage AI model types, including Ollama local models, remote APIs, GitHub Models / Copilot-available models, and custom providers.",
+        modelSettingsSubtitle: "Manage AI model types, including Ollama local models and remote APIs.",
         builtinModel: "Built-in Models",
         builtinModelHelp: "Built-in models are visible to all tenants. Sensitive values are masked and full secrets are never displayed here.",
         providerBackedTitle: "Provider-backed E2E Configuration",
@@ -4359,6 +4677,7 @@
             ${content}
           </div>
         </div>
+        ${uiState.modelEditorOpen ? renderModelEditor() : ""}
       `;
     }
 
@@ -4654,14 +4973,24 @@
 
     function renderModelSettings() {
       const text = copy();
-      const managedModels = appData.models.filter((model) => ["deepseek-flash", "dashscope-embedding"].includes(model.id));
+      const modelTypes = [
+        ["chat", text.chatModels],
+        ["embedding", text.embeddingModels],
+        ["rerank", text.rerankModels],
+        ["vision", text.visionModels],
+        ["speech", text.speechModels]
+      ];
+      const managedModels = settingsModels();
+      const visibleModels = uiState.modelCategory === "all"
+        ? managedModels
+        : managedModels.filter((model) => model.type === uiState.modelCategory);
       const categories = [
         ["all", text.allModels, managedModels.length],
-        ["chat", text.chatModels, managedModels.filter((model) => model.type === "chat").length],
-        ["embedding", text.embeddingModels, managedModels.filter((model) => model.type === "embedding").length],
-        ["rerank", text.rerankModels, 0],
-        ["vision", text.visionModels, 0],
-        ["speech", text.speechModels, 0]
+        ...modelTypes.map(([key, label]) => [
+          key,
+          label,
+          managedModels.filter((model) => model.type === key).length
+        ])
       ];
       renderSettingsFrame(`
         <div class="page-head">
@@ -4669,8 +4998,13 @@
             <h1>${text.modelSettingsTitle}</h1>
             <p>${text.modelSettingsSubtitle}</p>
           </div>
-          <div class="button-row">
-            <button class="btn secondary add-model-btn">＋ ${uiState.lang === "zh-CN" ? "添加模型" : "Add Model"}</button>
+          <div class="button-row model-add-control">
+            <button class="btn secondary add-model-btn" data-toggle-model-menu="true" aria-expanded="${uiState.modelMenuOpen ? "true" : "false"}" type="button">＋ ${uiState.lang === "zh-CN" ? "添加模型" : "Add Model"}</button>
+            ${uiState.modelMenuOpen ? `
+              <div class="model-add-menu" role="menu" aria-label="${uiState.lang === "zh-CN" ? "选择模型类型" : "Choose model type"}">
+                ${modelTypes.map(([key, label]) => `<button data-add-model-type="${key}" role="menuitem" type="button">${label}</button>`).join("")}
+              </div>
+            ` : ""}
           </div>
         </div>
         <section class="model-info-panel">
@@ -4679,6 +5013,20 @@
           <a href="#" aria-label="${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"}">
             ${uiState.lang === "zh-CN" ? "查看内置模型管理指南" : "View built-in model management guide"} ↗
           </a>
+        </section>
+        <nav class="model-list-tabs" aria-label="${text.modelSettingsTitle}">
+          ${categories.map(([key, label, count]) => `<button class="model-list-tab ${uiState.modelCategory === key ? "active" : ""}" data-model-category="${key}" type="button">${label}(${count})</button>`).join("")}
+        </nav>
+        <section class="model-list-grid">
+          ${visibleModels.map((model) => `
+            <button class="model-list-card" data-model-id="${model.id}" type="button">
+              <span class="model-icon">${modelIcon(model.type)}</span>
+              <span>
+                <h3>${model.displayName}</h3>
+                <p>${model.provider}${modelDetail(model)}</p>
+              </span>
+            </button>
+          `).join("")}
         </section>
         <section class="model-config-panel" data-testid="provider-backed-model-config">
           <div class="model-config-header">
@@ -4709,21 +5057,232 @@ npm run e2e:third-layer</code></pre>
             ${text.providerSafetyItems.map((item) => `<li>${item}</li>`).join("")}
           </ul>
         </section>
-        <nav class="model-list-tabs" aria-label="${text.modelSettingsTitle}">
-          ${categories.map(([key, label, count], index) => `<button class="model-list-tab ${index === 0 ? "active" : ""}" type="button">${label}(${count})</button>`).join("")}
-        </nav>
-        <section class="model-list-grid">
-          ${managedModels.map((model) => `
-            <button class="model-list-card" data-model-id="${model.id}" type="button">
-              <span class="model-icon">${model.type === "embedding" ? "⌘" : "□"}</span>
-              <span>
-                <h3>${model.displayName}</h3>
-                <p>${model.provider}${model.type === "embedding" ? " · 向量维度 1024" : ""}</p>
-              </span>
-            </button>
-          `).join("")}
-        </section>
       `);
+    }
+
+    function settingsModels() {
+      const builtinSettingsModelIds = ["deepseek-flash", "dashscope-embedding"];
+      return appData.models.filter((model) => builtinSettingsModelIds.includes(model.id) || model.createdInSettings);
+    }
+
+    function modelIcon(type) {
+      return {
+        chat: "□",
+        embedding: "⌘",
+        rerank: "⇅",
+        vision: "◉",
+        speech: "◇"
+      }[type] || "□";
+    }
+
+    function modelDetail(model) {
+      if (model.type === "embedding") return " · 向量维度 1024";
+      if (model.type === "rerank") return " · Top-K rerank";
+      if (model.type === "vision") return " · 多模态";
+      if (model.type === "speech") return " · 语音转写";
+      return "";
+    }
+
+    function addSettingsModel(type) {
+      const text = copy();
+      const nextNumber = appData.models.filter((model) => model.type === type && model.createdInSettings).length + 1;
+      const labels = {
+        chat: uiState.lang === "zh-CN" ? "自定义对话模型" : "Custom Chat Model",
+        embedding: text.embeddingModels,
+        rerank: text.rerankModels,
+        vision: text.visionModels,
+        speech: text.speechModels
+      };
+      const providers = {
+        chat: "Custom API",
+        embedding: "Ollama",
+        rerank: "Custom API",
+        vision: "GitHub Models",
+        speech: "Custom API"
+      };
+      const names = {
+        chat: "custom-chat",
+        embedding: "custom-embedding",
+        rerank: "custom-rerank",
+        vision: "custom-vision",
+        speech: "custom-speech"
+      };
+      const model = {
+        id: `${type}-custom-${Date.now()}`,
+        provider: providers[type] || "Custom API",
+        source: type === "embedding" ? "Ollama" : "API",
+        type,
+        name: `${names[type] || "custom-model"}-${nextNumber}`,
+        displayName: `${labels[type] || labels.chat} ${nextNumber}`,
+        baseUrl: "",
+        apiKeyStatus: "not_configured",
+        supportsMultimodal: type === "vision",
+        thinkingFormat: "none",
+        note: "Session-only prototype model configuration.",
+        createdInSettings: true
+      };
+      appData.models = [...appData.models, model];
+      uiState.selectedModelId = model.id;
+      uiState.modelCategory = type;
+      uiState.modelMenuOpen = false;
+      openModelEditor(model.id);
+    }
+
+    function openModelEditor(modelId) {
+      const model = appData.models.find((item) => item.id === modelId);
+      if (!model) return;
+      uiState.selectedModelId = model.id;
+      uiState.modelMenuOpen = false;
+      uiState.modelEditorOpen = true;
+      uiState.modelEditorDraft = { ...model, apiKeyEditing: false };
+      renderModelSettings();
+    }
+
+    function closeModelEditor() {
+      uiState.modelEditorOpen = false;
+      uiState.modelEditorDraft = null;
+      renderModelSettings();
+    }
+
+    function updateModelEditorDraft(patch) {
+      uiState.modelEditorDraft = {
+        ...uiState.modelEditorDraft,
+        ...currentModelEditorFormValues(),
+        ...patch
+      };
+      renderModelSettings();
+    }
+
+    function currentModelEditorFormValues() {
+      if (!uiState.modelEditorDraft) return {};
+      return {
+        provider: document.querySelector("#modelEditorProvider")?.value || uiState.modelEditorDraft.provider,
+        name: document.querySelector("#modelEditorName")?.value || uiState.modelEditorDraft.name,
+        displayName: document.querySelector("#modelEditorDisplayName")?.value || uiState.modelEditorDraft.displayName,
+        baseUrl: document.querySelector("#modelEditorBaseUrl")?.value || uiState.modelEditorDraft.baseUrl,
+        thinkingFormat: document.querySelector("#modelEditorThinking")?.value || uiState.modelEditorDraft.thinkingFormat
+      };
+    }
+
+    function renderModelEditor() {
+      const text = copy();
+      const draft = uiState.modelEditorDraft || appData.models.find((item) => item.id === uiState.selectedModelId);
+      if (!draft) return "";
+      const isApi = draft.source !== "Ollama";
+      const providerOptions = ["DeepSeek", "Aliyun DashScope", "OpenAI-compatible", "Custom API", "GitHub Models", "GitHub Copilot", "Ollama"];
+      const thinkingOptions = [
+        ["none", text.noThinking],
+        ["provider_default", text.providerDefault],
+        ["custom", text.customThinking]
+      ];
+      return `
+        <div class="model-editor-scrim" data-close-model-editor="true"></div>
+        <aside class="model-editor-drawer" role="dialog" aria-modal="true" aria-label="${text.editModel}">
+          <header class="model-editor-head">
+            <span class="model-editor-icon">${modelIcon(draft.type)}</span>
+            <div>
+              <h2>${text.editModel}</h2>
+              <p>${text.editModelSubtitle}</p>
+            </div>
+          </header>
+          <div class="model-editor-body">
+            <section class="model-editor-section">
+              <h3 class="model-editor-title">${text.modelSource}</h3>
+              <div class="model-source-toggle" role="group" aria-label="${text.modelSource}">
+                <button class="${!isApi ? "active" : ""}" data-model-source="Ollama" type="button">${text.ollama}</button>
+                <button class="${isApi ? "active" : ""}" data-model-source="API" type="button">${text.api}</button>
+              </div>
+            </section>
+            <section class="model-editor-section">
+              <h3 class="model-editor-title">${text.accessConfig}</h3>
+              <div class="model-editor-field">
+                <label for="modelEditorProvider">${text.provider}</label>
+                <select id="modelEditorProvider">
+                  ${providerOptions.map((provider) => `<option value="${escapeHtml(provider)}" ${provider === draft.provider ? "selected" : ""}>${escapeHtml(provider)}</option>`).join("")}
+                </select>
+              </div>
+              <div class="model-editor-field required">
+                <label for="modelEditorName">${text.modelName}</label>
+                <input id="modelEditorName" value="${escapeHtml(draft.name)}" />
+              </div>
+              <div class="model-editor-field">
+                <label for="modelEditorDisplayName">${text.displayName}</label>
+                <input id="modelEditorDisplayName" value="${escapeHtml(draft.displayName)}" />
+                <span class="field-help">${uiState.lang === "zh-CN" ? "仅用于界面展示，实际调用仍使用上面的模型名称。" : "Used only for display; execution still uses the model name above."}</span>
+              </div>
+              <div class="model-editor-field required">
+                <label for="modelEditorBaseUrl">${text.baseUrl}</label>
+                <input id="modelEditorBaseUrl" value="${escapeHtml(draft.baseUrl || "")}" />
+              </div>
+              <div class="model-editor-field">
+                <label>${text.apiKey}</label>
+                <div class="model-key-row">
+                  <span class="model-key-status ${draft.apiKeyStatus === "configured" ? "" : "empty"}">${draft.apiKeyStatus === "configured" ? text.configured : uiState.lang === "zh-CN" ? "未配置" : "Not configured"}</span>
+                  <span>
+                    <button class="text-action" data-start-model-key-replace="true" type="button">${text.replace}</button>
+                    <button class="text-action danger" data-model-key-status="not_configured" type="button">${text.remove}</button>
+                  </span>
+                </div>
+                ${draft.apiKeyEditing ? `
+                  <div class="model-key-editor">
+                    <input id="modelEditorApiKey" type="password" autocomplete="off" placeholder="${uiState.lang === "zh-CN" ? "输入新的 API Key（不会在原型中保存明文）" : "Enter a new API key (plaintext is not stored in this prototype)"}" />
+                    <button class="text-action" data-confirm-model-key-replace="true" type="button">${uiState.lang === "zh-CN" ? "确认" : "Confirm"}</button>
+                    <button class="text-action" data-cancel-model-key-replace="true" type="button">${text.cancel}</button>
+                  </div>
+                  <span class="field-help">${uiState.lang === "zh-CN" ? "原型只更新配置状态，不保存或回显真实密钥。" : "The prototype only updates configuration state and never stores or reveals the real key."}</span>
+                ` : ""}
+              </div>
+              <div class="model-editor-field">
+                <label>${text.customHeaders}</label>
+                <span class="field-help">${uiState.lang === "zh-CN" ? "调用远程模型 API 时附加的 HTTP 请求头，常用于企业网关鉴权、链路追踪等场景。" : "Additional HTTP headers for remote model APIs, usually for gateway auth or tracing."}</span>
+                <button class="text-action" type="button">${uiState.lang === "zh-CN" ? "+ 添加请求头" : "+ Add Header"}</button>
+              </div>
+            </section>
+            <section class="model-editor-section">
+              <h3 class="model-editor-title">${text.advancedOptions}</h3>
+              <div class="model-switch-row">
+                <strong>${text.multimodal}</strong>
+                <button class="switch-track ${draft.supportsMultimodal ? "active" : ""}" data-toggle-model-multimodal="true" type="button" aria-label="${text.multimodal}"></button>
+              </div>
+              <div class="model-editor-field">
+                <label for="modelEditorThinking">${text.thinkingFormat}</label>
+                <select id="modelEditorThinking">
+                  ${thinkingOptions.map(([value, label]) => `<option value="${value}" ${value === draft.thinkingFormat ? "selected" : ""}>${label}</option>`).join("")}
+                </select>
+                <span class="field-help">${uiState.lang === "zh-CN" ? "决定智能体「思考模式」开关时如何写入 API；不写入时该开关不生效。" : "Controls how thinking parameters are sent to the API; disabled when set to none."}</span>
+              </div>
+            </section>
+          </div>
+          <footer class="model-editor-foot">
+            <button class="btn secondary" data-test-model-connection="true" type="button">${text.testConnection}</button>
+            <span class="right-actions">
+              <button class="btn secondary" data-close-model-editor="true" type="button">${text.cancel}</button>
+              <button class="btn primary" data-save-model-editor="true" type="button">${text.save}</button>
+            </span>
+          </footer>
+        </aside>
+      `;
+    }
+
+    function saveModelEditor() {
+      const draft = uiState.modelEditorDraft;
+      if (!draft) return;
+      const modelName = document.querySelector("#modelEditorName")?.value.trim();
+      if (!modelName) return;
+      const { apiKeyEditing, ...persistedDraft } = draft;
+      const nextModel = {
+        ...persistedDraft,
+        provider: document.querySelector("#modelEditorProvider")?.value || draft.provider,
+        name: modelName,
+        displayName: document.querySelector("#modelEditorDisplayName")?.value.trim() || modelName,
+        baseUrl: document.querySelector("#modelEditorBaseUrl")?.value.trim() || "",
+        thinkingFormat: document.querySelector("#modelEditorThinking")?.value || "none"
+      };
+      appData.models = appData.models.map((model) => model.id === nextModel.id ? nextModel : model);
+      uiState.selectedModelId = nextModel.id;
+      uiState.modelEditorOpen = false;
+      uiState.modelEditorDraft = null;
+      renderModelSettings();
     }
 
     function escapeHtml(value) {
@@ -5739,10 +6298,88 @@ Legacy Spec Factory 的可信补证路径不是把全部源码重新读一遍，
           showSettings(settingsPanel.dataset.settingsPanel);
         }
 
+        const modelMenuToggle = event.target.closest("[data-toggle-model-menu]");
+        if (modelMenuToggle) {
+          uiState.modelMenuOpen = !uiState.modelMenuOpen;
+          renderModelSettings();
+          return;
+        }
+
+        const addModelType = event.target.closest("[data-add-model-type]");
+        if (addModelType) {
+          addSettingsModel(addModelType.dataset.addModelType);
+          return;
+        }
+
+        const modelCategory = event.target.closest("[data-model-category]");
+        if (modelCategory) {
+          uiState.modelCategory = modelCategory.dataset.modelCategory;
+          uiState.modelMenuOpen = false;
+          renderModelSettings();
+          return;
+        }
+
         const modelCard = event.target.closest("[data-model-id]");
         if (modelCard) {
-          uiState.selectedModelId = modelCard.dataset.modelId;
-          showSettings("models");
+          openModelEditor(modelCard.dataset.modelId);
+          return;
+        }
+
+        if (event.target.closest("[data-close-model-editor]")) {
+          closeModelEditor();
+          return;
+        }
+
+        const modelSource = event.target.closest("[data-model-source]");
+        if (modelSource) {
+          const source = modelSource.dataset.modelSource;
+          updateModelEditorDraft({
+            source,
+            provider: source === "Ollama" ? "Ollama" : uiState.modelEditorDraft.provider === "Ollama" ? "DeepSeek" : uiState.modelEditorDraft.provider,
+            baseUrl: source === "Ollama" ? "http://localhost:11434" : uiState.modelEditorDraft.baseUrl
+          });
+          return;
+        }
+
+        const modelKeyStatus = event.target.closest("[data-model-key-status]");
+        if (modelKeyStatus) {
+          updateModelEditorDraft({
+            apiKeyStatus: modelKeyStatus.dataset.modelKeyStatus,
+            apiKeyEditing: false
+          });
+          return;
+        }
+
+        if (event.target.closest("[data-start-model-key-replace]")) {
+          updateModelEditorDraft({ apiKeyEditing: true });
+          return;
+        }
+
+        if (event.target.closest("[data-cancel-model-key-replace]")) {
+          updateModelEditorDraft({ apiKeyEditing: false });
+          return;
+        }
+
+        if (event.target.closest("[data-confirm-model-key-replace]")) {
+          const apiKeyValue = document.querySelector("#modelEditorApiKey")?.value.trim();
+          if (apiKeyValue) {
+            updateModelEditorDraft({ apiKeyStatus: "configured", apiKeyEditing: false });
+          }
+          return;
+        }
+
+        if (event.target.closest("[data-toggle-model-multimodal]")) {
+          updateModelEditorDraft({ supportsMultimodal: !uiState.modelEditorDraft.supportsMultimodal });
+          return;
+        }
+
+        if (event.target.closest("[data-save-model-editor]")) {
+          saveModelEditor();
+          return;
+        }
+
+        if (event.target.closest("[data-test-model-connection]")) {
+          return;
         }
 
         if (event.target.id === "backHome") {

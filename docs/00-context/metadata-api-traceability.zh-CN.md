@@ -113,3 +113,9 @@
 ## 延后翻译
 
 无。每个产物都有 EN 与 `.zh-CN.md` 副本，REQ/US/T/AC ID 完全一致。
+
+## Product Goal Batch 5 FE 切换说明
+
+延后的 `T-MA-014` FE cutover 已由 Product Goal Batch 5 在 Phase I1-I2 范围内部分消费。真实 Vue 产品路径现在读取既有 space、batch、file 与 source chunk endpoints，并通过 `POST /api/spaces/{spaceId}/batches` 创建安全 sample batch。
+
+证据：`frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`；`docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`；`cd backend && mvn verify` 于 2026-07-05 通过。本 batch 未改变 metadata API 契约、schema、生产上传行为、auth/RBAC 或 provider 边界。

@@ -121,3 +121,23 @@ PUBLISHED 对已发布 Wiki metadata 为终态，直到未来 revision workflow 
 - 如果 file-level review 过粗，chunk-level review 可能需要扩展 endpoint。
 - Processing Center 面向 batch-scale，stakeholder 可能要求 bulk publish。
 - 在向 trusted internal 之外暴露这些 endpoints 前，生产 RBAC 需要后续切片。
+
+## Product Goal Batch 2 Vue 对齐补充
+
+Product Goal Batch 2 将本切片的 Processing Center 部分延展到真实 Vue 知识空间详情页。
+
+| Phase | Vue 产品验收 |
+|---|---|
+| Phase D 处理中心 | 真实 Vue `IBM i Modernization` Processing Center 展示文档总数、解析失败、需要 OCR、低置信度、缺少 `source_trace`、LLM 生成需审核、待发布计数，并用队列行解释内容为什么被 Wiki、Graph 和 Ask 排除。 |
+
+本补充只改变 Vue 产品界面成熟度；不新增 backend/API 行为、生产 RBAC、真实 remediation worker 或外部 provider 调用。
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 将本切片中的已发布 Wiki 能力扩展到真实 Vue 知识空间详情页。
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase E LM Wiki | 真实 Vue `IBM i Modernization` Wiki 标签页提供可浏览 Wiki 索引、密集的 Markdown-like 内容段落、页面 metadata、实体链接、confidence、review status，以及针对 published、approved、review-required 样例页面的可见 `source_trace` blocks。 |
+
+该 addendum 仅更新 Vue 产品界面成熟度，不新增真实 Markdown generator、真实文档内容、新 backend/API 行为或外部 provider 调用。

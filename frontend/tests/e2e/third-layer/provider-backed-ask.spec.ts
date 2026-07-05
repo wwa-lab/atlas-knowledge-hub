@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext } from '@playwright/test'
 
 const apiBaseUrl = process.env.ATLAS_API_BASE_URL ?? 'http://127.0.0.1:18082'
 const spaceId = 'ibm-i-modernization'
+const providerKey = normalizeProvider(process.env.ATLAS_MODEL_PROVIDER ?? 'deepseek')
 
 test('third-layer provider-backed Ask answers with citations and API-backed graph evidence', async ({
   page,
@@ -131,21 +132,23 @@ test('third-layer provider-backed Ask answers with citations and API-backed grap
   expect(askEnvelope.data.evidence[0].sourceFile).toContain('provider-backed-flow')
 
   const modelEnvelope = await expectApiOk(request, 'GET', `/api/model-runs/${askEnvelope.data.modelRunId}`)
-  expect(modelEnvelope.data.adapterKey).toBe('deepseek')
+  expect(modelEnvelope.data.adapterKey).toBe(providerKey)
   expect(modelEnvelope.data.mode).toBe('configured')
   expect(modelEnvelope.data.outputs[0].safeSummary).toBeTruthy()
 
   await page.goto('/')
-  const graph = page.locator('[data-tab="graph"]')
-  await expect(graph).toHaveAttribute('data-state', 'ready')
-  await expect(graph.getByTestId('graph-state')).toContainText('Graph API connected')
+  await page.getByTestId('vue-space-card-ibm-i-modernization').click()
+  await page.getByRole('button', { name: '图谱', exact: true }).click()
+
+  const graph = page.getByTestId('vue-product-graph')
+  await expect(graph).toContainText('Knowledge Graph')
   await expect(graph).not.toContainText('Using safe mock graph')
 
-  await graph.getByTestId('graph-search').fill(section)
-  await expect(graph.locator('.graph-node-button', { hasText: section })).toBeVisible()
-  await graph.locator('.graph-node-button', { hasText: section }).click()
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText(chunkId)
-  await expect(graph.getByTestId('graph-evidence-detail')).toContainText('APPROVED')
+  await page.getByTestId('vue-graph-search').fill(section)
+  await expect(page.getByTestId('vue-graph-node').filter({ hasText: section })).toBeVisible()
+  await page.getByTestId('vue-graph-node').filter({ hasText: section }).click()
+  await expect(page.getByTestId('vue-graph-detail')).toContainText(chunkId)
+  await expect(page.getByTestId('vue-graph-detail')).toContainText('APPROVED')
 })
 
 async function expectApiOk(
@@ -178,4 +181,8 @@ function graphWriteHeaders() {
     'X-Atlas-User': 'third-layer-e2e',
     'X-Atlas-Role': 'ADMIN'
   }
+}
+
+function normalizeProvider(provider: string) {
+  return provider.trim().toLowerCase().replaceAll('_', '-')
 }

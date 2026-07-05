@@ -18,25 +18,36 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Configured provider adapter for opt-in DeepSeek chat execution. */
+/** Configured provider adapter for opt-in OpenAI-compatible chat execution. */
 @Component
 public class ConfiguredModelAdapter implements ModelAdapter {
 
-  private static final String ADAPTER_KEY = "deepseek";
+  private static final String DEEPSEEK = "deepseek";
+  private static final String GITHUB_MODELS = "github-models";
   private static final String DEFAULT_ENDPOINT = "https://api.deepseek.com";
   private static final String DEFAULT_MODEL = "deepseek-chat";
+  private static final String GITHUB_MODELS_ENDPOINT = "https://models.github.ai/inference";
+  private static final String GITHUB_MODELS_MODEL = "openai/gpt-4.1";
   private static final int CONTEXT_LIMIT = 8192;
   private static final int MAX_SAFE_SUMMARY_LENGTH = 500;
   private static final int REQUEST_TIMEOUT_SECONDS = 45;
 
-  private final ModelEnvironment environment;
-  private final DeepSeekChatClient client;
+  private final Supplier<Map<String, String>> environmentSupplier;
+  private final ChatCompletionClient client;
 
   /** Creates the configured adapter placeholder. */
   public ConfiguredModelAdapter() {
-    this(System.getenv(), new HttpDeepSeekChatClient());
+    this(System::getenv, new HttpChatCompletionClient());
+  }
+
+  /** Creates the configured adapter with runtime configuration fallback. */
+  @Autowired
+  public ConfiguredModelAdapter(ModelConfigurationProvider configurationProvider) {
+    this(configurationProvider::effectiveEnvironment, new HttpChatCompletionClient());
   }
 
   /** Visible for contract tests that verify raw configuration never leaks. */
@@ -53,19 +64,25 @@ public class ConfiguredModelAdapter implements ModelAdapter {
   }
 
   /** Visible for contract tests with a fake provider client. */
-  public ConfiguredModelAdapter(Map<String, String> environment, DeepSeekChatClient client) {
-    this.environment = ModelEnvironment.from(environment);
+  public ConfiguredModelAdapter(Map<String, String> environment, ChatCompletionClient client) {
+    this(() -> environment, client);
+  }
+
+  /** Visible for contract tests with dynamic configuration. */
+  public ConfiguredModelAdapter(Supplier<Map<String, String>> environmentSupplier, ChatCompletionClient client) {
+    this.environmentSupplier = environmentSupplier;
     this.client = client;
   }
 
   @Override
   public List<ModelCapability> capabilities() {
+    ModelEnvironment environment = ModelEnvironment.from(environmentSupplier.get());
     return List.of(
         new ModelCapability(
-            ADAPTER_KEY,
+            environment.adapterKey(),
             environment.modelName(),
-            "DeepSeek Chat",
-            "deepseek",
+            environment.displayName(),
+            environment.providerLabel(),
             ModelType.CHAT,
             List.of(ModelOperation.CHAT),
             true,
@@ -73,7 +90,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
             CONTEXT_LIMIT,
             Map.of(
                 "provider",
-                environment.providerConfigured() ? "deepseek" : "missing",
+                environment.providerConfigured() ? environment.providerLabel() : "unsupported",
                 "credential",
                 environment.apiKeyConfigured() ? "configured" : "missing",
                 "endpoint",
@@ -84,23 +101,24 @@ public class ConfiguredModelAdapter implements ModelAdapter {
 
   @Override
   public ModelResult execute(ModelRequest request) {
+    ModelEnvironment environment = ModelEnvironment.from(environmentSupplier.get());
     if (!environment.available()) {
-      throw new IllegalStateException("DeepSeek model adapter is not configured.");
+      throw new IllegalStateException("Configured model adapter is not configured.");
     }
     if (request.operationType() != ModelOperation.CHAT) {
-      throw new IllegalStateException("DeepSeek model adapter only supports chat.");
+      throw new IllegalStateException("Configured model adapter only supports chat.");
     }
     if (!"configured".equals(request.mode())) {
-      throw new IllegalStateException("DeepSeek model adapter requires configured mode.");
+      throw new IllegalStateException("Configured model adapter requires configured mode.");
     }
     try {
-      DeepSeekChatResponse response = client.complete(DeepSeekChatRequest.from(environment, request));
+      ChatCompletionResponse response = client.complete(ChatCompletionRequest.from(environment, request));
       String safeSummary = sanitize(response.answer(), MAX_SAFE_SUMMARY_LENGTH);
       if (safeSummary == null || safeSummary.isBlank()) {
         throw new IllegalStateException("Provider returned an empty chat response.");
       }
       return new ModelResult(
-          ADAPTER_KEY,
+          environment.adapterKey(),
           request.modelKey(),
           "Provider chat operation completed.",
           new ModelResult.ModelUsage(response.promptUnits(), response.completionUnits()),
@@ -108,7 +126,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
               new ModelResult.ModelOutput(
                   request.runId() + "-output-001",
                   ModelOutputKind.TEXT_SUMMARY,
-                  "generated/model/" + request.runId() + "-deepseek-chat.json",
+                  "generated/model/" + request.runId() + "-" + environment.outputSlug() + ".json",
                   safeSummary,
                   List.of(),
                   null,
@@ -140,21 +158,21 @@ public class ConfiguredModelAdapter implements ModelAdapter {
     return safe.substring(0, maxLength);
   }
 
-  /** Provider client boundary for DeepSeek chat completion calls. */
-  public interface DeepSeekChatClient {
-    DeepSeekChatResponse complete(DeepSeekChatRequest request) throws IOException, InterruptedException;
+  /** Provider client boundary for chat completion calls. */
+  public interface ChatCompletionClient {
+    ChatCompletionResponse complete(ChatCompletionRequest request) throws IOException, InterruptedException;
   }
 
   /** Safe request shape passed from the adapter to its provider client. */
-  public record DeepSeekChatRequest(
+  public record ChatCompletionRequest(
       String endpoint,
       String apiKey,
       String modelName,
       String systemPrompt,
       String userPrompt) {
 
-    static DeepSeekChatRequest from(ModelEnvironment environment, ModelRequest request) {
-      return new DeepSeekChatRequest(
+    static ChatCompletionRequest from(ModelEnvironment environment, ModelRequest request) {
+      return new ChatCompletionRequest(
           environment.endpoint(),
           environment.apiKey(),
           environment.modelName(),
@@ -194,16 +212,16 @@ public class ConfiguredModelAdapter implements ModelAdapter {
   }
 
   /** Sanitized provider response used by the adapter. */
-  public record DeepSeekChatResponse(String answer, int promptUnits, int completionUnits) {}
+  public record ChatCompletionResponse(String answer, int promptUnits, int completionUnits) {}
 
   private record ModelEnvironment(
       String provider, String endpoint, String apiKey, String modelName) {
 
     static ModelEnvironment from(Map<String, String> values) {
-      String provider = value(values, "ATLAS_MODEL_PROVIDER", "");
-      String endpoint = value(values, "ATLAS_MODEL_ENDPOINT", DEFAULT_ENDPOINT);
+      String provider = normalizeProvider(value(values, "ATLAS_MODEL_PROVIDER", DEEPSEEK));
+      String endpoint = value(values, "ATLAS_MODEL_ENDPOINT", defaultEndpoint(provider));
       String apiKey = value(values, "ATLAS_MODEL_API_KEY", "");
-      String modelName = value(values, "ATLAS_MODEL_NAME", DEFAULT_MODEL);
+      String modelName = value(values, "ATLAS_MODEL_NAME", defaultModel(provider));
       return new ModelEnvironment(provider, trimTrailingSlash(endpoint), apiKey, modelName);
     }
 
@@ -212,7 +230,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
     }
 
     boolean providerConfigured() {
-      return "deepseek".equalsIgnoreCase(provider);
+      return DEEPSEEK.equals(provider) || GITHUB_MODELS.equals(provider);
     }
 
     boolean endpointConfigured() {
@@ -223,9 +241,45 @@ public class ConfiguredModelAdapter implements ModelAdapter {
       return apiKey != null && !apiKey.isBlank();
     }
 
+    String adapterKey() {
+      return providerConfigured() ? provider : "configured-model";
+    }
+
+    String displayName() {
+      return switch (provider) {
+        case GITHUB_MODELS -> "GitHub Models Chat";
+        case DEEPSEEK -> "DeepSeek Chat";
+        default -> "Configured Chat";
+      };
+    }
+
+    String providerLabel() {
+      return providerConfigured() ? provider : "unsupported";
+    }
+
+    String outputSlug() {
+      return switch (provider) {
+        case GITHUB_MODELS -> "github-models-chat";
+        case DEEPSEEK -> "deepseek-chat";
+        default -> "configured-chat";
+      };
+    }
+
     private static String value(Map<String, String> values, String key, String defaultValue) {
       String value = values == null ? null : values.get(key);
       return value == null || value.isBlank() ? defaultValue : value.trim();
+    }
+
+    private static String normalizeProvider(String value) {
+      return value == null ? "" : value.trim().toLowerCase().replace('_', '-');
+    }
+
+    private static String defaultEndpoint(String provider) {
+      return GITHUB_MODELS.equals(provider) ? GITHUB_MODELS_ENDPOINT : DEFAULT_ENDPOINT;
+    }
+
+    private static String defaultModel(String provider) {
+      return GITHUB_MODELS.equals(provider) ? GITHUB_MODELS_MODEL : DEFAULT_MODEL;
     }
 
     private static String trimTrailingSlash(String value) {
@@ -234,13 +288,13 @@ public class ConfiguredModelAdapter implements ModelAdapter {
     }
   }
 
-  private static class HttpDeepSeekChatClient implements DeepSeekChatClient {
+  private static class HttpChatCompletionClient implements ChatCompletionClient {
 
     private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public DeepSeekChatResponse complete(DeepSeekChatRequest request)
+    public ChatCompletionResponse complete(ChatCompletionRequest request)
         throws IOException, InterruptedException {
       String requestBody = requestBody(request);
       HttpRequest httpRequest =
@@ -264,7 +318,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
       return responseBody(response.body());
     }
 
-    private String requestBody(DeepSeekChatRequest request) throws IOException {
+    private String requestBody(ChatCompletionRequest request) throws IOException {
       ObjectNode body = objectMapper.createObjectNode();
       body.put("model", request.modelName());
       body.put("stream", false);
@@ -275,7 +329,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
       return objectMapper.writeValueAsString(body);
     }
 
-    private DeepSeekChatResponse responseBody(String body) throws IOException {
+    private ChatCompletionResponse responseBody(String body) throws IOException {
       JsonNode root = objectMapper.readTree(body);
       String answer = root.path("choices").path(0).path("message").path("content").asText("");
       if (answer.isBlank()) {
@@ -283,7 +337,7 @@ public class ConfiguredModelAdapter implements ModelAdapter {
       }
       int promptUnits = root.path("usage").path("prompt_tokens").asInt(0);
       int completionUnits = root.path("usage").path("completion_tokens").asInt(0);
-      return new DeepSeekChatResponse(answer, Math.max(promptUnits, 0), Math.max(completionUnits, 0));
+      return new ChatCompletionResponse(answer, Math.max(promptUnits, 0), Math.max(completionUnits, 0));
     }
   }
 }

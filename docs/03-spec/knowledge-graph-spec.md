@@ -128,3 +128,13 @@ flowchart TD
 - OQ-KG-001: Placement of rich graph editing.
 - OQ-KG-002: Production graph layout engine.
 - OQ-KG-003: Whether `review-publish` is implemented before this slice.
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 extends the Graph experience into the real Vue Knowledge Space detail page without changing backend/API scope.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase F Knowledge Graph | The real Vue `IBM i Modernization` Graph tab provides a graph canvas, Wiki Page / Entity / Concept / Document / Review Required nodes, node selection, search, legend, detail panel, confidence, review status, and evidence/source trace for selected graph objects. |
+
+This addendum changes only the Vue product surface maturity. It does not introduce a production graph database, production layout engine, real data ingestion, or new API contract behavior.

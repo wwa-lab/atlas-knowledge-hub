@@ -86,4 +86,12 @@ public class SourceChunk {
   public ReviewStatus getReviewStatus() {
     return reviewStatus;
   }
+
+  /** Updates the chunk review status from an explicit review action. */
+  public void applyReviewStatus(ReviewStatus status) {
+    if (status == ReviewStatus.PUBLISHED) {
+      throw new IllegalArgumentException("PUBLISHED is not set by the metadata review endpoint.");
+    }
+    this.reviewStatus = status;
+  }
 }

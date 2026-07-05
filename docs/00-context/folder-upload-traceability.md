@@ -106,3 +106,11 @@ Evidence is also recorded in `docs/06-tasks/folder-upload-tasks.md`.
 ## Deferred Translations
 
 None. Every artifact has an EN and a `.zh-CN.md` copy with identical REQ/US/T/AC IDs.
+
+## Product Goal Batch 2 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase C Upload To Batch Mock Loop | `T-FU-014` | L2 Vue parity | `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`; `docs/00-context/evidence/phase-c-upload-batch.png`; real Vue product path covers upload review, inventory, create batch, status mapping, source trace, and report. |
+
+This status updates product-surface maturity only. It does not change the no-backend/no-adapter scope of the `folder-upload` slice and does not imply final product acceptance.

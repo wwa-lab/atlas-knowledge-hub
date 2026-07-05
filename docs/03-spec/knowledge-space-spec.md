@@ -255,3 +255,12 @@ See `docs/05-design/contracts/knowledge-space-API_IMPLEMENTATION_GUIDE.md`.
 | REQ-KS-021 | Settings shows vector database, parsing, and storage engine configuration as adapter-backed mock options. |
 | REQ-KS-022 | Sidebar settings shortcuts open the Settings modal/sheet, All Settings does not replace the current product view, and closing returns to the previous view. |
 | REQ-KS-023 | Prototype remains readable across wide desktop, laptop, tablet, and mobile viewport widths without incoherent text/control overlap. |
+
+## Product Goal Batch 1 Acceptance
+
+This section maps the ongoing product roadmap goal to the historical `knowledge-space` slice without creating a competing planning layer.
+
+| Phase | Slice Coverage | Acceptance |
+|---|---|---|
+| Phase A Product Experience Reset | `REQ-KS-001`, `REQ-KS-002`, `REQ-KS-010`, `REQ-KS-015`, `REQ-KS-016`, `REQ-KS-022` | The Vite app opens the real Vue product shell by default; the primary path contains no `iframe.product-frame`; Home, sidebar, Global Chat, Settings, and model management are available in Vue. |
+| Phase B Knowledge Space Detail Parity | `REQ-KS-003`, `REQ-KS-004`, `REQ-KS-005`, `REQ-KS-006`, `REQ-KS-007`, `REQ-KS-009` | Clicking `IBM i Modernization` opens the real Vue detail page; default tab is Wiki; Documents, Processing Center, Wiki, and Graph render as Vue views and preserve the selected space context. |

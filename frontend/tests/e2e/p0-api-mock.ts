@@ -78,6 +78,16 @@ export async function mockP0Api(page: Page) {
       return fulfill(route, { runId: 'vector-run-p0', spaceId: 'ibm-i-modernization', status: 'SUCCEEDED' }, 201)
     }
 
+    if (path === '/api/spaces/ibm-i-modernization/downstream-refresh' && method === 'POST') {
+      state.graphProjectionCreated = true
+      state.vectorRunCreated = true
+      return fulfill(route, {
+        graphRun: { runId: 'graph-run-p0', spaceId: 'ibm-i-modernization', adapterId: 'deterministic', scope: 'APPROVED_ONLY', status: 'SUCCEEDED', summary: { createdCount: 1 } },
+        vectorRun: { runId: 'vector-run-p0', spaceId: 'ibm-i-modernization', batchId: 'batch-p0', adapterKey: 'mock-vector', operation: 'INDEX', status: 'SUCCEEDED' },
+        message: 'Downstream evidence refreshed.'
+      })
+    }
+
     if (path === '/api/spaces/ibm-i-modernization/graph/nodes/node-p0') {
       return fulfill(route, graphDetail())
     }
@@ -92,6 +102,20 @@ export async function mockP0Api(page: Page) {
 
     if (path === '/api/ask-runs/ask-p0') {
       return fulfill(route, askRun())
+    }
+
+    if (path === '/api/model-adapters') {
+      return fulfill(route, modelAdapters())
+    }
+
+    if (path === '/api/model-configurations/deepseek') {
+      if (method === 'PUT') {
+        return fulfill(route, modelConfiguration('CONFIGURED'))
+      }
+      if (method === 'DELETE') {
+        return fulfill(route, modelConfiguration('MISSING'))
+      }
+      return fulfill(route, modelConfiguration('MISSING'))
     }
 
     return fulfill(route, null, 404, false)
@@ -260,5 +284,43 @@ function askRun() {
     ],
     createdAt: '2026-07-03T00:00:00Z',
     completedAt: '2026-07-03T00:00:01Z'
+  }
+}
+
+function modelAdapters() {
+  return [
+    {
+      adapterKey: 'mock-model',
+      modelKey: 'deepseek-flash',
+      displayName: 'DeepSeek Flash',
+      providerFamily: 'built-in mock',
+      modelType: 'CHAT',
+      supportedOperations: ['CHAT'],
+      defaultModel: true,
+      status: 'AVAILABLE',
+      contextLimit: 8192,
+      maskedConfigSummary: {
+        credential: 'mock',
+        endpoint: 'not_configured',
+        externalNetwork: 'disabled'
+      }
+    }
+  ]
+}
+
+function modelConfiguration(credentialStatus = 'MISSING') {
+  return {
+    adapterKey: 'deepseek',
+    provider: 'deepseek',
+    modelKey: 'deepseek-chat',
+    credentialStatus,
+    endpointStatus: 'CONFIGURED',
+    mode: credentialStatus === 'CONFIGURED' ? 'runtime' : 'missing',
+    maskedConfigSummary: {
+      provider: 'deepseek',
+      credential: credentialStatus.toLowerCase().replace('_', '-'),
+      endpoint: 'configured',
+      externalNetwork: credentialStatus === 'MISSING' ? 'disabled' : 'enabled'
+    }
   }
 }

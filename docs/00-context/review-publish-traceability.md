@@ -92,3 +92,35 @@ Updated on 2026-07-03 after Codex implementation verification.
 - Verification passed: `cd backend && mvn test -Dtest='ReviewPublishServiceTest,ReviewPublishApiContractIT,DomainInvariantTest'`; `cd backend && mvn verify`; `cd frontend && npm run typecheck`; `cd frontend && npm run test -- --run`; `cd frontend && npm run build`; `cd frontend && npm run e2e`; prototype JavaScript syntax extraction; `git diff --check`.
 - Previously blocked checks are now resolved: ask/knowledge-graph migration/route/projection expectations were aligned, and `frontend/src/App.vue` lint errors were fixed.
 - Network/secret scan note: scans still report pre-existing mock provider URLs and masked password/secret copy in the prototype; no new runtime network call or raw secret was introduced by this slice.
+
+## Product Goal Batch 2 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase D Processing Center | `T-REVIEW-PUBLISH-010` | L2 Vue parity | `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`; `docs/00-context/evidence/phase-d-processing-center.png`; real Vue Processing Center shows quality gates and queue explanations for Wiki/Graph/Ask eligibility. |
+
+This status updates product-surface maturity only. It does not add production RBAC, real remediation workers, or new backend/API contracts.
+
+## Product Goal Batch 3 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase E LM Wiki | `T-REVIEW-PUBLISH-011` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-e-lm-wiki.png`; real Vue Wiki tab shows browsable pages, metadata, entity links, confidence, review status, and source trace. |
+
+This status updates product-surface maturity only. It does not add a real Markdown generator, real company data, or new backend/API contracts.
+
+## Product Goal Batch 5 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I3 Review queues API-backed Vue cutover | `T-FSP-011` consuming existing review queue API | L3 API-backed | `frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`; `docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`; real Vue Processing Center shows API review queues without changing the review-publish backend contract. |
+
+This status upgrades the review queue product surface only. It does not add production RBAC, real remediation workers, real company data, or new backend/API contracts.
+
+## Product Goal Batch 6 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I4 Wiki pages API-backed Vue cutover | `T-FSP-012` consuming existing publish and Wiki page APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`; real Vue Wiki tab reads API-published Wiki metadata after product-path publish. |
+
+This status upgrades the Wiki product surface only. It does not add a real Markdown generator, production RBAC, real company data, or new backend/API contracts.

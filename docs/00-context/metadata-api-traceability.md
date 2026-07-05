@@ -113,3 +113,9 @@ Deferred work:
 ## Deferred Translations
 
 None. Every artifact has an EN and a `.zh-CN.md` copy with identical REQ/US/T/AC IDs.
+
+## Product Goal Batch 5 FE Cutover Note
+
+The deferred `T-MA-014` FE cutover is partially consumed by Product Goal Batch 5 for Phase I1-I2. The real Vue product path now reads existing space, batch, file, and source chunk endpoints and creates the safe sample batch through `POST /api/spaces/{spaceId}/batches`.
+
+Evidence: `frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`; `docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`; `cd backend && mvn verify` passed on 2026-07-05. No metadata API contract, schema, production upload behavior, auth/RBAC, or provider boundary changed in this batch.

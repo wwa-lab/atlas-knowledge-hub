@@ -132,3 +132,13 @@ None in this slice. No backend/API contract is in scope; the API guide is intent
 
 - Directory picker vs synthetic selection (design decision; default synthetic + optional non-functional picker).
 - Single active batch vs batch list (default single active batch).
+
+## Product Goal Batch 2 Vue Parity Addendum
+
+The historical `folder-upload` slice first completed the static prototype path. Product Goal Batch 2 extends the same behavior into the real Vue product path.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase C Upload To Batch Mock Loop | In the real Vue `IBM i Modernization` detail page, Upload Folder/ZIP opens an upload review surface, renders inventory with supported and unsupported files, creates a mock batch, shows metrics, file statuses, source trace, and opens a batch report. |
+
+The addendum does not introduce backend/API behavior, real file reads, parser/converter calls, storage writes, or external provider calls. It remains mock-only and adapter-neutral.

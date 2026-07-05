@@ -200,3 +200,9 @@ git diff --check
 - OQ-MODA-002: This task set stores references and safe summaries only; raw prompt retention would require an accepted SDD change.
 - OQ-MODA-003: Usage/cost governance is deferred; only counts are in scope.
 - R-MODA-003: Embedding outputs must not bypass `vector-adapter`; T-MODA-009 must guard non-adapter vector writes.
+
+## Product Goal Batch 4 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-MODA-011 | Complete | Product Goal Batch 4 added the real Vue settings administration surface with model list/add/edit/cancel/save, masked API key replace/remove, mock-safe test connection feedback, and non-empty general/member/registration/API/vector/parser/storage panels. Evidence: `frontend/tests/e2e/phase-h-settings-administration.spec.ts`, `docs/00-context/evidence/phase-h-settings-administration.png`, frontend typecheck/test/build/E2E. |

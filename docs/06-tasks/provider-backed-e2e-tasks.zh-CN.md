@@ -14,7 +14,7 @@
 
 - 第三层 provider-backed E2E 必须 opt-in，并与 first-layer、second-layer、默认 frontend E2E、backend verification、setup、默认 CI 隔离。
 - 继续只使用 mock/sample knowledge data。
-- DeepSeek API key 只能来自环境变量。
+- Provider API key 只能来自环境变量。
 - Provider execution 必须停留在 ModelAdapter 边界内。
 - 不得记录、持久化、截图、trace、返回或提交 raw keys、raw auth headers、raw provider responses、private paths 或真实公司数据。
 - 缺 key、网络失败、provider 429、provider 5xx、timeout 和 malformed output 必须安全失败。
@@ -61,13 +61,13 @@
   # 实现必须包含 missing-key preflight test，证明不会启动 provider call。
   ```
 
-### T-PBE2E-003: 在 ModelAdapter 后实现 DeepSeek Provider
+### T-PBE2E-003: 在 ModelAdapter 后实现 configured provider
 
 - **映射到:** REQ-PBE2E-004, REQ-PBE2E-005, REQ-PBE2E-006, REQ-PBE2E-012；spec sections `ModelAdapter Boundary`, `Provider Configuration`。
 - **Owner type:** backend
 - **Priority:** Must
 - **Dependencies:** T-PBE2E-002
-- **范围:** 新增或扩展支持 DeepSeek 的 ModelAdapter implementation，在 server-side 读取运行时环境配置，调用 provider，将输出归一化为现有 model result shape，并保留 review-required output status。
+- **范围:** 新增或扩展支持 configured provider 的 ModelAdapter implementation，在 server-side 读取运行时环境配置，调用 DeepSeek 或 GitHub Models，将输出归一化为现有 model result shape，并保留 review-required output status。
 - **约束:** Provider-specific client/request/response parsing 只能位于 adapter implementation；不得持久化 raw provider payload。
 - **验证:**
   ```bash
@@ -155,6 +155,6 @@ Adapter shape 稳定后，T-PBE2E-006 failure simulations 可以和 T-PBE2E-005 
 
 ## 未决问题
 
-- OQ-PBE2E-001: DeepSeek key 的精确环境变量名。
+- OQ-PBE2E-001: Provider key 的精确环境变量名。
 - OQ-PBE2E-002: 第三层失败时 trace/video retention policy。
 - OQ-PBE2E-003: 未来是否需要带托管 secrets 的受保护 CI。

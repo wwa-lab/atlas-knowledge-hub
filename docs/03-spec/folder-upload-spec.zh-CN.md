@@ -132,3 +132,13 @@ Phase 1 推进是确定性种子分配（每个 mock 文件得到固定目标状
 
 - 目录选择器 vs 合成选择（设计决策；默认合成 + 可选无功能选择器）。
 - 单一活动批次 vs 批次列表（默认单一活动批次）。
+
+## Product Goal Batch 2 Vue 对齐补充
+
+历史 `folder-upload` 切片最先完成的是静态原型路径。Product Goal Batch 2 将同一行为延展到真实 Vue 产品路径。
+
+| Phase | Vue 产品验收 |
+|---|---|
+| Phase C 上传到批处理 mock 闭环 | 在真实 Vue `IBM i Modernization` 详情页中，上传文件夹/ZIP 会打开上传审阅界面，展示支持/不支持文件清单，创建 mock batch，显示指标、文件状态、source trace，并打开 batch report。 |
+
+本补充不引入后端/API 行为、真实文件读取、parser/converter 调用、storage 写入或外部 provider 调用。仍然仅 mock 且保持适配器中立。

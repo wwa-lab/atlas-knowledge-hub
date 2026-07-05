@@ -101,7 +101,7 @@ Atlas has three acceptance layers:
 
 - `first-layer`: deterministic local/mock gate, no provider calls.
 - `second-layer`: deterministic local full-stack gate with Docker PostgreSQL and Spring Boot, still no provider calls.
-- `third-layer`: opt-in provider-backed gate for DeepSeek Ask through the backend ModelAdapter, using mock/sample knowledge data only.
+- `third-layer`: opt-in provider-backed gate for configured provider Ask through the backend ModelAdapter, using mock/sample knowledge data only. Supported local providers are `deepseek` and `github-models`.
 
 Run the mock knowledge-loop E2E from the repository root:
 
@@ -116,14 +116,20 @@ Run the local full-stack second-layer E2E with Docker PostgreSQL, Spring Boot, f
 npm run e2e:second-layer
 ```
 
-Run the opt-in provider-backed third-layer E2E only when a local approved DeepSeek key is already available in the shell environment:
+Run the opt-in provider-backed third-layer E2E only when a local approved provider key is already available. The command reads repository-root `.env` first, so the usual local flow is:
 
 ```bash
-export ATLAS_MODEL_PROVIDER=deepseek
-export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
-export ATLAS_MODEL_NAME=deepseek-chat
+cp configs/atlas.company.example.env .env
+# edit .env locally; do not commit it
 npm run e2e:third-layer
+```
+
+For GitHub Models, use a GitHub token with Models access and set:
+
+```bash
+ATLAS_MODEL_PROVIDER=github-models
+ATLAS_MODEL_ENDPOINT=https://models.github.ai/inference
+ATLAS_MODEL_NAME=openai/gpt-4.1
 ```
 
 Do not commit `.env` files, shell history exports, real API keys, provider logs, screenshots, or company data.

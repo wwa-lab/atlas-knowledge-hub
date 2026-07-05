@@ -80,3 +80,4 @@ If a task cannot be met against `docs/03-spec/folder-upload-spec.md` as written,
 | T-FU-011 | Deferred (optional) | Extraction not scheduled in this slice. |
 | T-FU-012 | Done | `prototypes/index.html` synced; `diff frontend/public/atlas-prototype.html prototypes/index.html` is empty. Traceability already records the omitted API guide and adapter-neutral future. |
 | T-FU-013 | Done | `frontend/tests/e2e/folder-upload.spec.ts`; `cd frontend && npm run e2e` passed. |
+| T-FU-014 | Complete | Product Goal Batch 2 extended upload inventory, create batch, file status mapping, source trace, and batch report into the real Vue product path. Evidence: `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`, `docs/00-context/evidence/phase-c-upload-batch.png`, frontend typecheck/test/build/E2E. |

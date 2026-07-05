@@ -128,3 +128,13 @@ flowchart TD
 - OQ-KG-001：复杂图谱编辑的归属。
 - OQ-KG-002：生产图谱布局引擎。
 - OQ-KG-003：本切片前 `review-publish` 是否已实现。
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 将 Graph 体验扩展到真实 Vue 知识空间详情页，不改变 backend/API 范围。
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase F 知识图谱 | 真实 Vue `IBM i Modernization` Graph 标签页提供图谱画布、Wiki Page / Entity / Concept / Document / Review Required 节点、节点选择、搜索、图例、详情面板、confidence、review status，以及所选图谱对象的 evidence/source trace。 |
+
+该 addendum 仅更新 Vue 产品界面成熟度，不引入生产图数据库、生产布局引擎、真实数据 ingestion 或新的 API contract 行为。

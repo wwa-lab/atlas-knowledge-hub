@@ -200,3 +200,9 @@ git diff --check
 - OQ-MODA-002：本任务集只存 reference 和 safe summary；原始 prompt 保留需要已接受的 SDD 变更。
 - OQ-MODA-003：Usage/cost governance 延后；范围内只记录 counts。
 - R-MODA-003：Embedding output 不得绕过 `vector-adapter`；T-MODA-009 必须 guard non-adapter vector writes。
+
+## Product Goal Batch 4 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-MODA-011 | Complete | Product Goal Batch 4 增加真实 Vue settings administration 表面，包含模型 list/add/edit/cancel/save、masked API key replace/remove、mock-safe 测试连接反馈，以及非空 general/member/registration/API/vector/parser/storage panels。证据：`frontend/tests/e2e/phase-h-settings-administration.spec.ts`、`docs/00-context/evidence/phase-h-settings-administration.png`、frontend typecheck/test/build/E2E。 |

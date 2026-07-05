@@ -93,6 +93,68 @@ wiki PUBLISHED -> graph/vector refresh -> graph evidence ready -> ask SUCCEEDED/
 - Real external cloud calls.
 - Real company data.
 
+## Product Goal Batch 5 Addendum: Phase I1-I3 API-Backed Cutover
+
+Status: completed for L3 API-backed readiness evidence on 2026-07-05; not final product acceptance.
+
+| Phase | API-backed product surface | Existing API contract |
+|---|---|---|
+| I1 Knowledge Space metadata | Real Vue home cards and space header consume Knowledge Space metadata and keep safe sample fallbacks only when API data is unavailable. | `GET /api/spaces`; `GET /api/spaces/{spaceId}` |
+| I2 Batch/file/chunk metadata | Real Vue Documents tab shows API batch, file, and source chunk metadata, and creates the safe sample batch through Atlas API. | `GET /api/spaces/{spaceId}/batches`; `POST /api/spaces/{spaceId}/batches`; `GET /api/batches/{batchId}/files`; `GET /api/files/{fileId}/chunks` |
+| I3 Review queues | Real Vue Processing Center shows API review queues alongside existing processing gates for Wiki/Graph/Ask eligibility. | `GET /api/spaces/{spaceId}/review-queues` |
+
+This addendum does not introduce new backend endpoints, production uploads, production authentication/RBAC, real company data, external providers, or direct frontend calls to parser/converter/storage/vector/model engines. Remaining Phase I work covers Wiki pages, Graph evidence, Ask runs/citations, and model configuration metadata.
+
+## Product Goal Batch 6 Addendum: Phase I4-I7 API-Backed Cutover
+
+Status: completed for L3 API-backed readiness evidence on 2026-07-05; not final product acceptance.
+
+| Phase | API-backed product surface | Existing API contract |
+|---|---|---|
+| I4 Wiki pages | Real Vue Wiki tab reads published Wiki metadata from Atlas API after API review/publish actions. | `GET /api/spaces/{spaceId}/wiki-pages`; `POST /api/files/{fileId}/publish` |
+| I5 Graph evidence | Real Vue Graph tab maps Atlas graph nodes, edges, and source-trace evidence into the product graph surface. | `GET /api/spaces/{spaceId}/graph`; `GET /api/spaces/{spaceId}/graph/nodes/{nodeId}` |
+| I6 Ask runs and citations | Real Vue global Ask surface can submit through Atlas Ask API and display answer status, model run id, and citations. | `POST /api/spaces/{spaceId}/ask`; `GET /api/ask-runs/{runId}` |
+| I7 Model configuration metadata | Real Vue model settings surface reads masked model adapter capability metadata. | `GET /api/model-adapters` |
+
+This addendum does not add production provider calls, raw secret display, production RBAC, real company data, streaming Ask, or new model administration write contracts. Phase J hardening remains pending.
+
+## Core Knowledge Loop v1 Addendum: Real Upload And Runtime Model Configuration
+
+Status: planned for the next implementation slice on 2026-07-05. This slice targets a user-runnable closed loop, not full L5 production hardening.
+
+### Scope
+
+- FR-FSP-023: A normal user can configure the DeepSeek chat model key through Atlas UI/API without editing shell scripts or process environment variables.
+- FR-FSP-024: Atlas stores only masked model configuration state in API responses; raw secrets are never returned to the frontend, logs, or persisted documentation.
+- FR-FSP-025: A normal user can upload one or more PDF files, or a ZIP containing PDF files, through the primary product UI.
+- FR-FSP-026: Uploaded files are stored in a local artifact area controlled by Atlas backend configuration, and metadata records keep relative source trace paths.
+- FR-FSP-027: Atlas parses uploaded PDFs through an adapter boundary into review-required source chunks with page/section/source trace metadata.
+- FR-FSP-028: File review updates propagate to the selected source chunks so review queues, publish gates, graph, vector, and Ask use consistent review state.
+- FR-FSP-029: Atlas exposes a backend downstream refresh action that rebuilds graph and vector evidence from approved or published chunks without frontend direct engine calls.
+- FR-FSP-030: Ask uses configured model capabilities when available, while keeping safe no-key and no-evidence states visible.
+- FR-FSP-031: Any visible capability outside this v1 closed loop is disabled or labeled coming soon instead of behaving like a working production feature.
+
+### Acceptance Matrix Addendum
+
+| Requirement | Spec Sections | Observable Check |
+|---|---|---|
+| REQ-FSP-013 | Runtime Model Configuration | User saves, reads masked, and clears model key through Atlas API/UI. |
+| REQ-FSP-014 | Real Upload | User uploads PDF or ZIP-of-PDF through UI and receives a real batch id. |
+| REQ-FSP-015 | Parser Adapter | Backend parser run creates review-required chunks from uploaded PDF content. |
+| REQ-FSP-016 | Review Consistency | Approving a file updates selected chunks and review queues consistently. |
+| REQ-FSP-017 | Downstream Refresh | Backend refresh creates graph/vector evidence without frontend engine calls. |
+| REQ-FSP-018 | Ask | Ask can run after publish/refresh and shows citations or a safe actionable state. |
+| REQ-FSP-019 | Disabled / Coming Soon | Office/OCR/RBAC/vector-store/admin surfaces are disabled until implemented. |
+| REQ-FSP-020 | Verification | Backend tests, frontend checks, safety scans, and manual closed-loop evidence are recorded. |
+
+### Explicitly Disabled For v1
+
+- Office document conversion unless a configured internal converter runtime is present.
+- Image OCR, tables-as-structured-data extraction, incremental re-indexing, and streaming Ask.
+- Production authentication, RBAC administration, audit retention, rate limiting, multi-tenant isolation, and secret-manager integration.
+- Production vector stores such as pgvector, Milvus, or Qdrant.
+- Any direct frontend calls to parser, converter, model, vector, or storage engines.
+
 ## SDD Quality Notes
 
 This document was generated using the Atlas SDD chain model: `req-to-user-story`, `user-story-to-spec`, `spec-to-architecture`, `architecture-to-design`, `design-to-tasks`, and `review-doc-quality` as the review checklist.

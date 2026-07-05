@@ -170,3 +170,9 @@
 - OQ-ASKRAG-001：review-required evidence 的角色策略。
 - OQ-ASKRAG-002：未来 review queue integration。
 - OQ-ASKRAG-003：reranking 时机。
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-ASKRAG-011 | Complete | Product Goal Batch 3 增加真实 Vue 全局可信问答产品表面，包含多空间上下文选择、问题输入、模型选择器、答案面板、evidence citations、no-approved-evidence refusal 与 review-required warning 状态。证据：`frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`、`docs/00-context/evidence/phase-g-trusted-ask.png`、frontend typecheck/test/build/E2E。 |

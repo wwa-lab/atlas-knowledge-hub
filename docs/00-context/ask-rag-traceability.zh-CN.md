@@ -148,3 +148,19 @@ for f in docs/01-requirements/ask-rag-requirements.md docs/01-requirements/ask-r
 ```text
 Implement the ask-rag slice strictly against docs/03-spec/ask-rag-spec.md and docs/06-tasks/ask-rag-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 3 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase G 可信问答 | `T-ASKRAG-011` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-g-trusted-ask.png`；真实 Vue 全局 Chat 展示多空间上下文选择、问题输入、模型选择器、evidence citations、no-approved-evidence refusal 和 review-required warning。 |
+
+该状态仅更新产品界面成熟度，不新增真实外部模型调用、生产 RAG 优化、raw prompt/vector/provider payload 存储或新的 backend/API contract。
+
+## Product Goal Batch 6 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I6 Ask runs and citations API-backed Vue 切换 | `T-FSP-012`，消费既有 Ask create/read APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`；真实 Vue 全局 Ask 通过 Atlas API 提交，并展示 answer status、model run id 与 citations。 |
+
+该状态只升级产品 Ask 界面，不新增生产 retrieval governance、真实 provider calls、真实公司数据或新的后端/API 契约。

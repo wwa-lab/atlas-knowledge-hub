@@ -2,17 +2,17 @@
 
 ## Status
 
-Implemented. `provider-backed-e2e` now has the lightweight SDD set, opt-in third-layer command, DeepSeek chat execution behind ModelAdapter, provider-backed Playwright coverage, and verification evidence. The real provider run remains local-key-dependent and was not executed when `ATLAS_MODEL_API_KEY` was absent.
+Implemented. `provider-backed-e2e` now has the lightweight SDD set, opt-in third-layer command, configured chat execution behind ModelAdapter, provider-backed Playwright coverage, and verification evidence. Supported configured providers are DeepSeek and GitHub Models. The real provider run remains local-key-dependent and is not executed when `ATLAS_MODEL_API_KEY` is absent.
 
 ## Slice Contract
 
 | Field | Value |
 |---|---|
-| Goal | A local developer can intentionally provide a DeepSeek API key through environment variables, start the local Atlas stack with one command, and complete a real provider-backed Ask E2E journey in the browser using mock/sample knowledge data. |
+| Goal | A local developer can intentionally provide a configured provider API key through environment variables, start the local Atlas stack with one command, and complete a real provider-backed Ask E2E journey in the browser using mock/sample knowledge data. |
 | Slice | `provider-backed-e2e` |
 | Phase | Third-layer acceptance / Phase 4+ provider integration verification |
-| Scope | Opt-in third-layer E2E command, local stack orchestration, provider-backed Ask through browser, DeepSeek execution behind ModelAdapter, safe failures, and artifact hygiene. |
-| Exclusions | Default first-layer/second-layer changes, real company data, raw provider artifacts, production auth/RBAC, cost governance, and non-DeepSeek provider selection. |
+| Scope | Opt-in third-layer E2E command, local stack orchestration, provider-backed Ask through browser, DeepSeek/GitHub Models execution behind ModelAdapter, safe failures, and artifact hygiene. |
+| Exclusions | Default first-layer/second-layer changes, real company data, raw provider artifacts, production auth/RBAC, cost governance, IDE Copilot session-token usage, and provider selection beyond DeepSeek/GitHub Models. |
 
 ## Sources Read
 
@@ -60,8 +60,8 @@ Full downstream SDD generation skills were intentionally not expanded because th
 | Root command | `package.json` exposes `npm run e2e:third-layer`. |
 | Frontend command | `frontend/package.json` exposes `npm --prefix frontend run e2e:third-layer`, scoped to `frontend/tests/e2e/third-layer`. |
 | Local orchestration | `scripts/e2e/run-third-layer.sh` starts temporary PostgreSQL, Spring Boot API, builds frontend, runs provider-backed Playwright, scans artifacts, and cleans up services. |
-| Provider adapter | `backend/src/main/java/com/atlas/metadata/adapter/ConfiguredModelAdapter.java` implements minimal DeepSeek chat execution behind `ModelAdapter`. |
-| Ask routing | `backend/src/main/java/com/atlas/metadata/service/AskService.java` routes `mode=configured` Ask model runs to adapter key `deepseek` without exposing provider calls to controllers or Playwright. |
+| Provider adapter | `backend/src/main/java/com/atlas/metadata/adapter/ConfiguredModelAdapter.java` implements minimal DeepSeek and GitHub Models chat execution behind `ModelAdapter`. |
+| Ask routing | `backend/src/main/java/com/atlas/metadata/service/AskService.java` routes `mode=configured` Ask model runs to the configured provider adapter key without exposing provider calls to controllers or Playwright. |
 | E2E coverage | `frontend/tests/e2e/third-layer/provider-backed-ask.spec.ts` seeds approved sample evidence, publishes Wiki, projects graph/vector evidence, triggers Ask, verifies citations/source trace, and confirms the browser graph is live API-backed. |
 | Config placeholders | `configs/atlas.example.env`, `configs/atlas.company.example.env`, and `configs/adapters.configured.example.yaml` document provider settings without real keys. |
 | User-facing docs | `README.md`, `docs/07-acceptance/README.md`, `docs/07-acceptance/knowledge-loop-e2e.md`, `docs/local-runbook.md`, and `docs/local-runbook.zh-CN.md` now describe first/second/third-layer acceptance, local DeepSeek environment setup, VS Code execution, reports, cleanup, and skip/failure conditions. |
@@ -93,7 +93,7 @@ No API guide is included in this lightweight SDD pass. The slice is currently an
 |---|---|
 | Third-layer is opt-in only. | Prevents accidental network/provider calls, cost, credential dependency, and nondeterministic default tests. |
 | First-layer and second-layer remain mock/sample-only. | Preserves existing local reliability and acceptance guarantees. |
-| DeepSeek key comes only from environment variables. | Keeps real credentials out of source, docs, logs, screenshots, traces, and git. |
+| Provider key comes only from environment variables. | Keeps real credentials out of source, docs, logs, screenshots, traces, and git. |
 | Provider calls stay behind ModelAdapter. | Preserves Atlas provider replaceability and Ask/RAG adapter boundaries. |
 | Mock/sample knowledge data remains mandatory. | Provider-backed generation should test integration path, not expose real company documents. |
 
@@ -125,7 +125,7 @@ rg -n "<focused-doc-secret-private-path-pattern>" README.md docs/07-acceptance/R
 ## Residual Risks
 
 - Full third-layer provider execution is network- and credential-dependent; it must be run locally only when `ATLAS_MODEL_API_KEY` is present.
-- Provider latency, quota, 429, and 5xx behavior are sanitized by the adapter but still depend on DeepSeek availability.
+- Provider latency, quota, 429, and 5xx behavior are sanitized by the adapter but still depend on configured provider availability.
 - Third-layer must not become a default deterministic gate without a separate accepted CI/secret-management design.
 - User docs intentionally show placeholders only; operators must source real keys from approved local secret handling and keep `.env` or shell exports out of git.
 

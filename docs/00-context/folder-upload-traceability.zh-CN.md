@@ -106,3 +106,11 @@
 ## 推迟翻译
 
 无。每个产物都有 EN 与 `.zh-CN.md` 两份，REQ/US/T/AC ID 完全一致。
+
+## Product Goal Batch 2 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase C 上传到批处理 mock 闭环 | `T-FU-014` | L2 Vue parity | `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`；`docs/00-context/evidence/phase-c-upload-batch.png`；真实 Vue 产品路径覆盖 upload review、inventory、create batch、状态映射、source trace 和 report。 |
+
+该状态仅更新产品界面成熟度，不改变 `folder-upload` 切片无后端/无适配器的范围，也不代表最终产品验收通过。

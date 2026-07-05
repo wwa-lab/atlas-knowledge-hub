@@ -126,3 +126,32 @@ X-Atlas-Role: ADMIN
 - 现有 backend contract tests 必须继续在 `mvn verify` 下通过。
 - 新 frontend E2E 必须通过浏览器控件调用 endpoint sequence。
 - 前端代码不得直接调用 provider/vector/parser/storage/converter engines。
+
+## Core Knowledge Loop v1 API 补充
+
+### 运行时模型配置
+
+```http
+GET /api/model-configurations/deepseek
+PUT /api/model-configurations/deepseek
+DELETE /api/model-configurations/deepseek
+```
+
+`PUT` 接收 provider、endpoint、model name 与 raw API key。响应永不包含 raw key；仅暴露 `CONFIGURED`、`ENV_CONFIGURED` 或 `MISSING` credential state，以及安全 masked metadata。
+
+### 真实上传 Ingestion
+
+```http
+POST /api/spaces/{spaceId}/ingestions
+Content-Type: multipart/form-data
+```
+
+v1 支持 PDF 与包含 PDF 的 ZIP archives。后端将 bytes 存储到配置的 Atlas artifact root，创建 batch/file metadata，运行 local PDF parser adapter，并返回 created batch、files、chunks 与 parser run summary。
+
+### Downstream Refresh
+
+```http
+POST /api/spaces/{spaceId}/downstream-refresh
+```
+
+后端为 requested scope 内 approved 或 published chunks 刷新 graph projection 与 vector index evidence。前端不得直接调用 vector、parser、model 或 storage engines。

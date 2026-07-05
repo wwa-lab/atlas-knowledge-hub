@@ -82,3 +82,12 @@ Phase 1 前端已实现，当前 IA 细化已被原型基线接受。
 - Tasks：已更新到 `T-KS-031`。
 - Implementation：`T-KS-001` 至 `T-KS-031` 的 Phase 1 前端/原型基线已完成。
 - Verification：`T-KS-031` 已通过 `npm run build`、`npm run e2e`、镜像 diff 和 `git diff --check`；此前 Phase 1 shell 检查记录在 `docs/06-tasks/knowledge-space-tasks.md`。
+
+## Product Goal Batch 1 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase A 产品体验重置 | `T-KS-032` | L2 Vue parity | `docs/00-context/evidence/phase-a-product-home.png`；Playwright `phase-a-b-product-shell.spec.ts`；主路径无 `iframe.product-frame`。 |
+| Phase B 知识空间详情页对齐 | `T-KS-033` | L2 Vue parity | `docs/00-context/evidence/phase-b-space-detail.png`；Playwright 覆盖 Documents、Processing Center、Wiki、Graph 标签切换。 |
+
+Batch 1 复用既有 `knowledge-space` SDD 作为行为真相源，因为 Phase A/B 属于已接受前端切片内的产品界面对齐工作。未改变后端/API contract、架构边界、外部 provider、真实数据或密钥处理范围。

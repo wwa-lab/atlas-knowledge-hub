@@ -141,3 +141,13 @@ Answer review status：
 - OQ-ASKRAG-001：review-required evidence 的角色可见性。
 - OQ-ASKRAG-002：Ask answer 未来进入 review queue 的路径。
 - OQ-ASKRAG-003：reranking 是否作为独立后续切片。
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 将可信问答扩展到真实 Vue 产品壳，不调用真实 model 或 vector provider。
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase G 可信问答 | 真实 Vue 全局 Chat 表面提供多知识空间上下文选择、问题输入、模型选择器、答案面板、evidence citations、review-required warning，以及 no-approved-evidence refusal 状态，且仅使用 mock/sample-safe 数据。 |
+
+该 addendum 仅更新 Vue 产品界面成熟度，不新增生产 RAG 优化、raw prompt 持久化、raw vector/provider payload 存储、真实外部模型调用或新的 backend/API 行为。

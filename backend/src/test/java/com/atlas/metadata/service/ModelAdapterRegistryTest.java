@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class ModelAdapterRegistryTest {
 
   private final ModelAdapterRegistry registry =
-      new ModelAdapterRegistry(List.of(new MockModelAdapter(), new ConfiguredModelAdapter(null)));
+      new ModelAdapterRegistry(List.of(new MockModelAdapter(), new ConfiguredModelAdapter((String) null)));
 
   private final ModelAdapterRegistry deepSeekRegistry =
       new ModelAdapterRegistry(
@@ -32,7 +32,7 @@ class ModelAdapterRegistryTest {
                       "ATLAS_MODEL_NAME",
                       "deepseek-test"),
                   request ->
-                      new ConfiguredModelAdapter.DeepSeekChatResponse("Provider answer.", 1, 1))));
+                      new ConfiguredModelAdapter.ChatCompletionResponse("Provider answer.", 1, 1))));
 
   @Test
   void capabilitiesSortDefaultModelsFirst() {

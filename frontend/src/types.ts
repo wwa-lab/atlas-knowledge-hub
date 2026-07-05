@@ -387,6 +387,26 @@ export interface ApiVectorRun {
   safeMessage: string | null
 }
 
+export interface ApiIngestionResponse {
+  batch: ApiBatch
+  files: ApiFileItem[]
+  chunks: ApiSourceChunk[]
+  parserRun: {
+    runId: string
+    batchId: string
+    adapterKey: string
+    status: string
+    safeMessage: string | null
+  }
+  message: string
+}
+
+export interface ApiDownstreamRefreshResponse {
+  graphRun: ApiGraphProjectionRun
+  vectorRun: ApiVectorRun
+  message: string
+}
+
 export type AskRunStatus =
   | 'REQUESTED'
   | 'RETRIEVING'
@@ -427,6 +447,32 @@ export interface ApiAskRun {
   evidence: ApiAskEvidence[]
   createdAt?: string
   completedAt?: string | null
+}
+
+export type ApiModelType = 'CHAT' | 'EMBEDDING' | 'RERANK' | 'VISION' | 'SPEECH'
+export type ApiModelAdapterStatus = 'AVAILABLE' | 'DISABLED' | 'MISCONFIGURED'
+
+export interface ApiModelCapability {
+  adapterKey: string
+  modelKey: string
+  displayName: string
+  providerFamily: string
+  modelType: ApiModelType
+  supportedOperations: string[]
+  defaultModel: boolean
+  status: ApiModelAdapterStatus
+  contextLimit: number | null
+  maskedConfigSummary: Record<string, string>
+}
+
+export interface ApiModelConfiguration {
+  adapterKey: string
+  provider: string
+  modelKey: string
+  credentialStatus: 'CONFIGURED' | 'ENV_CONFIGURED' | 'MISSING'
+  endpointStatus: 'CONFIGURED' | 'MISSING'
+  mode: 'runtime' | 'environment' | 'missing'
+  maskedConfigSummary: Record<string, string>
 }
 
 export interface AskSource {

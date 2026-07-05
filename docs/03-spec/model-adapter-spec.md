@@ -191,3 +191,13 @@ The full contract lives in `docs/05-design/contracts/model-adapter-API_IMPLEMENT
 | OQ-MODA-001 | First real provider after mock implementation. | Affects adapter implementation choice, not the model adapter contract. |
 | OQ-MODA-002 | Raw prompt retention policy. | This spec commits to references and safe summaries only. |
 | OQ-MODA-003 | Usage/cost governance timing. | This spec records usage counts only and defers quota/cost policy. |
+
+## Product Goal Batch 4 Vue Parity Addendum
+
+Product Goal Batch 4 extends model and adapter administration into the real Vue settings surface.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase H Settings And Administration | The real Vue settings modal provides non-empty enterprise management panels for general settings, members, registration policy, API information, model management, vector adapter, parser adapter, and storage adapter. Model management supports list, add, edit, cancel, save, masked API key state, replace/remove, and mock-safe test connection feedback. |
+
+This addendum changes only the Vue product surface maturity. It does not add production secret management, production RBAC, real provider calls, external network calls, or new backend/API contract behavior.

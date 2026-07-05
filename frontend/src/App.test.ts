@@ -7,6 +7,289 @@ describe('Atlas P0 full-stack productization shell', () => {
     vi.restoreAllMocks()
   })
 
+  it('uses the real Vue 3 product page and opens model settings without the prototype iframe', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-product-page"]').text()).toContain('知识库')
+    expect(wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').text()).toContain(
+      'IBM i Modernization'
+    )
+    expect(wrapper.find('iframe.product-frame').exists()).toBe(false)
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-space-detail"]').text()).toContain(
+      'IBM i Modernization Index'
+    )
+
+    const modelSettingsButton = wrapper
+      .findAll('button')
+      .find(button => button.text().includes('模型管理'))
+    expect(modelSettingsButton).toBeTruthy()
+    await modelSettingsButton!.trigger('click')
+    expect(wrapper.get('[data-testid="vue-model-manager"]').text()).toContain('模型配置')
+
+    await wrapper.get('[data-testid="vue-model-card-deepseek-flash"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-model-editor"]').text()).toContain('编辑模型')
+    await wrapper.get('[data-testid="vue-test-model"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-model-test-status"]').text()).toContain(
+      'Mock connection passed'
+    )
+
+    await wrapper.get('[data-testid="vue-model-display-name"]').setValue('DeepSeek Vue Edited')
+    await wrapper.get('[data-testid="vue-key-replace"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-key-input"]').isVisible()).toBe(true)
+
+    await wrapper.get('[data-testid="vue-key-confirm"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-key-input"]').isVisible()).toBe(true)
+
+    await wrapper.get('[data-testid="vue-key-input"]').setValue('mock-key-not-persisted')
+    await wrapper.get('[data-testid="vue-key-confirm"]').trigger('click')
+    expect(wrapper.find('[data-testid="vue-key-input"]').exists()).toBe(false)
+
+    await wrapper.get('[data-testid="vue-save-model"]').trigger('click')
+    expect(wrapper.find('[data-testid="vue-model-editor"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="vue-model-manager"]').text()).toContain('DeepSeek Vue Edited')
+    expect(wrapper.html()).not.toContain('mock-key-not-persisted')
+  })
+
+  it('saves DeepSeek model settings while keeping an already configured key masked', async () => {
+    const api = mockP0Api({ deepSeekConfigured: true })
+    const wrapper = mount(App)
+    await flushAsync()
+
+    const modelSettingsButton = wrapper
+      .findAll('button')
+      .find(button => button.text().includes('模型管理'))
+    expect(modelSettingsButton).toBeTruthy()
+    await modelSettingsButton!.trigger('click')
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-model-card-deepseek-chat"]').trigger('click')
+    await wrapper.get('[data-testid="vue-model-base-url"]').setValue('https://api.deepseek.com/v1/')
+    await wrapper.get('[data-testid="vue-model-name"]').setValue('deepseek-reasoner')
+    await wrapper.get('[data-testid="vue-save-model"]').trigger('click')
+    await flushAsync()
+
+    expect(api.lastModelConfigurationSave).toEqual({
+      provider: 'deepseek',
+      endpoint: 'https://api.deepseek.com/v1/',
+      modelName: 'deepseek-reasoner'
+    })
+    expect(wrapper.find('[data-testid="vue-model-editor"]').exists()).toBe(false)
+    expect(wrapper.html()).not.toContain('runtime-secret')
+  })
+
+  it('renders real Vue administration panels without exposing production secrets', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    const settingsButton = wrapper
+      .findAll('button')
+      .find(button => button.text().includes('全部设置'))
+    expect(settingsButton).toBeTruthy()
+    await settingsButton!.trigger('click')
+    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('常规设置')
+    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('Mock workspace policy')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '注册配置')!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('注册策略')
+    expect(wrapper.get('.atlas-settings-placeholder').text()).toContain('不提交真实公司域名')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'API 信息')!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-admin-panel"]').text()).toContain('API 信息')
+    expect(wrapper.get('.atlas-settings-placeholder').text()).toContain('不显示 token')
+    expect(wrapper.html()).not.toContain('AKIA')
+  })
+
+  it('drives real Vue upload inventory into batch report and processing queues', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '文档')!
+      .trigger('click')
+    await wrapper.get('[data-testid="vue-upload-folder"]').trigger('click')
+
+    expect(wrapper.get('[data-testid="vue-upload-review"]').text()).toContain('Upload Review')
+    expect(wrapper.findAll('[data-testid="vue-inventory-row"]')).toHaveLength(7)
+    expect(wrapper.get('[data-testid="vue-upload-review"]').text()).toContain('UNSUPPORTED')
+
+    await wrapper.get('[data-testid="vue-create-batch"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-batch-summary"]').text()).toContain('Batch created')
+    expect(wrapper.get('[data-testid="vue-batch-summary"]').text()).toContain('PDF_CONVERT_FAILED')
+    expect(wrapper.get('[data-testid="vue-batch-summary"]').text()).toContain('OCR_REQUIRED')
+
+    await wrapper.get('[data-testid="vue-view-report"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-batch-report"]').text()).toContain('source_trace:')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '处理中心')!
+      .trigger('click')
+    const processingText = wrapper.get('[data-testid="vue-processing-center"]').text()
+    expect(processingText).toContain('parse failures')
+    expect(processingText).toContain('OCR required')
+    expect(wrapper.get('[data-testid="vue-processing-issue"]').text()).toContain(
+      'blocks Wiki / Graph / Ask'
+    )
+  })
+
+  it('cuts real Vue space, batch metadata, and review queues to API-backed state', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-api-space-status"]').text()).toContain(
+      'API-backed metadata'
+    )
+    expect(wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').text()).toContain(
+      'API'
+    )
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-space-head"]').text()).toContain('API-backed Space')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '文档')!
+      .trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-api-metadata"]').text()).toContain('Batches 0')
+    await wrapper.get('[data-testid="vue-api-create-batch"]').trigger('click')
+    await flushAsync()
+    const metadataText = wrapper.get('[data-testid="vue-api-metadata"]').text()
+    expect(metadataText).toContain('P0 Browser Batch')
+    expect(metadataText).toContain('samples/p0/productization.md')
+    expect(metadataText).toContain('chunk-p0')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '处理中心')!
+      .trigger('click')
+    const queueText = wrapper.get('[data-testid="vue-api-review-queues"]').text()
+    expect(queueText).toContain('API review queues')
+    expect(queueText).toContain('READY TO PUBLISH')
+    expect(queueText).toContain('LOW CONFIDENCE')
+  })
+
+  it('cuts real Vue Wiki, graph, Ask, and model metadata to API-backed state', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await flushAsync()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '文档')!
+      .trigger('click')
+    await wrapper.get('[data-testid="vue-api-create-batch"]').trigger('click')
+    await flushAsync()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '处理中心')!
+      .trigger('click')
+    await wrapper.get('[data-testid="vue-api-approve-file"]').trigger('click')
+    await flushAsync()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Wiki')!
+      .trigger('click')
+    await wrapper.get('[data-testid="vue-api-publish-file"]').trigger('click')
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('P0 Wiki')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain(
+      'API-backed published metadata'
+    )
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '图谱')!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-product-graph"]').text()).toContain('P0 Browser Evidence')
+    expect(wrapper.get('[data-testid="vue-graph-detail"]').text()).toContain('chunk-p0')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('对话'))!
+      .trigger('click')
+    await wrapper.get('[data-testid="vue-api-ask-submit"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'API-backed trusted answer'
+    )
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain('chunk-p0')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('模型管理'))!
+      .trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-api-model-status"]').text()).toContain(
+      'API-backed masked capabilities'
+    )
+    expect(wrapper.get('[data-testid="vue-model-manager"]').text()).toContain('mock-model')
+  })
+
+  it('renders product Wiki, graph evidence, and Trusted Ask states on the real Vue path', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain(
+      'IBM i Modernization Index'
+    )
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('source_trace:')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('PUBLISHED')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('Source Trace Standard'))!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-wiki-page"]').text()).toContain('Trace Coverage')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '图谱')!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-product-graph"]').text()).toContain('Knowledge Graph')
+    await wrapper.findAll('[data-testid="vue-graph-node"]')[0].trigger('click')
+    const graphDetail = wrapper.get('[data-testid="vue-graph-detail"]').text()
+    expect(graphDetail).toContain('APPROVED')
+    expect(graphDetail).toContain('productization.md')
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('对话'))!
+      .trigger('click')
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'Evidence citations'
+    )
+    await wrapper.get('[data-testid="vue-ask-mode"]').setValue('refusal')
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'NO_APPROVED_EVIDENCE'
+    )
+    await wrapper.get('[data-testid="vue-ask-mode"]').setValue('review-warning')
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'REVIEW_REQUIRED'
+    )
+  })
+
   it('renders API-backed space detail and disables unconnected prototype actions', async () => {
     mockP0Api()
     const wrapper = await mountWorkbench()
@@ -83,13 +366,14 @@ async function mountWorkbench() {
   return wrapper
 }
 
-function mockP0Api() {
+function mockP0Api(options: { deepSeekConfigured?: boolean } = {}) {
   const state = {
     batchCreated: false,
     fileReviewStatus: 'REVIEW_REQUIRED',
     wikiPublished: false,
     graphProjectionCreated: false,
-    vectorRunCreated: false
+    vectorRunCreated: false,
+    lastModelConfigurationSave: null as unknown
   }
 
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
@@ -211,6 +495,32 @@ function mockP0Api() {
       )
     }
 
+    if (url.endsWith('/api/spaces/ibm-i-modernization/downstream-refresh') && method === 'POST') {
+      state.graphProjectionCreated = true
+      state.vectorRunCreated = true
+      return jsonOk({
+        graphRun: {
+          runId: 'graph-run-p0',
+          spaceId: 'ibm-i-modernization',
+          adapterId: 'deterministic',
+          scope: 'APPROVED_ONLY',
+          status: 'SUCCEEDED',
+          safeMessage: 'Graph done.',
+          summary: {}
+        },
+        vectorRun: {
+          runId: 'vector-run-p0',
+          spaceId: 'ibm-i-modernization',
+          batchId: 'batch-p0',
+          adapterKey: 'mock-vector',
+          operation: 'INDEX',
+          status: 'SUCCEEDED',
+          safeMessage: 'Vector done.'
+        },
+        message: 'Downstream evidence refreshed.'
+      })
+    }
+
     if (url.includes('/api/spaces/ibm-i-modernization/graph/nodes/node-p0')) {
       return jsonOk(graphDetail())
     }
@@ -225,6 +535,21 @@ function mockP0Api() {
 
     if (url.endsWith('/api/ask-runs/ask-p0')) {
       return jsonOk(askRun())
+    }
+
+    if (url.endsWith('/api/model-adapters')) {
+      return jsonOk(modelAdapters(options.deepSeekConfigured))
+    }
+
+    if (url.endsWith('/api/model-configurations/deepseek')) {
+      if (method === 'PUT') {
+        state.lastModelConfigurationSave = JSON.parse(String(init?.body ?? '{}'))
+        return jsonOk(modelConfiguration('CONFIGURED'))
+      }
+      if (method === 'DELETE') {
+        return jsonOk(modelConfiguration('MISSING'))
+      }
+      return jsonOk(modelConfiguration(options.deepSeekConfigured ? 'CONFIGURED' : 'MISSING'))
     }
 
     return jsonOk(null)
@@ -369,6 +694,66 @@ function askRun() {
     ],
     createdAt: '2026-07-03T00:00:00Z',
     completedAt: '2026-07-03T00:00:01Z'
+  }
+}
+
+function modelAdapters(deepSeekConfigured = false) {
+  const adapters = [
+    {
+      adapterKey: 'mock-model',
+      modelKey: 'deepseek-flash',
+      displayName: 'DeepSeek Flash',
+      providerFamily: 'built-in mock',
+      modelType: 'CHAT',
+      supportedOperations: ['CHAT'],
+      defaultModel: true,
+      status: 'AVAILABLE',
+      contextLimit: 8192,
+      maskedConfigSummary: {
+        credential: 'mock',
+        endpoint: 'not_configured',
+        externalNetwork: 'disabled'
+      }
+    }
+  ]
+  if (deepSeekConfigured) {
+    return [
+      {
+        adapterKey: 'deepseek',
+        modelKey: 'deepseek-chat',
+        displayName: 'DeepSeek Chat',
+        providerFamily: 'deepseek',
+        modelType: 'CHAT',
+        supportedOperations: ['CHAT'],
+        defaultModel: true,
+        status: 'AVAILABLE',
+        contextLimit: 64000,
+        maskedConfigSummary: {
+          credential: 'configured',
+          endpoint: 'configured',
+          externalNetwork: 'enabled'
+        }
+      },
+      ...adapters
+    ]
+  }
+  return adapters
+}
+
+function modelConfiguration(credentialStatus = 'MISSING') {
+  return {
+    adapterKey: 'deepseek',
+    provider: 'deepseek',
+    modelKey: 'deepseek-chat',
+    credentialStatus,
+    endpointStatus: 'CONFIGURED',
+    mode: credentialStatus === 'CONFIGURED' ? 'runtime' : 'missing',
+    maskedConfigSummary: {
+      provider: 'deepseek',
+      credential: credentialStatus.toLowerCase().replace('_', '-'),
+      endpoint: 'configured',
+      externalNetwork: credentialStatus === 'MISSING' ? 'disabled' : 'enabled'
+    }
   }
 }
 

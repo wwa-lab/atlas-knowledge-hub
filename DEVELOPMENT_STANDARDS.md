@@ -36,6 +36,7 @@ A slice goal is complete only when the relevant documents, implementation, verif
 - Requirement IDs, user story IDs, task IDs, and verification evidence must remain traceable.
 - If implementation behavior changes, update spec, design, and tasks before or with the code change.
 - If slice implementation or acceptance status changes, update `docs/00-context/{slice}-traceability.md` and the slice row in `docs/00-context/slice-roadmap.md` / `.zh-CN.md` before close-out.
+- Roadmap and close-out status must distinguish task completion from product acceptance. Report whether the user-facing outcome is prototype-only, Vue parity, API-backed, internal beta-ready, or production-ready.
 - Do not create parallel planning systems for the same change.
 
 ## Coding Standards
@@ -138,6 +139,7 @@ Phase 0 verification:
 - Scan for external network calls and new dependencies.
 - Scan for raw secrets, private paths, and real data.
 - Use a manual UI checklist against the active spec.
+- For sample-driven UI prototype changes, verify the complete visible interaction chain represented by the sample: trigger, menu or navigation state, item selection, edit/input state, save/cancel or close behavior, visible state update, and responsive layout parity.
 - Confirm `docs/00-context` status files are current for the touched slice, especially traceability, slice roadmap, verification evidence, and deferred work.
 
 Phase 1+ verification:

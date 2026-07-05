@@ -170,3 +170,9 @@ Parallel work: T-ASKRAG-005 can follow T-ASKRAG-003; T-ASKRAG-006 can start afte
 - OQ-ASKRAG-001: Role policy for review-required evidence.
 - OQ-ASKRAG-002: Future review queue integration.
 - OQ-ASKRAG-003: Reranking timing.
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-ASKRAG-011 | Complete | Product Goal Batch 3 added the real Vue global Trusted Ask product surface with multi-space context selection, question input, model selector, answer panel, evidence citations, no-approved-evidence refusal, and review-required warning states. Evidence: `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`, `docs/00-context/evidence/phase-g-trusted-ask.png`, frontend typecheck/test/build/E2E. |

@@ -6,7 +6,7 @@ Draft. Lightweight behavior source of truth for `provider-backed-e2e`. This pass
 
 ## Overview
 
-`provider-backed-e2e` adds a third acceptance layer for an intentionally provider-backed Ask journey. Unlike first-layer mock E2E and second-layer local full-stack E2E, this layer is allowed to call DeepSeek, but only after explicit opt-in and only through the ModelAdapter boundary. The journey still uses local services and mock/sample knowledge data, proving the real Ask page can use provider-generated text without weakening Atlas data-safety rules.
+`provider-backed-e2e` adds a third acceptance layer for an intentionally provider-backed Ask journey. Unlike first-layer mock E2E and second-layer local full-stack E2E, this layer is allowed to call a configured chat provider such as DeepSeek or GitHub Models, but only after explicit opt-in and only through the ModelAdapter boundary. The journey still uses local services and mock/sample knowledge data, proving the real Ask page can use provider-generated text without weakening Atlas data-safety rules.
 
 ## Acceptance Layer Model
 
@@ -14,7 +14,7 @@ Draft. Lightweight behavior source of truth for `provider-backed-e2e`. This pass
 |---|---|---:|---|
 | First-layer | Fast local/mock gate for implemented surfaces and backend contracts. | No | Mock/sample only |
 | Second-layer | Local full-stack browser + Spring Boot API + temporary PostgreSQL gate. | No | Mock/sample only |
-| Third-layer provider-backed | Opt-in local provider-backed Ask browser journey. | Yes, DeepSeek through ModelAdapter only | Mock/sample only |
+| Third-layer provider-backed | Opt-in local provider-backed Ask browser journey. | Yes, configured provider through ModelAdapter only | Mock/sample only |
 
 Third-layer behavior must not be wired into first-layer, second-layer, `npm run e2e`, ordinary backend verification, or default CI.
 
@@ -23,7 +23,7 @@ Third-layer behavior must not be wired into first-layer, second-layer, `npm run 
 In scope:
 
 - One future opt-in command that starts the local stack and executes provider-backed Ask E2E.
-- Preflight checks for explicit opt-in and required DeepSeek environment configuration.
+- Preflight checks for explicit opt-in and required configured-provider environment configuration.
 - Browser journey that asks a question from the Atlas Ask page and validates source-grounded output.
 - Backend path that routes provider execution through ModelAdapter.
 - Safe handling for missing credentials, network errors, provider 429, provider 5xx, timeout, and malformed provider output.
@@ -34,7 +34,7 @@ Out of scope:
 
 - Code implementation in this pass.
 - Changing default first-layer/second-layer behavior.
-- Real company data, real private endpoints, production auth/RBAC, cost governance, provider account administration, streaming, and provider selection beyond DeepSeek.
+- Real company data, real private endpoints, production auth/RBAC, cost governance, provider account administration, streaming, IDE Copilot session-token usage, and provider selection beyond DeepSeek/GitHub Models.
 
 ## Actors
 
@@ -61,14 +61,14 @@ Out of scope:
 
 ### Provider Configuration
 
-- **FR-PBE2E-007:** DeepSeek credentials must be read only from environment variables at runtime. (REQ-PBE2E-004)
+- **FR-PBE2E-007:** Provider credentials must be read only from environment variables at runtime. (REQ-PBE2E-004)
 - **FR-PBE2E-008:** Preflight must fail before starting provider execution when the key is missing, opt-in is missing, or configuration is obviously invalid. (REQ-PBE2E-007, REQ-PBE2E-008)
 - **FR-PBE2E-009:** Frontend source and browser-visible state must never receive raw provider credentials or raw auth headers. (REQ-PBE2E-004, REQ-PBE2E-009)
 
 ### ModelAdapter Boundary
 
 - **FR-PBE2E-010:** Ask orchestration must invoke provider generation through the existing model service/ModelAdapter contract. (REQ-PBE2E-005)
-- **FR-PBE2E-011:** Provider-specific HTTP client, endpoint, request signing, and response parsing must live only inside the DeepSeek ModelAdapter implementation or a provider adapter package. (REQ-PBE2E-005, REQ-PBE2E-012)
+- **FR-PBE2E-011:** Provider-specific HTTP client, endpoint, request signing, and response parsing must live only inside the configured ModelAdapter implementation or a provider adapter package. (REQ-PBE2E-005, REQ-PBE2E-012)
 - **FR-PBE2E-012:** Controller, generic service, repository, vector, graph, frontend, and test orchestration layers must not contain direct provider execution logic. (REQ-PBE2E-005, REQ-PBE2E-012)
 
 ### Safe Failure Behavior
@@ -116,7 +116,7 @@ Expected implementation surfaces:
 | Surface | Expected Behavior |
 |---|---|
 | E2E shell script or npm command | Opt-in third-layer local orchestration. |
-| DeepSeek ModelAdapter | Reads environment config server-side, calls provider, returns sanitized adapter result. |
+| Configured ModelAdapter | Reads environment config server-side, calls DeepSeek or GitHub Models, returns sanitized adapter result. |
 | Ask service | Uses model service/ModelAdapter only; preserves Ask/RAG evidence and review status. |
 | Playwright provider-backed spec | Drives browser Ask page with sample evidence. |
 | Safety scans | Verify no secrets, raw provider responses, private paths, or real data entered artifacts or git. |
@@ -148,6 +148,6 @@ It must also include focused scans over provider-backed E2E docs, scripts, backe
 
 ## Open Questions
 
-- OQ-PBE2E-001: Exact environment variable name for the DeepSeek key.
+- OQ-PBE2E-001: Exact environment variable name for the provider key.
 - OQ-PBE2E-002: Trace/video retention policy for third-layer failures.
 - OQ-PBE2E-003: Whether protected CI with managed secrets is ever desired.

@@ -4,6 +4,13 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
+if [ -f ".env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ".env"
+  set +a
+fi
+
 POSTGRES_CONTAINER="${ATLAS_E2E_POSTGRES_CONTAINER:-atlas-e2e-third-postgres}"
 POSTGRES_IMAGE="${ATLAS_E2E_POSTGRES_IMAGE:-postgres:16}"
 POSTGRES_PORT="${ATLAS_E2E_POSTGRES_PORT:-55434}"
@@ -44,16 +51,32 @@ require_command npm
 require_command curl
 require_command rg
 
-if [ -z "${ATLAS_MODEL_API_KEY:-}" ]; then
-  echo "Missing required config: ATLAS_MODEL_API_KEY" >&2
-  echo "Third-layer provider-backed E2E is opt-in and requires a local DeepSeek API key." >&2
+if command -v lsof >/dev/null 2>&1 && lsof -iTCP:"${BACKEND_PORT}" -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+  echo "Backend port ${BACKEND_PORT} is already in use. Set ATLAS_E2E_BACKEND_PORT to a free port." >&2
   exit 1
 fi
 
-if [ "${MODEL_PROVIDER}" != "deepseek" ]; then
-  echo "Unsupported ATLAS_MODEL_PROVIDER=${MODEL_PROVIDER}. Third-layer E2E currently supports deepseek only." >&2
+if [ -z "${ATLAS_MODEL_API_KEY:-}" ]; then
+  echo "Missing required config: ATLAS_MODEL_API_KEY" >&2
+  echo "Third-layer provider-backed E2E is opt-in and requires a local provider API key." >&2
   exit 1
 fi
+
+case "${ATLAS_MODEL_API_KEY}" in
+  replace-with-secret-store-value|"<local-deepseek-api-key>"|"<local-github-models-token>"|"<local-provider-api-key>")
+    echo "ATLAS_MODEL_API_KEY still contains a placeholder value." >&2
+    echo "Fill repository-root .env with a local approved provider API key before running third-layer E2E." >&2
+    exit 1
+    ;;
+esac
+
+case "${MODEL_PROVIDER}" in
+  deepseek|github-models) ;;
+  *)
+    echo "Unsupported ATLAS_MODEL_PROVIDER=${MODEL_PROVIDER}. Third-layer E2E supports deepseek and github-models." >&2
+    exit 1
+    ;;
+esac
 
 export ATLAS_MODE="configured"
 export ATLAS_SAMPLE_INPUT="${ATLAS_SAMPLE_INPUT:-samples/input/e2e}"
@@ -122,8 +145,14 @@ ATLAS_API_BASE_URL="${BACKEND_URL}" VITE_ATLAS_API_BASE_URL="${BACKEND_URL}" \
   npm --prefix frontend run e2e:third-layer
 
 echo "Checking provider-backed artifact hygiene..."
-if rg -n "Authorization:\\s*Bearer\\s+\\S+|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN .*PRIVATE KEY|/[U]sers/|[C]:\\\\" \
+if rg -n "Authorization:\\s*Bearer\\s+\\S+|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN .*PRIVATE KEY" \
   "${BACKEND_LOG}" frontend/playwright-report frontend/test-results samples/output/e2e 2>/dev/null; then
+  echo "Unsafe provider-backed secret content detected." >&2
+  exit 1
+fi
+if rg -n "/[U]sers/|[C]:\\\\" \
+  "${BACKEND_LOG}" frontend/playwright-report frontend/test-results samples/output/e2e 2>/dev/null \
+  | grep -vF "${ROOT_DIR}"; then
   echo "Unsafe provider-backed artifact content detected." >&2
   exit 1
 fi

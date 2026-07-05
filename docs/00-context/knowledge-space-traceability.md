@@ -82,3 +82,12 @@ Current implementation status:
 - Tasks: Updated through `T-KS-031`.
 - Implementation: Phase 1 frontend/prototype baseline complete for `T-KS-001` through `T-KS-031`.
 - Verification: `npm run build`, `npm run e2e`, mirror diff, and `git diff --check` passed for `T-KS-031`; prior Phase 1 shell checks are recorded in `docs/06-tasks/knowledge-space-tasks.md`.
+
+## Product Goal Batch 1 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase A Product Experience Reset | `T-KS-032` | L2 Vue parity | `docs/00-context/evidence/phase-a-product-home.png`; Playwright `phase-a-b-product-shell.spec.ts`; no `iframe.product-frame` on primary path. |
+| Phase B Knowledge Space Detail Parity | `T-KS-033` | L2 Vue parity | `docs/00-context/evidence/phase-b-space-detail.png`; Playwright tab switching across Documents, Processing Center, Wiki, and Graph. |
+
+Batch 1 reuses the existing `knowledge-space` SDD as the source of truth because Phase A/B are product-surface parity work within the accepted frontend slice. No backend/API contract, architecture boundary, external provider, real data, or secret-handling scope was changed.

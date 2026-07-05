@@ -120,3 +120,113 @@ T-FSP-008 can run after T-FSP-003 and before final E2E.
 ## Open Questions
 
 - None blocking for P0.
+
+## Product Goal Batch 5 Task Extension
+
+### T-FSP-011: Cut Phase I1-I3 Vue surfaces to existing Atlas APIs
+
+- Requirement: REQ-FSP-001, REQ-FSP-002, REQ-FSP-003, REQ-FSP-004, REQ-FSP-005, REQ-FSP-011, REQ-FSP-012
+- Owner type: frontend / QA
+- Priority: Must for Product Goal Batch 5
+- Dependencies: T-FSP-002 through T-FSP-010
+- Scope: In the real Vue product path, render API-backed Knowledge Space metadata, batch/file/chunk metadata, and review queue metadata using the existing Atlas API helpers. Keep safe deterministic sample fallback where the API is unavailable. Do not add production uploads, auth/RBAC, real data, provider calls, or new backend contracts.
+- Verification:
+  - `cd frontend && npm run typecheck && npm run test && npm run build`
+  - `cd frontend && npx playwright test tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts --project=chromium`
+  - `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts tests/e2e/phase-h-settings-administration.spec.ts tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts --project=chromium`
+  - `cd backend && mvn verify`
+  - `git diff --check`
+  - Focused secret/private-path scan
+  - Focused network/dependency scan
+- Status: Completed on 2026-07-05 at L3 API-backed readiness evidence; final product acceptance remains pending user decision.
+
+## Core Knowledge Loop v1 Task Extension
+
+### T-FSP-013: Update SDD contract for user-runnable closed loop
+
+- Requirement: REQ-FSP-013 through REQ-FSP-020
+- Owner type: product / architecture
+- Priority: Must
+- Dependencies: T-FSP-012
+- Scope: Record the v1 scope, disabled capabilities, API addendum, traceability, and verification plan before code changes.
+- Verification: Spec, API guide, task list, and traceability all reference the same v1 requirement IDs.
+
+### T-FSP-014: Implement runtime DeepSeek model configuration API
+
+- Requirement: REQ-FSP-013, REQ-FSP-020
+- Owner type: backend
+- Priority: Must
+- Dependencies: T-FSP-013
+- Scope: Add masked read, save, and clear endpoints for backend-held DeepSeek configuration. The configured adapter must use runtime configuration before falling back to process environment values.
+- Verification: Backend tests cover masked response, no raw key return, clear behavior, and adapter capability state.
+
+### T-FSP-015: Implement real PDF and ZIP-of-PDF ingestion API
+
+- Requirement: REQ-FSP-014, REQ-FSP-020
+- Owner type: backend
+- Priority: Must
+- Dependencies: T-FSP-013
+- Scope: Add multipart upload endpoint scoped to a space. Store PDF bytes in a local artifact area, expand ZIPs safely, reject unsupported types safely, create batch/file metadata, and return the created parser run.
+- Verification: Backend integration/unit tests cover PDF upload, ZIP upload, unsupported file handling, path traversal rejection, and metadata response.
+
+### T-FSP-016: Implement local PDF text parser adapter
+
+- Requirement: REQ-FSP-015, REQ-FSP-020
+- Owner type: backend
+- Priority: Must
+- Dependencies: T-FSP-015
+- Scope: Add adapter-backed PDF text extraction into Markdown and review-required chunks with source trace. Keep Office/OCR paths disabled unless explicitly configured.
+- Verification: Backend tests prove chunks are generated through the adapter boundary and preserve source trace.
+
+### T-FSP-017: Propagate file review updates to chunks
+
+- Requirement: REQ-FSP-016, REQ-FSP-020
+- Owner type: backend
+- Priority: Must
+- Dependencies: T-FSP-013
+- Scope: When review actions name affected chunks, update only chunks belonging to the file; when the action omits chunks, update all chunks for the file. Keep invalid cross-file chunk IDs rejected.
+- Verification: Backend tests cover selected chunk update, all-chunk fallback, and cross-file rejection.
+
+### T-FSP-018: Implement backend downstream refresh orchestration
+
+- Requirement: REQ-FSP-017, REQ-FSP-020
+- Owner type: backend
+- Priority: Must
+- Dependencies: T-FSP-016, T-FSP-017
+- Scope: Add a backend endpoint that refreshes graph projection and vector index for approved/published chunks in the selected scope. The frontend must call this endpoint instead of vector/parser/model engines.
+- Verification: Backend tests cover refresh response and no eligible evidence state.
+
+### T-FSP-019: Cut Vue product path to real upload/config and grey disabled functions
+
+- Requirement: REQ-FSP-013, REQ-FSP-014, REQ-FSP-017, REQ-FSP-018, REQ-FSP-019
+- Owner type: frontend
+- Priority: Must
+- Dependencies: T-FSP-014 through T-FSP-018
+- Scope: Replace the sample-only primary action with file upload, wire model settings save/clear to API, call backend downstream refresh, and disable unsupported Office/OCR/RBAC/vector-store/admin controls.
+- Verification: Frontend unit/E2E checks cover upload controls, disabled states, and closed-loop happy path where feasible.
+
+### T-FSP-020: Run closed-loop verification and safety gates
+
+- Requirement: REQ-FSP-020
+- Owner type: QA/security
+- Priority: Must
+- Dependencies: T-FSP-014 through T-FSP-019
+- Scope: Run backend tests, frontend typecheck/tests/build, targeted E2E or manual closed-loop evidence, `git diff --check`, focused secret scan, and dependency/network scan.
+- Verification: Final report records passed checks, skipped checks with reasons, and residual L5 production gaps.
+
+### T-FSP-012: Cut Phase I4-I7 Vue knowledge surfaces to existing Atlas APIs
+
+- Requirement: REQ-FSP-006, REQ-FSP-007, REQ-FSP-008, REQ-FSP-009, REQ-FSP-010, REQ-FSP-011, REQ-FSP-012
+- Owner type: frontend / QA
+- Priority: Must for Product Goal Batch 6
+- Dependencies: T-FSP-011
+- Scope: In the real Vue product path, render API-backed Wiki pages, graph evidence, Ask run citations, and masked model adapter capability metadata using existing Atlas API helpers. Add product-path approve/publish/Ask controls where needed to avoid relying on the workbench. Do not add production provider calls, raw secrets, real data, auth/RBAC, or new backend contracts.
+- Verification:
+  - `cd frontend && npm run typecheck && npm run test && npm run build`
+  - `cd frontend && npx playwright test tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts --project=chromium`
+  - `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts tests/e2e/phase-h-settings-administration.spec.ts tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts --project=chromium`
+  - `cd backend && mvn verify`
+  - `git diff --check`
+  - Focused secret/private-path scan
+  - Focused network/dependency scan
+- Status: Completed on 2026-07-05 at L3 API-backed readiness evidence; final product acceptance remains pending user decision.

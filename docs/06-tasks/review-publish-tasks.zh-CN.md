@@ -121,3 +121,10 @@ T-REVIEW-PUBLISH-002 可与 T-REVIEW-PUBLISH-001 并行。T-REVIEW-PUBLISH-006 �
 | T-REVIEW-PUBLISH-007 | Complete | 已增加 published Wiki metadata mock data，并在 prototype 中显示 source/confidence/published status。 |
 | T-REVIEW-PUBLISH-008 | Complete | 已增加 Playwright E2E，覆盖 ready-to-publish 和 missing-trace blocked states；`npm run e2e` 通过。 |
 | T-REVIEW-PUBLISH-009 | Complete | `git diff --check`、network scan、secret/private-path scan、backend targeted tests、frontend typecheck、frontend unit tests、E2E、完整 `cd backend && mvn verify` 和 `cd frontend && npm run build` 均已通过；此前 ask/knowledge-graph 与 `App.vue` lint 阻塞已解决。 |
+| T-REVIEW-PUBLISH-010 | Complete | Product Goal Batch 2 已新增真实 Vue Processing Center parity 表面，展示解析失败、需要 OCR、低置信、缺少 source trace、LLM 生成需审核、待发布内容的指标和队列解释。证据：`frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`、`docs/00-context/evidence/phase-d-processing-center.png`、frontend typecheck/test/build/E2E。 |
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-REVIEW-PUBLISH-011 | Complete | Product Goal Batch 3 增加真实 Vue LM Wiki 产品表面，包含可浏览页面索引、Markdown-like 内容段落、实体链接、metadata、confidence、review status 和可见 source trace blocks。证据：`frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`、`docs/00-context/evidence/phase-e-lm-wiki.png`、frontend typecheck/test/build/E2E。 |

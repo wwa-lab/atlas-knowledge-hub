@@ -121,3 +121,23 @@ PUBLISHED is terminal for the published Wiki metadata until a future revision wo
 - Chunk-level review may require endpoint expansion if file-level review is too coarse.
 - Bulk publish may be requested by stakeholders because the Processing Center is batch-scale.
 - Production RBAC will need a later slice before exposing these endpoints beyond trusted internal use.
+
+## Product Goal Batch 2 Vue Parity Addendum
+
+Product Goal Batch 2 extends the Processing Center portion of this slice into the real Vue Knowledge Space detail page.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase D Processing Center | The real Vue `IBM i Modernization` Processing Center shows total documents, parse failures, OCR required, low confidence, missing `source_trace`, LLM-generated review-required items, ready-to-publish count, and queue rows explaining why content is blocked from Wiki, Graph, and Ask. |
+
+This addendum changes only the Vue product surface maturity. It does not add new backend/API behavior, production RBAC, real remediation workers, or external provider calls.
+
+## Product Goal Batch 3 Vue Parity Addendum
+
+Product Goal Batch 3 extends the published Wiki portion of this slice into the real Vue Knowledge Space detail page.
+
+| Phase | Vue Product Acceptance |
+|---|---|
+| Phase E LM Wiki | The real Vue `IBM i Modernization` Wiki tab provides a browsable Wiki index, dense Markdown-like content sections, page metadata, entity links, confidence, review status, and visible `source_trace` blocks for published, approved, and review-required sample pages. |
+
+This addendum changes only the Vue product surface maturity. It does not add a real Markdown generator, real document content, new backend/API behavior, or external provider calls.

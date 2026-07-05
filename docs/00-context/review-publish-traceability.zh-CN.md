@@ -92,3 +92,35 @@
 - 已通过验证：`cd backend && mvn test -Dtest='ReviewPublishServiceTest,ReviewPublishApiContractIT,DomainInvariantTest'`；`cd backend && mvn verify`；`cd frontend && npm run typecheck`；`cd frontend && npm run test -- --run`；`cd frontend && npm run build`；`cd frontend && npm run e2e`；prototype JavaScript syntax extraction；`git diff --check`。
 - 先前阻塞项已解决：ask/knowledge-graph migration/route/projection 预期已对齐，`frontend/src/App.vue` lint errors 已修复。
 - 网络/secret 扫描说明：扫描仍报告 prototype 中既有 mock provider URLs 以及 masked password/secret 文案；本切片未引入新的 runtime network call 或 raw secret。
+
+## Product Goal Batch 2 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase D 处理中心 | `T-REVIEW-PUBLISH-010` | L2 Vue parity | `frontend/tests/e2e/phase-c-d-upload-processing.spec.ts`；`docs/00-context/evidence/phase-d-processing-center.png`；真实 Vue Processing Center 展示质量门禁和 Wiki/Graph/Ask 可用性队列解释。 |
+
+该状态仅更新产品界面成熟度，不新增生产 RBAC、真实 remediation worker 或新的 backend/API contract。
+
+## Product Goal Batch 3 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase E LM Wiki | `T-REVIEW-PUBLISH-011` | L2 Vue parity | `frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-e-lm-wiki.png`；真实 Vue Wiki 标签页展示可浏览页面、metadata、实体链接、confidence、review status 和 source trace。 |
+
+该状态仅更新产品界面成熟度，不新增真实 Markdown generator、真实公司数据或新的 backend/API contract。
+
+## Product Goal Batch 5 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I3 Review queues API-backed Vue 切换 | `T-FSP-011`，消费既有 review queue API | L3 API-backed | `frontend/tests/e2e/phase-i1-i3-api-backed-metadata.spec.ts`；`docs/00-context/evidence/phase-i1-i3-api-backed-metadata.png`；真实 Vue Processing Center 展示 API review queues，未改变 review-publish 后端契约。 |
+
+该状态只升级 review queue 产品界面，不新增生产 RBAC、真实 remediation workers、真实公司数据或新的后端/API 契约。
+
+## Product Goal Batch 6 状态
+
+| Phase | 任务 ID | 成熟度 | 证据 |
+|---|---|---|---|
+| Phase I4 Wiki pages API-backed Vue 切换 | `T-FSP-012`，消费既有 publish 与 Wiki page APIs | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`；`docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`；真实 Vue Wiki tab 在产品路径 publish 后读取 API-published Wiki metadata。 |
+
+该状态只升级 Wiki 产品界面，不新增真实 Markdown generator、生产 RBAC、真实公司数据或新的后端/API 契约。

@@ -37,18 +37,18 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 
 | 阶段 | 切片 slug | 范围概述 | 归属边界 | 状态 |
 |---|---|---|---|---|
-| 1（前端） | `knowledge-space` | Vue 3 外壳复刻已接受 IA：首页知识库列表、全局多知识库对话、空间外壳、文档、处理中心、Wiki、图谱、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅（T-KS-001→031） |
-| 1（前端） | `folder-upload` | 文件夹/ZIP 上传 mock：文件清单、树、批次创建、mock 状态/报告 | 仅前端，无 API | ✅ 已实现（T-FU-001→013；T-FU-011 可选推迟） |
-| 2（API） | `metadata-api` | Spring Boot 元数据服务：批次/文件/空间实体、PostgreSQL + Flyway、去 mock 契约 | 后端 + DB | ✅ 已实现（T-MA-001→013；T-MA-014 延后 FE 切换） |
+| 1（前端） | `knowledge-space` | Vue 3 外壳复刻已接受 IA：首页知识库列表、全局多知识库对话、空间外壳、文档、处理中心、Wiki、图谱、设置 —— 仅 mock 数据 | 仅前端，无 API | ✅ Product Goal Batch 1 的 L2 Vue parity checkpoint（T-KS-001→034；最终产品验收待用户决定） |
+| 1（前端） | `folder-upload` | 文件夹/ZIP 上传 mock：文件清单、树、批次创建、mock 状态/报告 | 仅前端，无 API | ✅ Product Goal Batch 2 的 L2 Vue parity checkpoint（T-FU-001→014；T-FU-011 可选推迟；最终产品验收待用户决定） |
+| 2（API） | `metadata-api` | Spring Boot 元数据服务：批次/文件/空间实体、PostgreSQL + Flyway、去 mock 契约 | 后端 + DB | ✅ 已实现（T-MA-001→013；T-MA-014 已被 Product Goal Batch 5 在 spaces/batches/files/chunks 的 L3 Vue 切换中部分消费；最终验收待定） |
 | 3（适配器） | `converter-adapter` | `trinity-office` Office→PDF 置于 converter 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-CA-001→010；mock-engine 已验证；真实 runtime contract 延后） |
 | 3（适配器） | `parser-adapter` | `document-normalize` PDF→Markdown/图片 置于 parser 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-PA-001→010；mock-engine 已验证；真实 runtime contract 延后） |
 | 3（适配器） | `storage-adapter` | S3 兼容对象存储置于 storage 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-SA-001→010；`mvn verify` 已通过，使用 mock storage） |
 | 3（适配器） | `vector-adapter` | pgvector/向量库置于 vector 接口之后 | 适配器，禁止直连 | ✅ 已实现（T-VA-001→010；mock-engine 已验证；真实 vector DB 执行延后） |
-| 3（适配器） | `model-adapter` | LLM/embedding 供应商置于 model 接口之后，secret 脱敏 | 适配器，禁止直连 | ✅ 已实现 |
-| 4（加固） | `review-publish` | SME 审核状态机 + 已批准 Markdown 发布到 Wiki | 全栈 | ✅ 已实现（T-REVIEW-PUBLISH-001→009；production auth/RBAC 延后） |
-| 4（加固） | `knowledge-graph` | 从已批准页面抽取节点/边 + 可解释可视化 | 全栈 | ✅ 已实现（T-KG-001→013；production graph layout/engine 延后） |
-| 4（加固） | `ask-rag` | 基于已批准内容、带溯源、审核感知的 Ask | 全栈 | ✅ 已实现 |
-| 4（产品化） | `full-stack-productization` | P0 浏览器驱动全栈闭环：space list、sample batch、review、publish Wiki、graph evidence、Ask citations | 全栈 | ✅ 已实现（T-FSP-001→010；production upload/auth/provider hardening 延后） |
+| 3（适配器） | `model-adapter` | LLM/embedding 供应商置于 model 接口之后，secret 脱敏 | 适配器，禁止直连 | ✅ Product Goal Batch 6 的 L3 API-backed masked model capability checkpoint，另有 Batch 4 的 L2 Vue settings checkpoint（T-MODA-001→011；production secret manager/RBAC/provider calls 延后；最终产品验收待用户决定） |
+| 4（加固） | `review-publish` | SME 审核状态机 + 已批准 Markdown 发布到 Wiki | 全栈 | ✅ Product Goal Batch 5-6 的 L3 API-backed Wiki/review checkpoint，另有 Batch 3 的 L2 Vue Wiki checkpoint（T-REVIEW-PUBLISH-001→011；production auth/RBAC 与真实 Markdown generation 延后；最终产品验收待用户决定） |
+| 4（加固） | `knowledge-graph` | 从已批准页面抽取节点/边 + 可解释可视化 | 全栈 | ✅ Product Goal Batch 6 的 L3 API-backed Graph checkpoint，另有 Batch 3 的 L2 Vue Graph checkpoint（T-KG-001→014；production graph layout/engine 延后；最终产品验收待用户决定） |
+| 4（加固） | `ask-rag` | 基于已批准内容、带溯源、审核感知的 Ask | 全栈 | ✅ Product Goal Batch 6 的 L3 API-backed Ask checkpoint，另有 Batch 3 的 L2 Vue Trusted Ask checkpoint（T-ASKRAG-001→011；production retrieval governance 延后；最终产品验收待用户决定） |
+| 4（产品化） | `full-stack-productization` | P0 浏览器驱动全栈闭环：space list、sample batch、review、publish Wiki、graph evidence、Ask citations | 全栈 | ✅ Product Goal Batch 6 的 I1-I7 L3 API-backed checkpoint（T-FSP-001→012；Phase J 与最终产品验收待定；production upload/auth/provider hardening 延后） |
 | 4+（验收） | `provider-backed-e2e` | Opt-in 本地第三层 E2E：DeepSeek-backed Ask 通过 ModelAdapter，覆盖 live API graph/publish/vector flow，且只使用 mock/sample data | 验收 + model adapter | ✅ 已实现（provider run 需要本地 `ATLAS_MODEL_API_KEY`） |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。

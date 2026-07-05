@@ -6,7 +6,7 @@
 
 ## 概述
 
-`provider-backed-e2e` 增加第三层验收，用于显式 provider-backed Ask journey。它不同于 first-layer mock E2E 和 second-layer local full-stack E2E：第三层允许调用 DeepSeek，但必须显式 opt-in，并且只能经过 ModelAdapter 边界。Journey 仍然使用本地服务和 mock/sample knowledge data，用来证明真实 Ask 页面可以使用 provider-generated text，同时不削弱 Atlas 数据安全规则。
+`provider-backed-e2e` 增加第三层验收，用于显式 provider-backed Ask journey。它不同于 first-layer mock E2E 和 second-layer local full-stack E2E：第三层允许调用 DeepSeek 或 GitHub Models 等 configured chat provider，但必须显式 opt-in，并且只能经过 ModelAdapter 边界。Journey 仍然使用本地服务和 mock/sample knowledge data，用来证明真实 Ask 页面可以使用 provider-generated text，同时不削弱 Atlas 数据安全规则。
 
 ## 验收分层模型
 
@@ -14,7 +14,7 @@
 |---|---|---:|---|
 | First-layer | 快速 local/mock gate，覆盖已实现页面和后端合约。 | 否 | 仅 mock/sample |
 | Second-layer | 本地 full-stack browser + Spring Boot API + 临时 PostgreSQL gate。 | 否 | 仅 mock/sample |
-| Third-layer provider-backed | Opt-in 本地 provider-backed Ask browser journey。 | 是，只能通过 ModelAdapter 调用 DeepSeek | 仅 mock/sample |
+| Third-layer provider-backed | Opt-in 本地 provider-backed Ask browser journey。 | 是，只能通过 ModelAdapter 调用 configured provider | 仅 mock/sample |
 
 第三层行为不得接入 first-layer、second-layer、`npm run e2e`、普通 backend verification 或默认 CI。
 
@@ -23,7 +23,7 @@
 范围内：
 
 - 后续一个 opt-in 命令，启动本地 stack 并执行 provider-backed Ask E2E。
-- 对显式 opt-in 和必需 DeepSeek 环境配置的 preflight checks。
+- 对显式 opt-in 和必需 configured-provider 环境配置的 preflight checks。
 - 浏览器 journey：从 Atlas Ask 页面提问，并验证 source-grounded output。
 - 后端路径：provider 执行必须通过 ModelAdapter。
 - 缺凭据、网络错误、provider 429、provider 5xx、timeout、provider 输出格式异常的安全处理。
@@ -34,7 +34,7 @@
 
 - 本轮代码实现。
 - 修改默认 first-layer/second-layer 行为。
-- 真实公司数据、真实私有 endpoints、生产 auth/RBAC、成本治理、provider 账户管理、streaming，以及 DeepSeek 以外的 provider 选择。
+- 真实公司数据、真实私有 endpoints、生产 auth/RBAC、成本治理、provider 账户管理、streaming、IDE Copilot session token 使用，以及 DeepSeek/GitHub Models 以外的 provider 选择。
 
 ## 参与者
 
@@ -61,14 +61,14 @@
 
 ### Provider Configuration
 
-- **FR-PBE2E-007:** DeepSeek credentials 只能在运行时从环境变量读取。 (REQ-PBE2E-004)
+- **FR-PBE2E-007:** Provider credentials 只能在运行时从环境变量读取。 (REQ-PBE2E-004)
 - **FR-PBE2E-008:** 当 key 缺失、opt-in 缺失或配置明显无效时，preflight 必须在 provider 执行前失败。 (REQ-PBE2E-007, REQ-PBE2E-008)
 - **FR-PBE2E-009:** Frontend source 和浏览器可见状态永远不得接收 raw provider credentials 或 raw auth headers。 (REQ-PBE2E-004, REQ-PBE2E-009)
 
 ### ModelAdapter Boundary
 
 - **FR-PBE2E-010:** Ask orchestration 必须通过现有 model service/ModelAdapter contract 调用 provider generation。 (REQ-PBE2E-005)
-- **FR-PBE2E-011:** Provider-specific HTTP client、endpoint、request signing 和 response parsing 只能位于 DeepSeek ModelAdapter implementation 或 provider adapter package 中。 (REQ-PBE2E-005, REQ-PBE2E-012)
+- **FR-PBE2E-011:** Provider-specific HTTP client、endpoint、request signing 和 response parsing 只能位于 configured ModelAdapter implementation 或 provider adapter package 中。 (REQ-PBE2E-005, REQ-PBE2E-012)
 - **FR-PBE2E-012:** Controller、generic service、repository、vector、graph、frontend 和 test orchestration layers 不得包含直接 provider execution logic。 (REQ-PBE2E-005, REQ-PBE2E-012)
 
 ### Safe Failure Behavior
@@ -116,7 +116,7 @@ Provider call outcome:
 | Surface | 期望行为 |
 |---|---|
 | E2E shell script 或 npm command | Opt-in 第三层本地编排。 |
-| DeepSeek ModelAdapter | 在 server-side 读取环境配置、调用 provider、返回 sanitized adapter result。 |
+| Configured ModelAdapter | 在 server-side 读取环境配置、调用 DeepSeek 或 GitHub Models、返回 sanitized adapter result。 |
 | Ask service | 只使用 model service/ModelAdapter；保留 Ask/RAG evidence 和 review status。 |
 | Playwright provider-backed spec | 用 sample evidence 驱动浏览器 Ask 页面。 |
 | Safety scans | 验证没有 secrets、raw provider responses、private paths 或真实数据进入 artifacts/git。 |
@@ -148,6 +148,6 @@ git diff --check
 
 ## 未决问题
 
-- OQ-PBE2E-001: DeepSeek key 的精确环境变量名。
+- OQ-PBE2E-001: Provider key 的精确环境变量名。
 - OQ-PBE2E-002: 第三层失败时 trace/video retention policy。
 - OQ-PBE2E-003: 未来是否需要带托管 secrets 的受保护 CI。

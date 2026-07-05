@@ -93,6 +93,68 @@ wiki PUBLISHED -> graph/vector refresh -> graph evidence ready -> ask SUCCEEDED/
 - 真实外部云调用。
 - 真实公司数据。
 
+## Product Goal Batch 5 补充：Phase I1-I3 API-backed 切换
+
+状态：2026-07-05 已完成 L3 API-backed 验收准备证据；不代表最终产品验收通过。
+
+| Phase | API-backed 产品界面 | 既有 API 契约 |
+|---|---|---|
+| I1 Knowledge Space metadata | 真实 Vue 首页卡片与空间页头消费 Knowledge Space 元数据；仅在 API 数据不可用时保留安全 sample fallback。 | `GET /api/spaces`；`GET /api/spaces/{spaceId}` |
+| I2 Batch/file/chunk metadata | 真实 Vue Documents tab 展示 API batch、file 与 source chunk metadata，并通过 Atlas API 创建安全 sample batch。 | `GET /api/spaces/{spaceId}/batches`；`POST /api/spaces/{spaceId}/batches`；`GET /api/batches/{batchId}/files`；`GET /api/files/{fileId}/chunks` |
+| I3 Review queues | 真实 Vue Processing Center 展示 API review queues，并与既有 Wiki/Graph/Ask eligibility 处理门禁并列。 | `GET /api/spaces/{spaceId}/review-queues` |
+
+本补充不新增后端 endpoint、生产上传、生产认证/RBAC、真实公司数据、外部 provider，或前端直连 parser/converter/storage/vector/model engine。剩余 Phase I 工作覆盖 Wiki pages、Graph evidence、Ask runs/citations 与 model configuration metadata。
+
+## Product Goal Batch 6 补充：Phase I4-I7 API-backed 切换
+
+状态：2026-07-05 已完成 L3 API-backed 验收准备证据；不代表最终产品验收通过。
+
+| Phase | API-backed 产品界面 | 既有 API 契约 |
+|---|---|---|
+| I4 Wiki pages | 真实 Vue Wiki tab 在 API review/publish action 后，从 Atlas API 读取已发布 Wiki metadata。 | `GET /api/spaces/{spaceId}/wiki-pages`；`POST /api/files/{fileId}/publish` |
+| I5 Graph evidence | 真实 Vue Graph tab 将 Atlas graph nodes、edges 与 source-trace evidence 映射到产品图谱界面。 | `GET /api/spaces/{spaceId}/graph`；`GET /api/spaces/{spaceId}/graph/nodes/{nodeId}` |
+| I6 Ask runs and citations | 真实 Vue 全局 Ask 界面可通过 Atlas Ask API 提交问题，并展示 answer status、model run id 与 citations。 | `POST /api/spaces/{spaceId}/ask`；`GET /api/ask-runs/{runId}` |
+| I7 Model configuration metadata | 真实 Vue model settings 界面读取 masked model adapter capability metadata。 | `GET /api/model-adapters` |
+
+本补充不新增生产 provider 调用、明文 secret 展示、生产 RBAC、真实公司数据、streaming Ask 或新的模型管理写契约。Phase J hardening 仍待执行。
+
+## Core Knowledge Loop v1 补充：真实上传与运行时模型配置
+
+状态：计划在 2026-07-05 后续实现切片中落地。本切片目标是用户可跑通的闭环，不是完整 L5 生产加固。
+
+### 范围
+
+- FR-FSP-023：普通用户可以通过 Atlas UI/API 配置 DeepSeek chat model key，无需编辑 shell script 或进程环境变量。
+- FR-FSP-024：Atlas API 只返回 masked model configuration state；raw secret 不返回前端、不进入日志、不写入文档。
+- FR-FSP-025：普通用户可以通过主产品 UI 上传一个或多个 PDF，或包含 PDF 的 ZIP。
+- FR-FSP-026：上传文件存储在 Atlas backend 配置控制的本地 artifact 区域，metadata records 保留相对 source trace path。
+- FR-FSP-027：Atlas 通过 adapter boundary 将上传 PDF 解析为 `REVIEW_REQUIRED` source chunks，并保留 page、section、source trace metadata。
+- FR-FSP-028：File review 更新会传播到所选 source chunks，确保 review queue、publish gate、graph、vector、Ask 使用一致 review state。
+- FR-FSP-029：Atlas 提供 backend downstream refresh action，从 approved 或 published chunks 重建 graph/vector evidence，前端不直连 engine。
+- FR-FSP-030：Ask 在可用时使用已配置 model capability，同时保留安全的 no-key 与 no-evidence 状态。
+- FR-FSP-031：v1 闭环范围外的可见能力必须 disabled 或标注 coming soon，不能表现为已可生产使用。
+
+### 验收矩阵补充
+
+| Requirement | Spec Sections | Observable Check |
+|---|---|---|
+| REQ-FSP-013 | Runtime Model Configuration | 用户可通过 Atlas API/UI 保存、读取 masked、清除 model key。 |
+| REQ-FSP-014 | Real Upload | 用户通过 UI 上传 PDF 或 ZIP-of-PDF，并获得真实 batch id。 |
+| REQ-FSP-015 | Parser Adapter | 后端 parser run 从上传 PDF 内容创建 review-required chunks。 |
+| REQ-FSP-016 | Review Consistency | Approve file 会同步更新 selected chunks 与 review queues。 |
+| REQ-FSP-017 | Downstream Refresh | Backend refresh 创建 graph/vector evidence，前端不直连 engine。 |
+| REQ-FSP-018 | Ask | Publish/refresh 后 Ask 可运行，并显示 citations 或安全可操作状态。 |
+| REQ-FSP-019 | Disabled / Coming Soon | Office/OCR/RBAC/vector-store/admin surfaces 在实现前 disabled。 |
+| REQ-FSP-020 | Verification | 记录 backend tests、frontend checks、safety scans 与 manual closed-loop evidence。 |
+
+### v1 明确禁用
+
+- Office 文档转换，除非配置了内部 converter runtime。
+- Image OCR、tables-as-structured-data extraction、incremental re-indexing、streaming Ask。
+- 生产认证、RBAC 管理、审计留存、限流、多租户隔离、secret-manager integration。
+- pgvector、Milvus、Qdrant 等生产向量库。
+- 前端直接调用 parser、converter、model、vector 或 storage engines。
+
 ## SDD 质量说明
 
 本文档使用 Atlas SDD 链模型生成：`req-to-user-story`、`user-story-to-spec`、`spec-to-architecture`、`architecture-to-design`、`design-to-tasks`，并以 `review-doc-quality` checklist 做一致性审查。

@@ -11,10 +11,10 @@ This runbook is the hands-on path for running Atlas Knowledge Hub locally. It is
 | Mock E2E loop | Local first-layer acceptance with mock/sample data. | Node.js/npm and Playwright browsers from frontend install. |
 | Backend tests | API, adapter, Flyway, PostgreSQL contract behavior. | Java 21, Maven, Docker for Testcontainers. |
 | Second-layer E2E | Local full-stack browser plus API plus PostgreSQL loop. | Node.js/npm, Java 21, Maven, Docker Desktop. |
-| Third-layer E2E | Opt-in provider-backed Ask loop through DeepSeek and ModelAdapter, still using mock/sample knowledge data. | Node.js/npm, Java 21, Maven, Docker Desktop, local DeepSeek API key in shell env. |
+| Third-layer E2E | Opt-in provider-backed Ask loop through a configured ModelAdapter provider, still using mock/sample knowledge data. | Node.js/npm, Java 21, Maven, Docker Desktop, local provider key in `.env` or shell env. |
 | Backend local API | Spring Boot API against your own PostgreSQL. | Java 21, Maven, PostgreSQL config. |
 
-The fastest path is the static prototype. The safest first verification path is `npm run e2e:first-layer`; use `npm run e2e:second-layer` when you want to prove the local browser is wired to the live Spring Boot API. Use `npm run e2e:third-layer` only when you intentionally want one real DeepSeek-backed Ask call from the backend adapter.
+The fastest path is the static prototype. The safest first verification path is `npm run e2e:first-layer`; use `npm run e2e:second-layer` when you want to prove the local browser is wired to the live Spring Boot API. Use `npm run e2e:third-layer` only when you intentionally want one real provider-backed Ask call from the backend adapter.
 
 ## 1. Prerequisites
 
@@ -213,18 +213,36 @@ By default the script removes the temporary Docker PostgreSQL container when it 
 
 ## 9. Run Third-Layer Provider-Backed E2E
 
-Use this when you want one local command that starts PostgreSQL, starts Spring Boot, builds the frontend, and verifies a real DeepSeek-backed Ask journey through the backend ModelAdapter.
+Use this when you want one local command that starts PostgreSQL, starts Spring Boot, builds the frontend, and verifies a real provider-backed Ask journey through the backend ModelAdapter.
 
 Third-layer is opt-in and not part of default frontend E2E, first-layer, or second-layer. It still uses mock/sample knowledge data only.
 
-From the repository root, export provider configuration in the current shell:
+From the repository root, copy the local env template and fill provider values in `.env`:
 
 ```bash
-export ATLAS_MODEL_PROVIDER=deepseek
-export ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
-export ATLAS_MODEL_NAME=deepseek-chat
+cp configs/atlas.company.example.env .env
+$EDITOR .env
 ```
+
+Required values:
+
+```bash
+ATLAS_MODEL_PROVIDER=deepseek
+ATLAS_MODEL_ENDPOINT=https://api.deepseek.com
+ATLAS_MODEL_API_KEY=<local-deepseek-api-key>
+ATLAS_MODEL_NAME=deepseek-chat
+```
+
+GitHub Models alternative:
+
+```bash
+ATLAS_MODEL_PROVIDER=github-models
+ATLAS_MODEL_ENDPOINT=https://models.github.ai/inference
+ATLAS_MODEL_API_KEY=<local-github-token-with-models-access>
+ATLAS_MODEL_NAME=openai/gpt-4.1
+```
+
+Do not use or export an IDE Copilot session token. The `github-models` provider expects an approved GitHub token for GitHub Models inference.
 
 Then run:
 
@@ -404,7 +422,7 @@ Or stop the conflicting local process before rerunning.
 Set the key in the current shell and rerun:
 
 ```bash
-export ATLAS_MODEL_API_KEY='<local-deepseek-api-key>'
+export ATLAS_MODEL_API_KEY='<local-provider-api-key>'
 npm run e2e:third-layer
 ```
 

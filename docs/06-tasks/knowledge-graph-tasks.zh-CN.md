@@ -52,3 +52,9 @@ T-KG-008 可在 T-KG-007 后与前端工作并行。
 - 已应用前端验收修正：Vue `[data-tab="graph"]` surface 现在承载 API-backed graph 数据路径，并包含 search、node/edge filters、evidence-only toggle、SVG canvas、legend、hover/focus affordances、node/edge selection、source-trace evidence detail、empty state、fallback state 和 unauthorized state。
 - 已应用验证修正：`frontend/tests/e2e/knowledge-graph.spec.ts` 在真实 `[data-tab="graph"]` surface 上断言 API-backed graph data、search/filter behavior、node 和 edge selection、source trace/confidence/review status、unauthorized state 与 empty state。
 - 防复发要求：后续 T-KG-010/T-KG-011 close-out 必须继续把 E2E 断言放在 spec 命名的真实用户界面上，而不是相邻 transition panel 或仅检查 prototype SVG 的 smoke test。
+
+## Product Goal Batch 3 Task Addendum
+
+| ID | Status | Evidence |
+|---|---|---|
+| T-KG-014 | Complete | Product Goal Batch 3 增加真实 Vue Knowledge Space Graph 产品表面，包含 graph canvas、node types、search、legend、node selection、detail panel、confidence、review status 和 evidence/source trace。证据：`frontend/tests/e2e/phase-e-f-g-knowledge-surfaces.spec.ts`、`docs/00-context/evidence/phase-f-knowledge-graph.png`、frontend typecheck/test/build/E2E。 |

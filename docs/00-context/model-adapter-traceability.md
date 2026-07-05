@@ -135,3 +135,19 @@ API guide is included. `model-adapter` is a Phase 3 backend/API adapter contract
 ```text
 Implement the model-adapter slice strictly against docs/03-spec/model-adapter-spec.md and docs/06-tasks/model-adapter-tasks.md: complete every task in ID order, respect the stated Constraints and Verification per task, treat docs/03-spec as the behavior source of truth, do not expand scope, and if implementation would diverge from the spec stop and surface the mismatch instead of coding around it.
 ```
+
+## Product Goal Batch 4 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase H Settings And Administration | `T-MODA-011` | L2 Vue parity | `frontend/tests/e2e/phase-h-settings-administration.spec.ts`; `docs/00-context/evidence/phase-h-settings-administration.png`; real Vue settings modal shows non-empty administration panels and model list/add/edit/cancel/save/key/test states with masked credential behavior. |
+
+This status updates product-surface maturity only. It does not add production secret management, production RBAC, real provider calls, external network calls, or new backend/API contracts.
+
+## Product Goal Batch 6 Status
+
+| Phase | Task IDs | Maturity | Evidence |
+|---|---|---|---|
+| Phase I7 Model configuration metadata API-backed Vue cutover | `T-FSP-012` consuming existing model adapter capability API | L3 API-backed | `frontend/tests/e2e/phase-i4-i7-api-backed-knowledge-surfaces.spec.ts`; `docs/00-context/evidence/phase-i4-i7-api-backed-knowledge-surfaces.png`; real Vue model settings surface reads `GET /api/model-adapters` and displays masked capability status. |
+
+This status upgrades masked model metadata display only. It does not add production secret management, provider calls, credential writes, real company data, or new backend/API contracts.
