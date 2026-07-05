@@ -8,10 +8,15 @@ import com.atlas.metadata.adapter.ParserAdapter;
 import com.atlas.metadata.adapter.ParserCapability;
 import com.atlas.metadata.adapter.ParserRequest;
 import com.atlas.metadata.adapter.ParserResult;
+import com.atlas.metadata.adapter.DocumentNormalizeParserAdapter;
+import com.atlas.metadata.adapter.runtime.RuntimeAdapterConfiguration;
+import com.atlas.metadata.adapter.runtime.RuntimeExecutionResult;
 import com.atlas.metadata.enums.ParserAdapterStatus;
 import com.atlas.metadata.enums.SourceType;
 import com.atlas.metadata.exception.RequestValidationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -33,11 +38,35 @@ class ParserAdapterRegistryTest {
   }
 
   @Test
+  void resolvesMockOrConfiguredModeDeterministicallyWhenKeysOverlap() {
+    ParserAdapter defaultAdapter = new MockDocumentNormalizeParserAdapter();
+    ParserAdapter configuredAdapter =
+        new DocumentNormalizeParserAdapter(
+            new RuntimeAdapterConfiguration(true, "configured-command", Duration.ofSeconds(120), 65_536),
+            invocation -> new RuntimeExecutionResult(0, "{\"files\":[]}", "", false),
+            new ObjectMapper());
+    ParserAdapterRegistry registry =
+        new ParserAdapterRegistry(List.of(configuredAdapter, defaultAdapter));
+
+    assertThat(registry.capabilities()).extracting(ParserCapability::adapterKey)
+        .containsExactly("document-normalize", "document-normalize");
+    assertThat(registry.resolve(null).capability().defaultAdapter()).isTrue();
+    assertThat(registry.resolve("document-normalize", "mock").capability().defaultAdapter()).isTrue();
+    assertThat(registry.resolve("document-normalize", "configured").capability().defaultAdapter()).isFalse();
+  }
+
+  @Test
   void rejectsUnknownAdapterKeyWithValidationError() {
     ParserAdapterRegistry registry =
         new ParserAdapterRegistry(List.of(new MockDocumentNormalizeParserAdapter()));
 
     assertThatThrownBy(() -> registry.resolve("unknown"))
+        .isInstanceOf(RequestValidationException.class)
+        .satisfies(
+            error ->
+                assertThat(((RequestValidationException) error).getFields())
+                    .containsEntry("adapterKey", "must reference a configured parser adapter"));
+    assertThatThrownBy(() -> registry.resolve("document-normalize", "configured"))
         .isInstanceOf(RequestValidationException.class)
         .satisfies(
             error ->

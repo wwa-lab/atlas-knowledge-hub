@@ -115,7 +115,7 @@ public class ConversionService {
       throw new ConflictException("Batch already has an active conversion run.");
     }
 
-    ConverterAdapter adapter = adapterRegistry.resolve(request.adapterKey());
+    ConverterAdapter adapter = adapterRegistry.resolve(request.adapterKey(), request.mode());
     ConverterCapability capability = adapter.capability();
     OffsetDateTime now = OffsetDateTime.now(clock);
     ConversionRun run =

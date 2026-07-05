@@ -29,20 +29,46 @@ public class ParserAdapterRegistry {
 
   /** Resolves a requested adapter key or the configured default. */
   public ParserAdapter resolve(String adapterKey) {
-    return adapters.stream()
-        .filter(adapter -> matches(adapter, adapterKey))
-        .findFirst()
-        .orElseThrow(
-            () ->
-                new RequestValidationException(
-                    Map.of("adapterKey", "must reference a configured parser adapter")));
+    return resolve(adapterKey, null);
   }
 
-  private boolean matches(ParserAdapter adapter, String adapterKey) {
-    ParserCapability capability = adapter.capability();
-    if (adapterKey == null || adapterKey.isBlank()) {
-      return capability.defaultAdapter();
+  /** Resolves a requested adapter key and mode without falling through between mock and configured adapters. */
+  public ParserAdapter resolve(String adapterKey, String mode) {
+    String effectiveAdapterKey =
+        adapterKey == null || adapterKey.isBlank() ? defaultAdapterKey() : adapterKey;
+    List<ParserAdapter> candidates =
+        adapters.stream()
+            .filter(adapter -> adapter.capability().adapterKey().equals(effectiveAdapterKey))
+            .toList();
+    if ("configured".equals(mode)) {
+      return candidates.stream()
+          .filter(adapter -> !adapter.capability().defaultAdapter())
+          .findFirst()
+          .orElseThrow(this::unknownAdapter);
     }
-    return capability.adapterKey().equals(adapterKey);
+    if (adapterKey == null || adapterKey.isBlank()) {
+      return candidates.stream()
+          .filter(adapter -> adapter.capability().defaultAdapter())
+          .findFirst()
+          .orElseThrow(this::unknownAdapter);
+    }
+    return candidates.stream()
+        .sorted(Comparator.comparing((ParserAdapter adapter) -> adapter.capability().defaultAdapter()).reversed())
+        .findFirst()
+        .orElseThrow(this::unknownAdapter);
+  }
+
+  private RequestValidationException unknownAdapter() {
+    return new RequestValidationException(
+        Map.of("adapterKey", "must reference a configured parser adapter"));
+  }
+
+  private String defaultAdapterKey() {
+    return adapters.stream()
+        .map(ParserAdapter::capability)
+        .filter(ParserCapability::defaultAdapter)
+        .map(ParserCapability::adapterKey)
+        .findFirst()
+        .orElse("");
   }
 }

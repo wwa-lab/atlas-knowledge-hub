@@ -124,7 +124,7 @@ public class ParserService {
       throw new ConflictException("Batch already has an active parser run.");
     }
 
-    ParserAdapter adapter = adapterRegistry.resolve(request.adapterKey());
+    ParserAdapter adapter = adapterRegistry.resolve(request.adapterKey(), request.mode());
     ParserCapability capability = adapter.capability();
     List<FileItem> files = targetFiles(batchId, request.fileIds());
     List<FileItem> eligibleFiles = eligibleFiles(files);

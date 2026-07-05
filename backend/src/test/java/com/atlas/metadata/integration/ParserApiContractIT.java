@@ -223,6 +223,51 @@ class ParserApiContractIT extends AbstractPostgresIT {
   }
 
   @Test
+  void configuredParserModeFailsSafelyWhenRuntimeIsDisabled() throws Exception {
+    String batchId =
+        createBatch(
+            """
+            [
+              {
+                "sourcePath": "Configured/BRD.pdf",
+                "sourceType": "pdf",
+                "status": "PDF_CONVERTED",
+                "confidence": 1,
+                "reviewStatus": "REVIEW_REQUIRED",
+                "pdfPath": "generated/pdf/BRD.pdf"
+              }
+            ]
+            """);
+    String fileId = firstFileId(batchId);
+
+    mockMvc
+        .perform(
+            post("/api/batches/" + batchId + "/parser-runs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "adapterKey": "document-normalize",
+                      "requestedBy": "delivery-lead",
+                      "mode": "configured"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.adapterKey").value("document-normalize"))
+        .andExpect(jsonPath("$.data.status").value("FAILED"))
+        .andExpect(jsonPath("$.data.safeMessage").value("Parser adapter is unavailable."))
+        .andExpect(jsonPath("$.data.results").isEmpty());
+
+    mockMvc
+        .perform(get("/api/files/" + fileId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("PDF_CONVERTED"))
+        .andExpect(jsonPath("$.data.markdownPath").doesNotExist())
+        .andExpect(jsonPath("$.data.reviewStatus").value("REVIEW_REQUIRED"));
+  }
+
+  @Test
   void adapterFaultFailsRunSafelyAndLeavesFileUnchanged() throws Exception {
     String batchId =
         createBatch(

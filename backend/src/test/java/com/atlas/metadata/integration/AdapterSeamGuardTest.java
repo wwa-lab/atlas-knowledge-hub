@@ -44,12 +44,19 @@ class AdapterSeamGuardTest {
   void adapterPackageMayContainAdapterContractsButNoOutboundNetworkClient() throws IOException {
     Path adapterDir =
         BACKEND.resolve("src/main/java/com/atlas/metadata/adapter").normalize();
-    String adapterSource = readAll(adapterDir);
+    Path runtimeDir = adapterDir.resolve("runtime").normalize();
+    String adapterSource = readAllExcluding(adapterDir, runtimeDir);
+    String runtimeSource = readAll(runtimeDir);
 
     assertThat(adapterSource)
         .doesNotContain("WebClient")
         .doesNotContain("RestTemplate")
         .doesNotContain("ProcessBuilder")
+        .doesNotContain("Runtime.getRuntime(");
+    assertThat(runtimeSource)
+        .contains("ProcessBuilder")
+        .doesNotContain("WebClient")
+        .doesNotContain("RestTemplate")
         .doesNotContain("Runtime.getRuntime(");
     assertThat(adapterSource)
         .contains("trinity-office")
@@ -157,6 +164,18 @@ class AdapterSeamGuardTest {
   private String readAll(Path dir) throws IOException {
     try (var stream = Files.walk(dir)) {
       return String.join("\n", stream.filter(Files::isRegularFile).map(this::read).toList());
+    }
+  }
+
+  private String readAllExcluding(Path dir, Path excludedDir) throws IOException {
+    try (var stream = Files.walk(dir)) {
+      return String.join(
+          "\n",
+          stream
+              .filter(Files::isRegularFile)
+              .filter(path -> !path.normalize().startsWith(excludedDir))
+              .map(this::read)
+              .toList());
     }
   }
 

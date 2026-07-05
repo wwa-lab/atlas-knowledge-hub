@@ -213,6 +213,62 @@ class ConversionApiContractIT extends AbstractPostgresIT {
   }
 
   @Test
+  void configuredConversionModeFailsSafelyWhenRuntimeIsDisabled() throws Exception {
+    MvcResult batchResult =
+        mockMvc
+            .perform(
+                post("/api/spaces/ibm-i-modernization/batches")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Disabled Runtime Conversion Package",
+                          "sourceKind": "folder",
+                          "owner": "Delivery Lead",
+                          "files": [
+                            {
+                              "sourcePath": "Configured/BRD.docx",
+                              "sourceType": "docx",
+                              "status": "UPLOADED",
+                              "confidence": 0,
+                              "reviewStatus": "REVIEW_REQUIRED"
+                            }
+                          ]
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String batchId = JsonPath.read(batchResult.getResponse().getContentAsString(), "$.data.id");
+    String fileId = firstFileId(batchId);
+
+    mockMvc
+        .perform(
+            post("/api/batches/" + batchId + "/conversion-runs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "adapterKey": "trinity-office",
+                      "requestedBy": "delivery-lead",
+                      "mode": "configured"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.adapterKey").value("trinity-office"))
+        .andExpect(jsonPath("$.data.status").value("FAILED"))
+        .andExpect(jsonPath("$.data.safeMessage").value("Converter adapter is unavailable."))
+        .andExpect(jsonPath("$.data.results").isEmpty());
+
+    mockMvc
+        .perform(get("/api/files/" + fileId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("UPLOADED"))
+        .andExpect(jsonPath("$.data.pdfPath").doesNotExist())
+        .andExpect(jsonPath("$.data.reviewStatus").value("REVIEW_REQUIRED"));
+  }
+
+  @Test
   void adapterFaultFailsRunSafelyAndLeavesFileUnchanged() throws Exception {
     MvcResult batchResult =
         mockMvc
@@ -354,5 +410,16 @@ class ConversionApiContractIT extends AbstractPostgresIT {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.error.fields").value(org.hamcrest.Matchers.hasValue("must be between 0 and 1")));
+  }
+
+  private String firstFileId(String batchId) throws Exception {
+    MvcResult filesResult =
+        mockMvc
+            .perform(get("/api/batches/" + batchId + "/files"))
+            .andExpect(status().isOk())
+            .andReturn();
+    List<String> fileIds =
+        JsonPath.read(filesResult.getResponse().getContentAsString(), "$.data[*].id");
+    return fileIds.getFirst();
   }
 }
