@@ -1,7 +1,7 @@
 # Implementation Task Breakdown: audit-log-foundation
 
 Status: Implemented after user acceptance
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 Source spec: `docs/03-spec/audit-log-foundation-spec.md`
 Source design: `docs/05-design/audit-log-foundation-design.md`
 
@@ -122,7 +122,7 @@ Parallel work:
 
 - The implementation is a prototype audit foundation, not a production retention/SIEM/export/compliance system.
 - Historical `graph_audit_record` rows are preserved but not backfilled into `audit_event`.
-- Full `KnowledgeGraphApiContractIT` remains blocked by pre-existing Graph RBAC/default-auth helper contract drift outside this slice.
+- Graph API contract verification now passes after aligning controller-slice auth test boundaries.
 
 ## Definition Of Done
 

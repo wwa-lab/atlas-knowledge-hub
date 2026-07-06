@@ -1,6 +1,6 @@
 # Atlas Repo 一页总览与统一 Roadmap
 
-最后更新：2026-07-06
+最后更新：2026-07-07
 定位：本文件是当前仓库状态、产品成熟度、slice 队列和下一步门禁的**唯一阅读入口**。
 
 如果只想看一份文档，请看这一份。其他 roadmap、progress、traceability、acceptance report 都作为明细和证据存在，不再作为第一入口。
@@ -82,10 +82,10 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | Wave | Wave 3 / Trust And Governance |
 | Slice | `audit-log-foundation` |
 | 文档状态 | 双语 SDD 已按 closeout review 收敛并与实现对齐 |
-| 工作区状态 | audit implementation、tests、traceability 与 roadmap/status 已更新，等待最终验证/提交 |
+| 工作区状态 | audit implementation、tests、traceability 与 roadmap/status 已更新，task verification 与 closeout gate 已通过，等待提交 |
 | 成熟度 | Implemented prototype audit foundation；不等于 production audit/compliance readiness |
 | 前置依赖 | `auth-space-rbac` 已完成 closeout verification，包含 dedicated role E2E；不代表 production SSO/OIDC readiness |
-| 下一门禁 | 运行并保留 task verification、`npm run agent:closeout` 与最终 closeout evidence |
+| 下一门禁 | 人工确认后提交；后续治理切片保留 deferred emitters 与 production audit/compliance 缺口 |
 | 实现规则 | 不扩大到 production retention、SIEM/export、tamper-evident storage、compliance reporting、Wiki ingest/linkify-lint emitters 或 adapter/runtime emitters |
 
 ## 7. Slice / Wave 队列

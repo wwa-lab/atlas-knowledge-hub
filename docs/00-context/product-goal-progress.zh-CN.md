@@ -14,10 +14,10 @@
 | 当前 batch | Batch 8 与 Post-Final provider-backed verification 已完成 |
 | 当前 phase | Final 验收证据整理已完成；后续进入 Wave 3 governance |
 | 当前 slice | audit-log-foundation |
-| 当前成熟度 | Acceptance-ready evidence package；active slice `audit-log-foundation` 为 implemented prototype audit foundation；最终产品验收待用户决定 |
-| 最后完成 checkpoint | Post-Final provider-backed verification / 2026-07-05；audit-log-foundation closeout fixes / 2026-07-06 |
+| 当前成熟度 | Acceptance-ready evidence package；active slice `audit-log-foundation` 为 closeout-passed prototype audit foundation；最终产品验收待用户决定 |
+| 最后完成 checkpoint | Post-Final provider-backed verification / 2026-07-05；audit-log-foundation closeout verification / 2026-07-07 |
 | 当前 blocker | 无 |
-| 下一步 | 运行最终 task verification 与 `npm run agent:closeout`；保留 production audit/compliance、Wiki ingest/linkify-lint emitters 与 adapter/runtime emitters 为后续治理切片 |
+| 下一步 | 人工确认后提交；保留 production audit/compliance、Wiki ingest/linkify-lint emitters 与 adapter/runtime emitters 为后续治理切片 |
 
 ## Batch 记录
 

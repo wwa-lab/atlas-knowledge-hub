@@ -1,7 +1,7 @@
 # 溯源：audit-log-foundation
 
 状态：用户接受后已实现
-最后更新：2026-07-06
+最后更新：2026-07-07
 成熟度：已实现 prototype audit foundation；不是生产 retention/SIEM/compliance。
 
 ## Source Documents
@@ -128,18 +128,22 @@ Draft self-review result：
 
 - `cd backend && mvn -Dtest=AuditLogServiceTest,AuditLogApiContractIT test` 通过，并补充 metadata allowlist、time-range filter 与 invalid interval 覆盖。
 - `cd backend && mvn -Dtest=AuditLogServiceTest,AuditLogApiContractIT,AuthSpaceRbacApiContractIT,AskServiceTest,ReviewPublishServiceTest,GraphProjectionServiceTest test` 通过。
-- `cd backend && mvn -DskipTests package` 通过。
+- `cd backend && mvn -Dtest=KnowledgeGraphApiContractIT,WikiIngestApiContractIT,WikiLinkifyLintApiContractIT,ReviewPublishApiContractIT test` 通过，并校准 controller-slice auth test 边界。
+- `cd backend && mvn verify` 通过：126 个 unit tests、58 个 integration tests；`ConfiguredRuntimeSmokeIT` 按配置跳过 2 个 opt-in runtime checks。
 - `npm --prefix frontend test -- App.test.ts` 通过，并补充 governance-read 入口隐藏覆盖。
 - `npm --prefix frontend test` 通过。
 - `npm --prefix frontend run build` 通过。
+- `npm run agent:check-sdd -- --slice audit-log-foundation --require-api-guide --report docs/00-context/audit-log-foundation-sdd-completion-report.md` 通过。
+- `npm run agent:closeout` 通过。
+- `git diff --check` 通过。
+- 针对本次 touched audit 文件的 private-path 与 secret-pattern focused scan 通过。
 
 ## Residual Risks
 
-- 完整 `KnowledgeGraphApiContractIT` 当前仍在本切片外失败：既有 Graph contract 期望 viewer 被拒绝且 POST helper 隐式带默认 auth，但当前 RBAC/test helper 行为与之不一致。已通过单跑 `cd backend && mvn -Dtest=KnowledgeGraphApiContractIT test` 确认。
 - 历史 `atlas.graph_audit_record` 行会被保留，但不会 backfill 到 `atlas.audit_event`。
 - Wiki ingest/linkify-lint 与 adapter/runtime operation emitters 延后到后续 governance slices，本 foundation slice 不声称 production audit coverage。
 - audit foundation 有意不覆盖生产级 retention policy、SIEM/export、tamper-evident storage 与 compliance reporting。
 
 ## Next Gate
 
-运行 closeout workflow gates；如需要，可另开 Graph/RBAC contract cleanup slice 处理非 audit 的既有失败。
+人工确认后可标记 prototype audit foundation complete。

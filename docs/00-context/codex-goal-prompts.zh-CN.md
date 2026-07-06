@@ -1,6 +1,6 @@
 # Codex Goal 提示词速查
 
-最后更新：2026-07-06
+最后更新：2026-07-07
 用途：给 Codex Agent Goal Mode 使用的可复制提示词集合。
 
 如果只需要一个入口，先看本文件。更完整的原始模板保留在：
@@ -17,6 +17,7 @@
 - 完成前必须跑 task verification 和 `npm run agent:closeout`。
 - PR/push 上的 `Agent Workflow Gate` 红灯时，不得标记 complete。
 - 如果已有其他人或其他 agent 的未提交改动，必须保护，不得覆盖。
+- 需要“一次复制就直接交付”的场景，使用 Prompt 7，并在 prompt 里给出明确的预授权边界。
 
 ## Prompt 0：只盘点当前 repo 状态
 
@@ -299,6 +300,139 @@ Slice: <slice slug>
 - 是否必须先等待人工接受
 
 在输出恢复判断前，不要编辑文件。
+```
+
+## Prompt 7：自主 single-slice 全流程交付
+
+用于你希望 Codex 一次完成：设置 goal、生成/更新 SDD、在预授权范围内接受 SDD、实现、验证、closeout、commit、push。
+
+适用范围：
+
+- Tier 0 / Tier 1 / 低风险 Tier 2 的单 slice。
+- 用户已经在 prompt 中写清 Goal、Scope、Exclusions、Acceptance、Verification、Autonomy boundary。
+- SDD 变化没有引入新的安全、权限、真实数据、外部 provider、破坏性 migration 或 production readiness 承诺。
+
+不适用范围：
+
+- auth、RBAC、audit、secret、真实公司数据、外部 provider、破坏性 migration、production readiness。
+- API/data model/security/governance scope 不清楚。
+- 当前工作区有会被覆盖的用户或其他 agent 改动。
+- 需要组织级产品决策，而不是实现层保守决策。
+
+```text
+请设置并执行一个 Atlas autonomous single-slice full-delivery goal。
+
+Goal mode: autonomous-single-slice
+Autonomy level: standard-preauthorized
+Slice: <slice slug>
+Branch: <current branch or target branch>
+Commit message: <type: short description>
+Push: yes
+
+Goal:
+<用户可见或工程可验证的结果>
+
+Scope:
+- <范围内行为 1>
+- <范围内行为 2>
+
+Exclusions:
+- <明确不做 1>
+- <明确不做 2>
+
+Acceptance:
+- <可观察完成标准 1>
+- <可观察完成标准 2>
+
+Verification:
+- <必须运行的命令 1>
+- <必须运行的命令 2>
+- npm run agent:closeout
+
+Autonomy boundary:
+- 本 prompt 预授权 Codex 在上述 Goal / Scope / Exclusions / Acceptance 内生成或更新 SDD。
+- 如果 SDD 变化完全落在上述边界内，且通过 SDD gate，则视为本 prompt 已接受该 SDD，可继续实现。
+- Codex 可以自行做保守实现决策，但必须优先使用现有 repo patterns。
+- Codex 不需要为常规命名、文件组织、测试补充、文档同步、lint/format 修复、非破坏性小重构反复询问用户。
+- Codex 必须停止并请求用户决策，如果发现任何 stop condition。
+
+必须读取：
+- AGENTS.md
+- PROJECT_RULES.md
+- DEVELOPMENT_STANDARDS.md
+- docs/00-context/repo-status-roadmap.zh-CN.md
+- docs/00-context/agent-goal-loop-workflow.md
+- docs/00-context/agent-goal-loop-workflow.zh-CN.md
+- docs/00-context/agent-goal-loop-quickstart.md
+- docs/00-context/agent-goal-loop-quickstart.zh-CN.md
+- docs/00-context/codex-goal-prompts.zh-CN.md
+- docs/00-context/sdd-profile.md
+- docs/SDD-BOOTSTRAP.md
+- docs/SDD-BOOTSTRAP.zh-CN.md
+- 当前 slice 已有 SDD / traceability docs
+
+执行步骤：
+1. 创建或确认 goal objective：完成 <slice slug> 从 SDD 到实现、验证、closeout、commit、push 的单 slice 交付。
+2. 运行 git status --short 和 git diff --stat，确认不会覆盖无关改动。
+3. 选择并报告 workflow tier；standard-preauthorized 只允许 Tier 0/1/低风险 Tier 2。
+4. 检查当前 slice SDD 是否存在、双语同步、task 可执行。
+5. 如果 SDD 缺失或陈旧，必须使用项目本地 SDD skill chain 更新：
+   - atlas-sdd-generate-all
+   - req-to-user-story
+   - user-story-to-spec
+   - spec-to-architecture
+   - architecture-to-design
+   - design-to-tasks
+   - review-doc-quality
+6. 运行 SDD gate；若 SDD 完全落在 Autonomy boundary 内，则继续实现，不再询问。
+7. 严格按 docs/06-tasks/<slice>-tasks.md 的 task ID 顺序实现。
+8. 添加或更新必要测试。
+9. 运行 Verification 中列出的命令。
+10. 若验证失败，在当前 slice 内执行 scoped fix loop；不要扩大 scope。
+11. 更新 traceability、roadmap/progress、lessons learned（如适用）。
+12. 运行 npm run agent:closeout。
+13. 运行 git diff --check，并确认 secret/private-path/real-data 没有新增风险。
+14. 若所有 gate 通过，review git diff。
+15. git add 当前 slice 相关文件。
+16. git commit，使用上面的 Commit message；不要使用 --no-verify。
+17. git push 到当前分支；若上游未设置，使用 git push -u origin <branch>。
+
+Stop conditions:
+- 任务属于 Tier 3，或触及 auth/RBAC/audit/secret/真实数据/外部 provider/破坏性 migration/production readiness，而 prompt 没有明确 high risk approval。
+- SDD 变化超出 Goal / Scope / Exclusions / Acceptance。
+- SDD skill chain 不可用或无法确认已使用。
+- API/data model/security/governance 决策不明确。
+- 工作区存在会被覆盖的用户或其他 agent 改动。
+- 需要真实公司数据、raw secrets、private paths、confidential screenshots 或未批准外部调用。
+- verification 或 closeout gate 失败，且无法在当前 slice 内修复。
+- commit hook 或 push 失败。
+
+完成报告：
+- Goal objective
+- Workflow tier
+- Slice
+- Autonomy boundary 是否满足
+- SDD skill chain used
+- SDD accepted by preauthorization: yes/no
+- Docs changed
+- Code changed
+- Tests changed
+- Task IDs completed
+- Verification run
+- Closeout gate result
+- Commit hash
+- Push target
+- Residual risks
+- Next recommended slice/action
+```
+
+如果是高风险 slice，但你确实希望一次 prompt 授权到底，必须把 `Autonomy level` 改成 `high_risk_explicitly_approved`，并在 prompt 中增加：
+
+```text
+High-risk explicit approval:
+- 我已审阅并接受 <slice> 的 spec/design/API guide/tasks。
+- 我授权 Codex 在这些已接受文档范围内实现、验证、closeout、commit、push。
+- 如果实现需要改变安全、权限、审计、secret、真实数据、外部 provider 或 migration 语义，必须停止，不得自行决定。
 ```
 
 ## 当前 repo 示例：audit-log-foundation

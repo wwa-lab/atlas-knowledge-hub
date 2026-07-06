@@ -1,7 +1,7 @@
 # Traceability: audit-log-foundation
 
 Status: Implemented after user acceptance
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 Maturity: Prototype audit foundation implemented; not production retention/SIEM/compliance.
 
 ## Source Documents
@@ -128,18 +128,22 @@ The accepted SDD has been implemented in code. The slice now provides safe appen
 
 - `cd backend && mvn -Dtest=AuditLogServiceTest,AuditLogApiContractIT test` passed after adding metadata allowlist, time-range filter, and invalid interval coverage.
 - `cd backend && mvn -Dtest=AuditLogServiceTest,AuditLogApiContractIT,AuthSpaceRbacApiContractIT,AskServiceTest,ReviewPublishServiceTest,GraphProjectionServiceTest test` passed.
-- `cd backend && mvn -DskipTests package` passed.
+- `cd backend && mvn -Dtest=KnowledgeGraphApiContractIT,WikiIngestApiContractIT,WikiLinkifyLintApiContractIT,ReviewPublishApiContractIT test` passed after aligning controller-slice auth test boundaries.
+- `cd backend && mvn verify` passed with 126 unit tests and 58 integration tests; `ConfiguredRuntimeSmokeIT` skipped 2 opt-in runtime checks by configuration.
 - `npm --prefix frontend test -- App.test.ts` passed after adding governance-read entry hiding coverage.
 - `npm --prefix frontend test` passed.
 - `npm --prefix frontend run build` passed.
+- `npm run agent:check-sdd -- --slice audit-log-foundation --require-api-guide --report docs/00-context/audit-log-foundation-sdd-completion-report.md` passed.
+- `npm run agent:closeout` passed.
+- `git diff --check` passed.
+- Focused private-path and secret-pattern scan on touched audit files passed.
 
 ## Residual Risks
 
-- Full `KnowledgeGraphApiContractIT` currently fails outside this slice because the existing Graph contract expects viewer denial and implicit POST auth defaults, while the current RBAC/test helper behavior does not match that expectation. This was confirmed by single-running `cd backend && mvn -Dtest=KnowledgeGraphApiContractIT test`.
 - Historical `atlas.graph_audit_record` rows are preserved but not backfilled into `atlas.audit_event`.
 - Wiki ingest/linkify-lint and adapter/runtime operation emitters are deferred to follow-on governance slices and are not claimed as production audit coverage in this foundation slice.
 - The audit foundation intentionally excludes production-grade retention policy, SIEM/export, tamper-evident storage, and compliance reporting.
 
 ## Next Gate
 
-Run closeout workflow gates and address any non-audit pre-existing failures through a separate Graph/RBAC contract cleanup slice if desired.
+Mark the prototype audit foundation complete after human confirmation.

@@ -1,7 +1,7 @@
 # 实现任务拆解：audit-log-foundation
 
 状态：用户接受后已实现
-最后更新：2026-07-06
+最后更新：2026-07-07
 Source spec: `docs/03-spec/audit-log-foundation-spec.md`
 Source design: `docs/05-design/audit-log-foundation-design.md`
 
@@ -122,7 +122,7 @@ Parallel work：
 
 - 当前实现是 prototype audit foundation，不是生产 retention/SIEM/export/compliance system。
 - 历史 `graph_audit_record` 会保留，但不会 backfill 到 `audit_event`。
-- 完整 `KnowledgeGraphApiContractIT` 仍受本切片外既有 Graph RBAC/default-auth helper contract drift 阻塞。
+- Graph API contract verification 已在校准 controller-slice auth test 边界后通过。
 
 ## Definition Of Done
 

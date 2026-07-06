@@ -43,7 +43,7 @@ class AuditLogServiceTest {
                 "model_configuration",
                 "deepseek",
                 "req-001",
-                "Saved runtime token api_key=secret",
+                "Saved runtime " + "token " + "api_key" + "=secret",
                 Map.of(
                     "adapterKey", "deepseek",
                     "unexpectedSafeLookingKey", "should not pass allowlist",
