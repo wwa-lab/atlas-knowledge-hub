@@ -191,4 +191,3 @@ so that audit logging does not become a new leakage channel.
 ### Open Questions
 
 - None.
-

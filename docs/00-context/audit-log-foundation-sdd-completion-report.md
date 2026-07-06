@@ -111,4 +111,3 @@ User accepts the SDD or requests revisions. After acceptance, implementation sta
 ## Resume Point
 
 Implement `audit-log-foundation` strictly against `docs/03-spec/audit-log-foundation-spec.md`, `docs/05-design/audit-log-foundation-design.md`, `docs/05-design/contracts/audit-log-foundation-API_IMPLEMENTATION_GUIDE.md`, and `docs/06-tasks/audit-log-foundation-tasks.md` after human acceptance.
-

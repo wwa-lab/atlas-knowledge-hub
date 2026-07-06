@@ -55,4 +55,3 @@ Wave：Wave 3 / Trust And Governance
 |---|---|---|
 | OQ-AUDIT-LOG-FOUNDATION-001 | `AUDITOR` 默认应看到 space 中全部 events，还是只看到 security/governance categories？ | Product / Security |
 | OQ-AUDIT-LOG-FOUNDATION-002 | 现有 `graph_audit_record` 应在 migration 中 backfill 到通用表，还是作为 legacy companion 保留到 cleanup slice？ | Engineering |
-

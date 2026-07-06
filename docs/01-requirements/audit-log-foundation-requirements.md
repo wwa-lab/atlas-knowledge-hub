@@ -55,4 +55,3 @@ Out of scope:
 |---|---|---|
 | OQ-AUDIT-LOG-FOUNDATION-001 | Should `AUDITOR` see all events in a space, or only security/governance categories by default? | Product / Security |
 | OQ-AUDIT-LOG-FOUNDATION-002 | Should existing `graph_audit_record` be backfilled into the general table during migration, or kept as a legacy companion until a cleanup slice? | Engineering |
-
