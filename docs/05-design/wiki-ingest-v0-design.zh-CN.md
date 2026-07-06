@@ -2,7 +2,7 @@
 
 ## 状态
 
-供用户接受的草稿。接受前产品代码仍被阻止。
+已接受并完成 Auto Wiki ingest v0 implementation verification。生成 candidates 仍保持 review-required；本设计不完成 linkify/lint、review-gate approval、connector sync、model-assisted generation 或 production readiness。
 
 ## Source Architecture
 

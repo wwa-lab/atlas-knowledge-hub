@@ -1,5 +1,7 @@
 # Atlas Knowledge Hub Product Roadmap
 
+> Current canonical repository status: `docs/00-context/repo-status-roadmap.zh-CN.md`. This file keeps the A-J product narrative, maturity model, and historical roadmap detail; it is no longer the only status entry point.
+
 This roadmap is the product execution plan for building Atlas Knowledge Hub into an internal enterprise knowledge-base management product inspired by modern AI-native knowledge products.
 
 Chinese companion: [ROADMAP.zh-CN.md](ROADMAP.zh-CN.md).
@@ -311,7 +313,7 @@ Status on 2026-07-05:
 - Wave 1 / `wiki-linkify-lint`: implementation is verified as the Wiki Foundation linkify/lint base: deterministic Wiki link insertion, link metadata refresh, lint issue recording, and Processing Center/Wiki warnings. This is not review-gate, refresh/retract, connector, model-assisted generation, or production readiness.
 - Current active slice completed: Wave 2 / `real-office-parser-runtime` is implemented and verified. Controlled internal `trinity-office` and `document-normalize` runtime execution now sits behind existing adapter boundaries, while default CI remains mock-safe. Optional runtime smoke tests self-skip until approved local runtime env vars and binaries are available.
 - Wave 3 / `runtime-smoke-config-and-runbook`: implemented as command-level runtime smoke readiness. The bilingual runbook documents smoke env vars, Spring adapter property distinctions, skip/pass/fail outcomes, safe evidence rules, troubleshooting, and rollback. Default CI remains mock-safe; approved local pass evidence is skipped until approved runtime command values are provided. This is not production operations readiness.
-- Wave 3 / `auth-space-rbac`: draft bilingual SDD has been generated for backend-enforced current-user context, local mock auth, future SSO/OIDC boundary, space membership, role matrix, protected API guards, and permission-aware UI. No product code is implemented for this slice until human acceptance of the spec and tasks.
+- Wave 3 / `auth-space-rbac`: closeout verified for backend-enforced current-user context, local mock auth, future SSO/OIDC boundary, space membership, role matrix, protected API guards, and permission-aware UI. Dedicated role E2E is now included in the default frontend E2E suite. This is not production SSO/OIDC readiness.
 
 ## Near-Term Execution Plan
 

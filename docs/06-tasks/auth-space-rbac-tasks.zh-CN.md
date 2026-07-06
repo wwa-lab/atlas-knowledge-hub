@@ -1,13 +1,13 @@
 # 实现任务拆解：auth-space-rbac
 
-状态：已实现，保留 E2E 缺口
-最后更新：2026-07-06
+状态：已按已接受的 auth-space-rbac 切片完成
+最后更新：2026-07-07
 Source spec：`docs/03-spec/auth-space-rbac-spec.md`
 Source design：`docs/05-design/auth-space-rbac-design.md`
 
 ## 概览
 
-本任务计划为受控内部 beta 实现后端强制认证和空间 RBAC。SDD 被接受后，第一轮实现已于 2026-07-06 完成。
+本任务计划为受控内部 beta 实现后端强制认证和空间 RBAC。SDD 被接受后，第一轮实现已于 2026-07-06 完成，并于 2026-07-07 完成 closeout verification。
 
 ## Implementation Status
 
@@ -21,8 +21,8 @@ Source design：`docs/05-design/auth-space-rbac-design.md`
 | T-AUTH-SPACE-RBAC-006 | Done | 已添加 `/api/auth/me` 与 `/api/spaces/{spaceId}/members` endpoints。 |
 | T-AUTH-SPACE-RBAC-007 | Done | 现有核心 API domains 通过 centralized path policy 受保护；graph-specific header guard 已移除。 |
 | T-AUTH-SPACE-RBAC-008 | Done | 前端启动加载 `/api/auth/me`，发送 mock auth header，并基于 capabilities 禁用代表性写操作。 |
-| T-AUTH-SPACE-RBAC-009 | Partial | 前端 unit coverage 已验证 viewer disabled controls；本轮未运行专门 Playwright role E2E。 |
-| T-AUTH-SPACE-RBAC-010 | Done | Backend full tests、frontend build、frontend typecheck 与 frontend unit tests 已通过。 |
+| T-AUTH-SPACE-RBAC-009 | Done | `frontend/tests/e2e/auth-space-rbac.spec.ts` 覆盖 `VIEWER`、`KNOWLEDGE_MANAGER` 与 `SPACE_OWNER`，包括 manipulated viewer write `403`。 |
+| T-AUTH-SPACE-RBAC-010 | Done | `mvn verify`、frontend typecheck、frontend unit tests、frontend build 与完整 frontend E2E 已通过。 |
 | T-AUTH-SPACE-RBAC-011 | Done | 已运行 `git diff --check`、focused secret scan 与 network/dependency scan；命中项为既有 mock/test fixture 或既有 adapter URL。 |
 | T-AUTH-SPACE-RBAC-012 | Done | Traceability 已更新 implementation evidence 与 residual risks。 |
 

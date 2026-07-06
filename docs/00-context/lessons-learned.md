@@ -46,6 +46,48 @@ Status:
 
 ## Lessons
 
+### LL-20260707-002 Space-Scoped Slugs Need Space-Scoped Generated IDs
+
+ID: LL-20260707-002
+Date: 2026-07-07
+Slice: wiki-ingest-v0
+Source: Atlas closeout review for Wave 3 / `wiki-ingest-v0`.
+Expectation: Same-slug Auto Wiki candidates in different spaces must not conflict; the spec's space-scoped slug rule must hold through persistence identifiers, not only repository lookup.
+Observed: The implementation looked up existing pages by `(spaceId, slug)` but generated new page IDs as `wiki-auto-{slug}`, so the same slug in another space could collide on the global `wiki_page.id`.
+Root cause: Implementation drift at the persistence identifier boundary. Verification covered idempotent reruns and trusted slug collisions but did not include a positive cross-space same-slug case.
+Decision: Generated Auto Wiki page IDs must include a normalized space slug when page IDs are globally unique.
+Durable updates: Updated `WikiIngestService` page ID generation, added `WikiIngestServiceTest.sameCandidateSlugInDifferentSpaceGetsDistinctPageId`, and refreshed wiki-ingest-v0 task/traceability evidence.
+New verification: `cd backend && mvn -q -Dtest=WikiIngestServiceTest,ReviewPublishServiceTest -DfailIfNoTests=false test` now covers the cross-space same-slug case.
+Status: Applied.
+
+### LL-20260707-001 Auth/RBAC Closeout Must Include Full Verify And Role E2E
+
+ID: LL-20260707-001
+Date: 2026-07-07
+Slice: auth-space-rbac
+Source: Atlas closeout review for Wave 3 / `auth-space-rbac`.
+Expectation: A Must-level auth/RBAC slice can be marked complete only when API contracts, completed task IDs, traceability, roadmap status, role-specific E2E, and full backend verification all agree.
+Observed: The slice was implemented, but T-AUTH-SPACE-RBAC-009 remained Partial, traceability still carried a dedicated role E2E gap, the roadmap still described the slice as SDD-only, `mvn verify` had not been proven green, and the membership update API drifted from the API guide's `PATCH /api/spaces/{spaceId}/members/{membershipId}` contract.
+Root cause: Closeout review blind spot. Focused backend/frontend checks passed, but the full verification gate and status-document reconciliation were not treated as blocking evidence before claiming completion.
+Decision: Auth/RBAC closeout must run `mvn verify`, include dedicated role E2E in the default frontend E2E suite, and assert membership update/delete by membership id before marking the slice complete.
+Durable updates: Updated `docs/06-tasks/auth-space-rbac-tasks.md` / `.zh-CN.md`, traceability, slice roadmap, repo-status roadmap, and product roadmap to remove stale E2E-gap/SDD-only language. Added `frontend/tests/e2e/auth-space-rbac.spec.ts` and backend contract coverage for membership-id PATCH.
+New verification: `cd backend && mvn verify`; `cd backend && mvn test -Dtest=AuthorizationServiceTest,AuthSpaceRbacApiContractIT`; `npm --prefix frontend run e2e`; `npm run agent:check-sdd -- --slice auth-space-rbac --require-api-guide`; `npm run agent:closeout`.
+Status: Applied.
+
+### LL-20260706-001 Closeout Must Reconcile Spec Claims, Task Evidence, And Canonical Status
+
+ID: LL-20260706-001
+Date: 2026-07-06
+Slice: audit-log-foundation
+Source: Closeout review found that task and traceability docs claimed implementation completion while the canonical repo-status entry still described the slice as an SDD draft, and the original spec/task language required broader emitters than the implemented foundation covered.
+Expectation: A slice can be marked complete only when implementation behavior, spec language, completed task IDs, traceability, roadmap/progress status, and verification evidence describe the same scope.
+Observed: `audit-log-foundation` implemented a prototype foundation with auth, membership, Wiki publish, Graph, Ask, read APIs, and Vue audit UI, but the SDD still implied Wiki ingest/linkify-lint and adapter/runtime emitters were part of the completed scope. The canonical repo-status file still said the slice was waiting for acceptance.
+Root cause: Review blind spot and status drift. The closeout gate verified file presence and workflow hygiene but did not by itself prove semantic alignment between the implementation, completed task language, and the one-page repo status.
+Decision: For governance slices, closeout must either implement every claimed emitter/behavior or update the SDD/task language before marking the task complete. Canonical status files must be updated in the same change as traceability.
+Durable updates: Updated `docs/03-spec/audit-log-foundation-spec.md` / `.zh-CN.md`, `docs/05-design/audit-log-foundation-design.md` / `.zh-CN.md`, `docs/06-tasks/audit-log-foundation-tasks.md` / `.zh-CN.md`, traceability, `docs/00-context/repo-status-roadmap.zh-CN.md`, and `docs/00-context/product-goal-progress.zh-CN.md` to distinguish implemented foundation coverage from deferred emitters. Added focused backend/frontend tests for metadata allowlist, time-range filters, invalid time intervals, private-path literal hygiene, and governance-read UI gating.
+New verification: During closeout review, compare implemented emitters and API filters against FR/AC rows, then check `docs/00-context/{slice}-traceability*`, `docs/00-context/slice-roadmap*`, `docs/00-context/repo-status-roadmap.zh-CN.md`, and progress docs for matching status language before claiming complete.
+Status: Applied.
+
 ### LL-20260705-004 SDD Handoffs Must Force Project-Local Skill Usage
 
 ID: LL-20260705-004

@@ -1,5 +1,7 @@
 # 切片路线图与「双命令」SDD 循环
 
+> 当前仓库状态请先看：`docs/00-context/repo-status-roadmap.zh-CN.md`。本文件保留 slice backlog、SDD loop 和可复制 prompt 模板，不再作为唯一状态入口。
+
 用 Agent 编码工具（Claude Code、Codex，或任何能读取本仓库技能的 Agent）驱动 Atlas Knowledge Hub 的操作手册。
 
 每个切片是两件事：
@@ -62,7 +64,8 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | Wave 1 / Wiki Foundation | `wiki-linkify-lint` | 确定性 Wiki link insertion、link metadata refresh、broken/orphan/source/thin-content linting，以及面向审核的 warnings | ✅ 已作为 Wiki Foundation linkify/lint base 完成 implementation verification；不代表 review-gate、refresh/retract、connector、model-assisted generation 或 production readiness | 当前成熟度目标已关闭 |
 | Wave 2 / Runtime Integration | `real-office-parser-runtime` | 将真实 internal converter/parser runtime 集成到现有 adapter boundaries 之后 | ✅ 已实现并验证；默认 CI 仍保持 mock-safe | 当真实 binaries 可用时配置 approved local runtime smoke env vars，或进入下一个已接受切片 |
 | Wave 3 / Runtime Readiness | `runtime-smoke-config-and-runbook` | 为 approved local `trinity-office` 与 `document-normalize` checks 定义 runtime smoke environment contract、safe evidence rules 与双语 runbook | ✅ 已作为 command-level runtime smoke readiness 实现；默认 CI 仍保持 mock-safe，approved local pass evidence 在提供 commands 前保持 skipped | 当前成熟度目标已关闭；不代表 production operations readiness |
-| Wave 3 / Trust And Governance | `auth-space-rbac` | 后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI contract | 🔨 已生成双语 SDD 草案；未实现产品代码 | 人工审阅并接受 `docs/03-spec/auth-space-rbac-spec.md` 与 `docs/06-tasks/auth-space-rbac-tasks.md` 后再实现 |
+| Wave 3 / Trust And Governance | `auth-space-rbac` | 后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI contract | ✅ 已按接受切片完成 closeout verification，包含 dedicated role E2E；不代表 production SSO/OIDC readiness | 验收 review 关注 role semantics 与 `/api/spaces` list visibility；production SSO/OIDC 留在未来工作 |
+| Wave 3 / Trust And Governance | `audit-log-foundation` | 面向核心治理操作的 safe append-only audit event capture、RBAC-protected audit read APIs 与只读 audit UI | ✅ 已按接受版 SDD 完成 prototype implementation | Production retention/SIEM/export 与 historical graph-audit backfill 仍不在本切片范围内 |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for user acceptance. Product code remains blocked until acceptance.
+Accepted and implementation verified for Auto Wiki ingest v0. Generated candidates remain review-required; this design does not complete linkify/lint, review-gate approval, connector sync, model-assisted generation, or production readiness.
 
 ## Source Architecture
 

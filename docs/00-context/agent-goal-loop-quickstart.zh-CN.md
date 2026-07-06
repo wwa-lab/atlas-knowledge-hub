@@ -4,6 +4,8 @@
 
 如果公司内部主要使用 GitHub Copilot Chat，先阅读 `docs/00-context/agent-execution-modes.zh-CN.md`。Copilot Chat 使用同一套 gates，但由人作为 loop operator。
 
+Codex goal 提示词速查见 `docs/00-context/codex-goal-prompts.zh-CN.md`。
+
 ## 1. 选择 Tier
 
 | 任务 | Tier |

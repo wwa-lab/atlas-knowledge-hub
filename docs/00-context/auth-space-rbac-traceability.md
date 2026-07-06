@@ -1,8 +1,8 @@
 # Traceability: auth-space-rbac
 
-Status: Implemented with residual E2E gap
-Last updated: 2026-07-06
-Maturity: First implementation pass complete after SDD acceptance.
+Status: Complete for the accepted auth-space-rbac slice
+Last updated: 2026-07-07
+Maturity: Closeout verified for controlled internal beta auth/RBAC scope; not production SSO/OIDC readiness.
 
 ## Source Documents
 
@@ -96,10 +96,10 @@ Completed in the implementation pass:
 
 - Persistence: `backend/src/main/resources/db/migration/V13__auth_space_rbac.sql` adds `atlas_user`, `space_membership`, constraints, indexes, and sample-safe mock users/memberships.
 - Backend auth boundary: `CurrentUserService`, `AuthorizationService`, `AuthorizationPathPolicy`, `AtlasAuthInterceptor`, and `AtlasAuthWebConfig` enforce current-user and role/capability checks before controller execution.
-- APIs: `/api/auth/me` and `/api/spaces/{spaceId}/members` were added with current-user, membership list/create/update/remove, and last active owner protection.
+- APIs: `/api/auth/me` and `/api/spaces/{spaceId}/members` were added with current-user, membership list/create/update/remove, and last active owner protection. Membership update/remove now use the API guide's membership-id member resource path.
 - Existing domains: space, batch, file/chunk, review/publish, Wiki, graph, Ask, vector, conversion, parser, storage, model/settings, ingestion, and downstream refresh paths are guarded by centralized path policy.
 - Graph API: removed the earlier graph-only `X-Atlas-Role` controller guard so graph authorization goes through the shared RBAC boundary.
-- Frontend: all API calls include `X-Atlas-User`, `/api/auth/me` is loaded on startup, and representative write controls are disabled from backend capabilities.
+- Frontend: all API calls include `X-Atlas-User`, `/api/auth/me` is loaded on startup, representative write controls are disabled from backend capabilities, and role-specific Playwright coverage exercises viewer, knowledge manager, and space owner paths.
 
 ## Verification Evidence
 
@@ -109,21 +109,22 @@ Completed for this implementation pass:
 - File existence check: PASS, all 20 expected bilingual SDD files exist.
 - Bilingual ID parity: PASS through the SDD gate for requirements, stories, spec, architecture, data flow, data model, design, API guide, tasks, and traceability.
 - Deferred-decision scan on `auth-space-rbac` SDD files: PASS, no deferred-decision keyword patterns found.
-- `cd backend && mvn test`: PASS, 123 tests.
-- `cd backend && mvn test -Dtest=AuthorizationServiceTest,AuthSpaceRbacApiContractIT`: PASS, 9 targeted RBAC tests.
+- `cd backend && mvn verify`: PASS, 191 tests reported across Surefire/Failsafe with 2 optional configured-runtime smoke tests skipped.
+- `cd backend && mvn test -Dtest=AuthorizationServiceTest,AuthSpaceRbacApiContractIT`: PASS, 10 targeted RBAC tests.
 - `npm --prefix frontend run typecheck`: PASS.
-- `npm --prefix frontend test`: PASS, 3 test files and 19 tests.
+- `npm --prefix frontend test`: PASS, 3 test files and 20 tests.
 - `npm --prefix frontend run build`: PASS, including lint, typecheck, and Vite production build.
+- `npm --prefix frontend run e2e`: PASS, 16 Playwright tests including `frontend/tests/e2e/auth-space-rbac.spec.ts`.
 - `git diff --check`: PASS.
 - Focused secret/private-path scan on new auth/RBAC files: PASS with notes. Matches were `ask-runs` identifier text and the existing frontend model `apiKey` request field, not raw secrets.
 - Focused network/dependency scan: PASS with notes. Matches were existing configured model/endpoint UI and adapter references; this slice did not add new package dependencies or external cloud calls.
 
 ## Residual Risks
 
-- Dedicated Playwright role E2E was not run in this pass; frontend coverage is unit-level for viewer-disabled controls plus production build.
 - `/api/spaces` list remains authenticated-only in this prototype pass; individual space details and derived resources are space-guarded.
 - Production SSO/OIDC, full audit retention, secret manager, and rate limiting remain separate Wave 3 slices.
+- The current worktree also contains `audit-log-foundation` changes, so review packaging should keep auth/RBAC closeout changes distinct from the audit slice when preparing commits or PRs.
 
 ## Next Gate
 
-Acceptance review should focus on role semantics, `/api/spaces` list visibility, and whether to add dedicated Playwright role E2E before the next Wave 3 slice.
+Acceptance review should focus on role semantics, `/api/spaces` list visibility, and keeping production SSO/OIDC, secret manager, and rate limiting in their future slices.

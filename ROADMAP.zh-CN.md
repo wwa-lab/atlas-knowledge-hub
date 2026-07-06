@@ -1,5 +1,7 @@
 # Atlas Knowledge Hub 产品路线图
 
+> 当前仓库状态请先看：`docs/00-context/repo-status-roadmap.zh-CN.md`。本文件保留产品 A-J 叙事、成熟度定义和历史路线图细节，不再作为唯一状态入口。
+
 本路线图是 Atlas Knowledge Hub 的产品执行计划，目标是把当前仓库推进成面向公司内部使用的企业级知识库管理产品，而不是只停留在脚本、静态原型或局部调试页。
 
 英文版本：[ROADMAP.md](ROADMAP.md)。
@@ -313,7 +315,7 @@ Atlas 应成为一个真实的 Vue 3 + Spring Boot 内部产品，用于管理�
 - Wave 1 / `wiki-linkify-lint`：Implementation 已作为 Wiki Foundation linkify/lint base 完成验证：deterministic Wiki link insertion、link metadata refresh、lint issue recording，以及 Processing Center/Wiki warnings。本切片不代表 review-gate、refresh/retract、connector、model-assisted generation 或 production readiness。
 - 当前 active slice 已完成：Wave 2 / `real-office-parser-runtime` 已实现并验证。受控内部 `trinity-office` 与 `document-normalize` runtime execution 已位于现有 adapter boundaries 之后，默认 CI 仍保持 mock-safe。Optional runtime smoke tests 会在缺少 approved local runtime env vars 和 binaries 时 self-skip。
 - Wave 3 / `runtime-smoke-config-and-runbook`：已作为 command-level runtime smoke readiness 实现。双语 runbook 记录 smoke env vars、Spring adapter property distinctions、skip/pass/fail outcomes、safe evidence rules、troubleshooting 与 rollback。默认 CI 仍保持 mock-safe；approved local pass evidence 在提供 approved runtime command values 前保持 skipped。这不代表 production operations readiness。
-- Wave 3 / `auth-space-rbac`：已生成双语 SDD 草案，覆盖后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI。该切片在人工接受 spec 和 tasks 前不实现产品代码。
+- Wave 3 / `auth-space-rbac`：已完成 closeout verification，覆盖后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI。Dedicated role E2E 已纳入默认 frontend E2E suite。这不代表 production SSO/OIDC readiness。
 
 ## 近期执行顺序
 

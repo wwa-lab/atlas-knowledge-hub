@@ -1,13 +1,13 @@
 # Implementation Task Breakdown: auth-space-rbac
 
-Status: Implemented with residual E2E gap
-Last updated: 2026-07-06
+Status: Complete for the accepted auth-space-rbac slice
+Last updated: 2026-07-07
 Source spec: `docs/03-spec/auth-space-rbac-spec.md`
 Source design: `docs/05-design/auth-space-rbac-design.md`
 
 ## Overview
 
-This task plan implements backend-enforced authentication and space RBAC for controlled internal beta. The first implementation pass was completed on 2026-07-06 after SDD acceptance.
+This task plan implements backend-enforced authentication and space RBAC for controlled internal beta. The implementation pass was completed on 2026-07-06 after SDD acceptance, and closeout verification was completed on 2026-07-07.
 
 ## Implementation Status
 
@@ -21,8 +21,8 @@ This task plan implements backend-enforced authentication and space RBAC for con
 | T-AUTH-SPACE-RBAC-006 | Done | `/api/auth/me` and `/api/spaces/{spaceId}/members` endpoints added. |
 | T-AUTH-SPACE-RBAC-007 | Done | Existing core API domains are guarded through centralized path policy; graph-specific header guard removed. |
 | T-AUTH-SPACE-RBAC-008 | Done | Frontend loads `/api/auth/me`, sends mock auth header, and disables representative write controls from capabilities. |
-| T-AUTH-SPACE-RBAC-009 | Partial | Frontend unit coverage verifies viewer disabled controls; dedicated Playwright role E2E was not run in this pass. |
-| T-AUTH-SPACE-RBAC-010 | Done | Backend full tests, frontend build, frontend typecheck, and frontend unit tests passed. |
+| T-AUTH-SPACE-RBAC-009 | Done | `frontend/tests/e2e/auth-space-rbac.spec.ts` covers `VIEWER`, `KNOWLEDGE_MANAGER`, and `SPACE_OWNER`, including manipulated viewer write `403`. |
+| T-AUTH-SPACE-RBAC-010 | Done | `mvn verify`, frontend typecheck, frontend unit tests, frontend build, and full frontend E2E passed. |
 | T-AUTH-SPACE-RBAC-011 | Done | `git diff --check`, focused secret scan, and network/dependency scan were run; findings were existing mock/test fixtures or existing configured adapter URLs. |
 | T-AUTH-SPACE-RBAC-012 | Done | Traceability updated with implementation evidence and residual risks. |
 

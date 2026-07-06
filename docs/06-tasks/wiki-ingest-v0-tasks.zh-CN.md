@@ -49,7 +49,7 @@ Implementation 已完成验证。Auto Wiki ingest v0 的所有 Must tasks 已完
 | T-WIKI-INGEST-V0-002 | Complete | 已新增 DTOs 和 `WikiIngestController`；API contract tests 通过。 |
 | T-WIKI-INGEST-V0-003 | Complete | `WikiIngestService` 按 space、approval、traceability 和 safe statuses 过滤输入。 |
 | T-WIKI-INGEST-V0-004 | Complete | Deterministic candidate builder 写入安全 Markdown artifacts，并拒绝 `model-assisted`。 |
-| T-WIKI-INGEST-V0-005 | Complete | Service tests 覆盖 generated slug merge 与 trusted collision safe issue policy。 |
+| T-WIKI-INGEST-V0-005 | Complete | Service tests 覆盖 generated slug merge、space-distinct generated page IDs 与 trusted collision safe issue policy。 |
 | T-WIKI-INGEST-V0-006 | Complete | Run/log/issue evidence 已持久化，并通过 safe DTOs 返回。 |
 | T-WIKI-INGEST-V0-007 | Complete | Vue 请求 `includeDrafts=true` 并展示 generated review-required fields。 |
 | T-WIKI-INGEST-V0-008 | Complete | Backend unit/API tests 与 frontend type/unit/build/E2E checks 通过。 |

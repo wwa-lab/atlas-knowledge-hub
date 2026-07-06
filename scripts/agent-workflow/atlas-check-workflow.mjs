@@ -39,6 +39,8 @@ const STATIC_DIRS = [
 const STATIC_GLOBS = [
   /^docs\/00-context\/agent-goal-loop-.*\.md$/,
   /^docs\/00-context\/agent-execution-modes(?:\.zh-CN)?\.md$/,
+  /^docs\/00-context\/codex-goal-prompts\.zh-CN\.md$/,
+  /^docs\/00-context\/repo-status-roadmap\.zh-CN\.md$/,
 ];
 
 function parseArgs(argv) {

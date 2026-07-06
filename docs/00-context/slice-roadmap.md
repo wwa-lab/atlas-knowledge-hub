@@ -1,5 +1,7 @@
 # Slice Roadmap & Two-Command SDD Loop
 
+> Current canonical repository status: `docs/00-context/repo-status-roadmap.zh-CN.md`. This file keeps the slice backlog, SDD loop, and copy-paste prompt templates; it is no longer the only status entry point.
+
 Operator playbook for driving Atlas Knowledge Hub with agent coding tools (Claude Code, Codex, or any agent that can read this repo's skills).
 
 Each slice is two jobs:
@@ -62,7 +64,8 @@ This queue records the current SDD-driven roadmap state after the historical pro
 | Wave 1 / Wiki Foundation | `wiki-linkify-lint` | Deterministic Wiki link insertion, link metadata refresh, broken/orphan/source/thin-content linting, and review-facing warnings | ✅ Implementation verified as Wiki Foundation linkify/lint base; not review-gate, refresh/retract, connector, model-assisted generation, or production readiness | Closed for this maturity target |
 | Wave 2 / Runtime Integration | `real-office-parser-runtime` | Real internal converter/parser runtime integration behind existing adapter boundaries | ✅ Implemented and verified; default CI remains mock-safe | Configure approved local runtime smoke env vars when real binaries are available, or move to the next accepted slice |
 | Wave 3 / Runtime Readiness | `runtime-smoke-config-and-runbook` | Runtime smoke environment contract, safe evidence rules, and bilingual runbook for approved local `trinity-office` and `document-normalize` checks | ✅ Implemented as command-level runtime smoke readiness; default CI remains mock-safe and approved local pass evidence is skipped until commands are provided | Closed for this maturity target; does not represent production operations readiness |
-| Wave 3 / Trust And Governance | `auth-space-rbac` | Backend-enforced current-user context, local mock auth, future SSO/OIDC boundary, space membership, role matrix, protected API guards, and permission-aware UI contract | 🔨 Draft bilingual SDD generated; no product code implemented | Human review and acceptance of `docs/03-spec/auth-space-rbac-spec.md` plus `docs/06-tasks/auth-space-rbac-tasks.md` before implementation |
+| Wave 3 / Trust And Governance | `auth-space-rbac` | Backend-enforced current-user context, local mock auth, future SSO/OIDC boundary, space membership, role matrix, protected API guards, and permission-aware UI contract | ✅ Closeout verified for the accepted slice, including dedicated role E2E; not production SSO/OIDC readiness | Acceptance review of role semantics and `/api/spaces` list visibility; production SSO/OIDC remains future work |
+| Wave 3 / Trust And Governance | `audit-log-foundation` | Safe append-only audit event capture, RBAC-protected audit read APIs, and read-only audit UI for core governance operations | ✅ Prototype implemented after accepted SDD | Production retention/SIEM/export and historical graph-audit backfill remain out of scope |
 
 Slice boundaries are guidance, not law: split a slice if its task list would exceed a reviewable single implementation pass, and record the split in traceability. Adapter slices in Phase 3 can each be an independent generate-all unit so contracts stay small.
 

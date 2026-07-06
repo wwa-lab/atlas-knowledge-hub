@@ -135,7 +135,7 @@ Implement the wiki-ingest-v0 slice strictly against docs/03-spec/wiki-ingest-v0-
 | T-WIKI-INGEST-V0-002 | Added `CreateWikiIngestRunRequest`, `WikiIngestRunResponse`, `WikiIngestController`, and start/read API contract coverage. |
 | T-WIKI-INGEST-V0-003 | `WikiIngestService` selects only space-scoped approved, traceable chunks and records eligible/excluded counts. |
 | T-WIKI-INGEST-V0-004 | Deterministic candidate builder creates `TOPIC`, `AUTO_GENERATED`, `ON_SOURCE_CHANGE`, `REVIEW_REQUIRED` pages, writes generated Markdown through local artifact storage, aggregates confidence by minimum chunk confidence, and rejects `model-assisted` v0 mode. |
-| T-WIKI-INGEST-V0-005 | Space-scoped slug lookup merges generated candidates and records safe issues without overwriting trusted `PUBLISHED_FILE` pages. |
+| T-WIKI-INGEST-V0-005 | Space-scoped slug lookup merges generated candidates, generated page IDs include the normalized space slug to avoid cross-space ID collisions, and trusted `PUBLISHED_FILE` pages are preserved with safe issues. |
 | T-WIKI-INGEST-V0-006 | `wiki_generation_run`, `wiki_log_entry`, and `wiki_page_issue` evidence is persisted with safe summaries, page ids, issue ids, and counts. |
 | T-WIKI-INGEST-V0-007 | Vue fetches `GET /api/spaces/{spaceId}/wiki-pages?includeDrafts=true` for Wiki surfaces and can render generated `REVIEW_REQUIRED` / `AUTO_GENERATED` status without trusted claims. |
 | T-WIKI-INGEST-V0-008 | Backend service/API tests and frontend type/unit/build/E2E coverage were added or updated. |
@@ -149,9 +149,9 @@ Implement the wiki-ingest-v0 slice strictly against docs/03-spec/wiki-ingest-v0-
 | Backend focused unit tests | Passed | `cd backend && mvn -q -Dtest=WikiIngestServiceTest,ReviewPublishServiceTest -DfailIfNoTests=false test` |
 | Backend focused API contract tests | Passed | `cd backend && mvn -q -Dtest=WikiIngestApiContractIT,ReviewPublishApiContractIT -DfailIfNoTests=false test` |
 | Backend full unit tests | Passed | `cd backend && mvn -q test` |
-| Backend verify with PostgreSQL/Testcontainers | Passed | `cd backend && mvn -q verify`; Flyway applied through `V11__wiki_ingest_v0_run_counts.sql`. |
+| Backend verify with PostgreSQL/Testcontainers | Passed | `cd backend && mvn -q verify -DforkCount=1 -DreuseForks=true -Dmaven.compiler.useIncrementalCompilation=false`; Flyway applied through `V14__audit_log_foundation.sql` in the current worktree, including `V11__wiki_ingest_v0_run_counts.sql`. |
 | Frontend typecheck/unit/build | Passed | `cd frontend && npm run typecheck && npm run test && npm run build` |
-| Frontend E2E | Passed | `cd frontend && npm run e2e`; 13 Playwright tests passed. |
+| Frontend E2E | Passed | `cd frontend && npm run e2e`; 16 Playwright tests passed. |
 | Second-layer full-stack E2E | Passed | `npm run e2e:second-layer`; 2 Playwright tests passed against local backend/frontend/PostgreSQL. |
 | Diff hygiene | Passed | `git diff --check` returned no findings. |
 | Focused secret/private-path scan | Passed with reviewed false positive | New ingest-file diff scan returned no findings; broader scoped diff only matched the word `password` in a negative API contract assertion. |

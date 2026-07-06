@@ -49,7 +49,7 @@ Implement Auto Wiki ingest v0 as a review-required candidate generation flow fro
 | T-WIKI-INGEST-V0-002 | Complete | DTOs and `WikiIngestController` added; API contract tests pass. |
 | T-WIKI-INGEST-V0-003 | Complete | `WikiIngestService` filters by space, approval, traceability, and safe statuses. |
 | T-WIKI-INGEST-V0-004 | Complete | Deterministic candidate builder writes safe Markdown artifacts and rejects `model-assisted`. |
-| T-WIKI-INGEST-V0-005 | Complete | Generated slug merge and trusted collision safe issue policy covered by service tests. |
+| T-WIKI-INGEST-V0-005 | Complete | Generated slug merge, space-distinct generated page IDs, and trusted collision safe issue policy covered by service tests. |
 | T-WIKI-INGEST-V0-006 | Complete | Run/log/issue evidence persisted and returned through safe DTOs. |
 | T-WIKI-INGEST-V0-007 | Complete | Vue requests `includeDrafts=true` and renders generated review-required fields. |
 | T-WIKI-INGEST-V0-008 | Complete | Backend unit/API tests and frontend type/unit/build/E2E checks pass. |

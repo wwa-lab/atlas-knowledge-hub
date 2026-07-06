@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for user review. Do not implement until accepted.
+Accepted and implemented. User acceptance was recorded in chat on 2026-07-05 before product code changes.
 
 ## Source Architecture
 

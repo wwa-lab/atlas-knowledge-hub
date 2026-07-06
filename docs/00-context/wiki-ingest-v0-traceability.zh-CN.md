@@ -135,7 +135,7 @@ Auto Wiki ingest v0 implementation 已完成验证。该切片仍是 review-requ
 | T-WIKI-INGEST-V0-002 | 已新增 `CreateWikiIngestRunRequest`、`WikiIngestRunResponse`、`WikiIngestController` 和 start/read API contract coverage。 |
 | T-WIKI-INGEST-V0-003 | `WikiIngestService` 只选择 space-scoped approved、traceable chunks，并记录 eligible/excluded counts。 |
 | T-WIKI-INGEST-V0-004 | Deterministic candidate builder 创建 `TOPIC`、`AUTO_GENERATED`、`ON_SOURCE_CHANGE`、`REVIEW_REQUIRED` pages，通过 local artifact storage 写入 generated Markdown，以最低 chunk confidence 聚合 confidence，并拒绝 v0 `model-assisted` mode。 |
-| T-WIKI-INGEST-V0-005 | Space-scoped slug lookup 会合并 generated candidates，并在不覆盖 trusted `PUBLISHED_FILE` pages 的情况下记录 safe issues。 |
+| T-WIKI-INGEST-V0-005 | Space-scoped slug lookup 会合并 generated candidates；generated page ID 包含 normalized space slug，避免跨 space ID 冲突；trusted `PUBLISHED_FILE` pages 会保留并记录 safe issues。 |
 | T-WIKI-INGEST-V0-006 | 已用 safe summaries、page ids、issue ids 和 counts 持久化 `wiki_generation_run`、`wiki_log_entry` 与 `wiki_page_issue` evidence。 |
 | T-WIKI-INGEST-V0-007 | Vue 对 Wiki surfaces 请求 `GET /api/spaces/{spaceId}/wiki-pages?includeDrafts=true`，并可展示 generated `REVIEW_REQUIRED` / `AUTO_GENERATED` status，不作 trusted 声称。 |
 | T-WIKI-INGEST-V0-008 | 已新增或更新 backend service/API tests 与 frontend type/unit/build/E2E coverage。 |
@@ -149,9 +149,9 @@ Auto Wiki ingest v0 implementation 已完成验证。该切片仍是 review-requ
 | Backend focused unit tests | Passed | `cd backend && mvn -q -Dtest=WikiIngestServiceTest,ReviewPublishServiceTest -DfailIfNoTests=false test` |
 | Backend focused API contract tests | Passed | `cd backend && mvn -q -Dtest=WikiIngestApiContractIT,ReviewPublishApiContractIT -DfailIfNoTests=false test` |
 | Backend full unit tests | Passed | `cd backend && mvn -q test` |
-| Backend verify with PostgreSQL/Testcontainers | Passed | `cd backend && mvn -q verify`；Flyway 已应用到 `V11__wiki_ingest_v0_run_counts.sql`。 |
+| Backend verify with PostgreSQL/Testcontainers | Passed | `cd backend && mvn -q verify -DforkCount=1 -DreuseForks=true -Dmaven.compiler.useIncrementalCompilation=false`；当前 worktree Flyway 已应用到 `V14__audit_log_foundation.sql`，包含 `V11__wiki_ingest_v0_run_counts.sql`。 |
 | Frontend typecheck/unit/build | Passed | `cd frontend && npm run typecheck && npm run test && npm run build` |
-| Frontend E2E | Passed | `cd frontend && npm run e2e`；13 个 Playwright tests passed。 |
+| Frontend E2E | Passed | `cd frontend && npm run e2e`；16 个 Playwright tests passed。 |
 | Second-layer full-stack E2E | Passed | `npm run e2e:second-layer`；本地 backend/frontend/PostgreSQL 路径 2 个 Playwright tests passed。 |
 | Diff hygiene | Passed | `git diff --check` 无发现。 |
 | Focused secret/private-path scan | Passed with reviewed false positive | 新增 ingest 文件 diff scan 无发现；更宽的 scoped diff 只命中 negative API contract assertion 中的 `password` 字面量。 |
