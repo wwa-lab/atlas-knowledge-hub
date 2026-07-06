@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.atlas.metadata.controller.ReviewPublishController;
 import com.atlas.metadata.config.AtlasAuthInterceptor;
+import com.atlas.metadata.config.AtlasAuthWebConfig;
 import com.atlas.metadata.dto.CreateWikiPublishRequest;
 import com.atlas.metadata.dto.ReviewQueueItemResponse;
 import com.atlas.metadata.dto.ReviewQueueItemResponse.ReviewQueueType;
@@ -47,7 +48,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(
     controllers = ReviewPublishController.class,
     excludeFilters =
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AtlasAuthInterceptor.class))
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class}))
 class ReviewPublishApiContractIT {
 
   @Autowired private MockMvc mockMvc;

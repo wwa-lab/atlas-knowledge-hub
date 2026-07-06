@@ -9,6 +9,7 @@ POSTGRES_IMAGE="${ATLAS_E2E_POSTGRES_IMAGE:-postgres:16}"
 POSTGRES_PORT="${ATLAS_E2E_POSTGRES_PORT:-55432}"
 BACKEND_PORT="${ATLAS_E2E_BACKEND_PORT:-18080}"
 BACKEND_URL="http://127.0.0.1:${BACKEND_PORT}"
+MOCK_USER="${ATLAS_E2E_MOCK_USER:-frontend-demo}"
 DB_NAME="${ATLAS_E2E_DB_NAME:-atlas_knowledge_hub}"
 DB_USER="${ATLAS_E2E_DB_USER:-atlas_user}"
 DB_PASSWORD="${ATLAS_E2E_DB_PASSWORD:-change-me-local-only}"
@@ -35,6 +36,17 @@ require_command() {
   fi
 }
 
+clean_path() {
+  local path="$1"
+  for _ in {1..5}; do
+    if rm -rf "${path}" 2>/dev/null; then
+      return 0
+    fi
+    sleep 1
+  done
+  rm -rf "${path}"
+}
+
 require_command docker
 require_command mvn
 require_command npm
@@ -50,7 +62,9 @@ echo "Preparing second-layer local full-stack E2E state..."
 bash scripts/e2e/check-required-config.sh mock
 bash scripts/e2e/reset-local-state.sh
 bash scripts/e2e/seed-sample-data.sh
-rm -rf frontend/playwright-report frontend/test-results backend/target
+clean_path frontend/playwright-report
+clean_path frontend/test-results
+clean_path backend/target
 mkdir -p "$(dirname "${BACKEND_LOG}")"
 
 echo "Starting local PostgreSQL container ${POSTGRES_CONTAINER} on port ${POSTGRES_PORT}..."
@@ -70,6 +84,12 @@ for _ in {1..60}; do
 done
 docker exec "${POSTGRES_CONTAINER}" pg_isready -U "${DB_USER}" -d "${DB_NAME}" >/dev/null
 
+echo "Packaging Spring Boot backend..."
+(
+  cd backend
+  mvn -q -DskipTests package
+) >"${BACKEND_LOG}" 2>&1
+
 echo "Starting Spring Boot backend on ${BACKEND_URL}..."
 (
   cd backend
@@ -77,14 +97,15 @@ echo "Starting Spring Boot backend on ${BACKEND_URL}..."
     ATLAS_DB_USERNAME="${DB_USER}" \
     ATLAS_DB_PASSWORD="${DB_PASSWORD}" \
     ATLAS_DB_SCHEMA="atlas" \
-    mvn spring-boot:run \
-      -Dspring-boot.run.arguments="--server.port=${BACKEND_PORT} --atlas.cors.allowed-origins=http://127.0.0.1:4173,http://localhost:4173"
-) >"${BACKEND_LOG}" 2>&1 &
+    java -jar target/metadata-api-0.1.0-SNAPSHOT.jar \
+      --server.port="${BACKEND_PORT}" \
+      --atlas.cors.allowed-origins="http://127.0.0.1:4173,http://localhost:4173"
+) >>"${BACKEND_LOG}" 2>&1 &
 backend_pid="$!"
 
 echo "Waiting for backend health via /api/spaces..."
 for _ in {1..120}; do
-  if curl -fsS "${BACKEND_URL}/api/spaces" >/dev/null 2>&1; then
+  if curl -fsS -H "X-Atlas-User: ${MOCK_USER}" "${BACKEND_URL}/api/spaces" >/dev/null 2>&1; then
     break
   fi
   if ! kill -0 "${backend_pid}" 2>/dev/null; then
@@ -94,13 +115,14 @@ for _ in {1..120}; do
   fi
   sleep 1
 done
-curl -fsS "${BACKEND_URL}/api/spaces" >/dev/null
+curl -fsS -H "X-Atlas-User: ${MOCK_USER}" "${BACKEND_URL}/api/spaces" >/dev/null
 
 echo "Building frontend with live local backend API base..."
-VITE_ATLAS_API_BASE_URL="${BACKEND_URL}" npm --prefix frontend run build
+VITE_ATLAS_API_BASE_URL="${BACKEND_URL}" VITE_ATLAS_MOCK_USER="${MOCK_USER}" npm --prefix frontend run build
 
 echo "Running second-layer Playwright E2E..."
 ATLAS_API_BASE_URL="${BACKEND_URL}" VITE_ATLAS_API_BASE_URL="${BACKEND_URL}" \
+  VITE_ATLAS_MOCK_USER="${MOCK_USER}" \
   npm --prefix frontend run e2e:second-layer
 
 echo "Checking diff whitespace hygiene..."

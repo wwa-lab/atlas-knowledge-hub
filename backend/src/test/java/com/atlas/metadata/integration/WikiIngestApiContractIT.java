@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.atlas.metadata.config.AtlasAuthInterceptor;
+import com.atlas.metadata.config.AtlasAuthWebConfig;
 import com.atlas.metadata.controller.WikiIngestController;
 import com.atlas.metadata.dto.CreateWikiIngestRunRequest;
 import com.atlas.metadata.dto.WikiIngestRunResponse;
@@ -30,7 +31,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(
     controllers = WikiIngestController.class,
     excludeFilters =
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AtlasAuthInterceptor.class))
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class}))
 class WikiIngestApiContractIT {
 
   @Autowired private MockMvc mockMvc;
