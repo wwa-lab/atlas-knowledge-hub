@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,18 +48,23 @@ public class SpaceMembershipController {
         .body(ApiEnvelope.ok(membershipService.create(spaceId, request, actor)));
   }
 
-  @PutMapping("/{userId}")
+  @PatchMapping("/{membershipId}")
   public ApiEnvelope<SpaceMembershipResponse> update(
       @PathVariable String spaceId,
-      @PathVariable String userId,
-      @Valid @RequestBody UpdateSpaceMembershipRequest request) {
-    return ApiEnvelope.ok(membershipService.update(spaceId, userId, request));
+      @PathVariable String membershipId,
+      @Valid @RequestBody UpdateSpaceMembershipRequest request,
+      HttpServletRequest httpRequest) {
+    CurrentUserContext actor =
+        (CurrentUserContext) httpRequest.getAttribute(CurrentUserService.CURRENT_USER_ATTRIBUTE);
+    return ApiEnvelope.ok(membershipService.update(spaceId, membershipId, request, actor));
   }
 
-  @DeleteMapping("/{userId}")
+  @DeleteMapping("/{membershipId}")
   public ResponseEntity<ApiEnvelope<Void>> remove(
-      @PathVariable String spaceId, @PathVariable String userId) {
-    membershipService.remove(spaceId, userId);
+      @PathVariable String spaceId, @PathVariable String membershipId, HttpServletRequest httpRequest) {
+    CurrentUserContext actor =
+        (CurrentUserContext) httpRequest.getAttribute(CurrentUserService.CURRENT_USER_ATTRIBUTE);
+    membershipService.remove(spaceId, membershipId, actor);
     return ResponseEntity.ok(ApiEnvelope.ok(null));
   }
 }

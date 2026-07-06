@@ -256,7 +256,7 @@ public class WikiIngestService {
       Candidate candidate,
       List<String> createdPageIds,
       OffsetDateTime timestamp) {
-    String pageId = "wiki-auto-" + candidate.slug();
+    String pageId = generatedPageId(candidate.spaceId(), candidate.slug());
     if (!options.dryRun()) {
       String markdownPath = writeMarkdown(candidate.spaceId(), candidate);
       WikiPage page =
@@ -274,6 +274,10 @@ public class WikiIngestService {
       wikiPageRepository.save(page);
     }
     createdPageIds.add(pageId);
+  }
+
+  private String generatedPageId(String spaceId, String slug) {
+    return "wiki-auto-" + slugFrom(spaceId) + "-" + slug;
   }
 
   private Selection selectChunks(String spaceId, List<String> sourceFileIds) {

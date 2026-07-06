@@ -27,6 +27,9 @@ import com.atlas.metadata.enums.GraphEdgeType;
 import com.atlas.metadata.enums.GraphNodeType;
 import com.atlas.metadata.enums.GraphProjectionItemStatus;
 import com.atlas.metadata.enums.GraphProjectionStatus;
+import com.atlas.metadata.enums.AuditCategory;
+import com.atlas.metadata.enums.AuditResult;
+import com.atlas.metadata.enums.AuditSeverity;
 import com.atlas.metadata.enums.ReviewAction;
 import com.atlas.metadata.enums.ReviewStatus;
 import com.atlas.metadata.exception.NotFoundException;
@@ -79,6 +82,7 @@ public class GraphService {
   private final GraphAuditRecordRepository graphAuditRecordRepository;
   private final ReviewRecordRepository reviewRecordRepository;
   private final GraphProjectionAdapter projectionAdapter;
+  private final AuditLogService auditLogService;
   private final Clock clock;
 
   @Autowired
@@ -93,7 +97,8 @@ public class GraphService {
       GraphProjectionItemRepository graphProjectionItemRepository,
       GraphAuditRecordRepository graphAuditRecordRepository,
       ReviewRecordRepository reviewRecordRepository,
-      GraphProjectionAdapter projectionAdapter) {
+      GraphProjectionAdapter projectionAdapter,
+      AuditLogService auditLogService) {
     this(
         spaceRepository,
         batchRepository,
@@ -106,6 +111,7 @@ public class GraphService {
         graphAuditRecordRepository,
         reviewRecordRepository,
         projectionAdapter,
+        auditLogService,
         Clock.systemUTC());
   }
 
@@ -133,6 +139,7 @@ public class GraphService {
         graphAuditRecordRepository,
         null,
         projectionAdapter,
+        null,
         clock);
   }
 
@@ -148,6 +155,7 @@ public class GraphService {
       GraphAuditRecordRepository graphAuditRecordRepository,
       ReviewRecordRepository reviewRecordRepository,
       GraphProjectionAdapter projectionAdapter,
+      AuditLogService auditLogService,
       Clock clock) {
     this.spaceRepository = spaceRepository;
     this.batchRepository = batchRepository;
@@ -160,6 +168,7 @@ public class GraphService {
     this.graphAuditRecordRepository = graphAuditRecordRepository;
     this.reviewRecordRepository = reviewRecordRepository;
     this.projectionAdapter = projectionAdapter;
+    this.auditLogService = auditLogService;
     this.clock = clock;
   }
 
@@ -298,6 +307,19 @@ public class GraphService {
             run.getId(),
             "Created graph projection run with approved-only evidence.",
             OffsetDateTime.now(clock)));
+    audit(
+        "GRAPH_PROJECTION_RUN",
+        spaceId,
+        "system",
+        AuditResult.SUCCEEDED,
+        AuditSeverity.NOTICE,
+        "projection_run",
+        run.getId(),
+        "Created graph projection run with approved-only evidence.",
+        Map.of(
+            "status", run.getStatus().name(),
+            "createdCount", run.getCreatedCount(),
+            "skippedCount", run.getSkippedCount()));
     return projectionRunResponse(run);
   }
 
@@ -425,6 +447,16 @@ public class GraphService {
             edgeId,
             "Graph edge review action recorded.",
             now));
+    audit(
+        "GRAPH_EDGE_REVIEW",
+        spaceId,
+        record.getReviewer(),
+        AuditResult.SUCCEEDED,
+        AuditSeverity.NOTICE,
+        "graph_edge",
+        edgeId,
+        "Graph edge review action recorded.",
+        Map.of("reviewAction", action.name(), "reviewStatus", edge.getReviewStatus().name()));
     return ReviewMapper.toResponse(saved);
   }
 
@@ -444,6 +476,45 @@ public class GraphService {
             targetId,
             reasonCode,
             OffsetDateTime.now(clock)));
+    audit(
+        "GRAPH_ACCESS_DENIED",
+        spaceId,
+        actor == null || actor.isBlank() ? "anonymous" : actor,
+        AuditResult.DENIED,
+        AuditSeverity.SECURITY,
+        "graph_access",
+        targetId,
+        reasonCode,
+        Map.of("reasonCode", reasonCode == null ? "DENIED" : reasonCode));
+  }
+
+  private void audit(
+      String action,
+      String spaceId,
+      String actor,
+      AuditResult result,
+      AuditSeverity severity,
+      String targetType,
+      String targetId,
+      String summary,
+      Map<String, Object> metadata) {
+    if (auditLogService == null) {
+      return;
+    }
+    auditLogService.recordIfEnabled(
+        new AuditLogService.CreateAuditEventCommand(
+            actor,
+            actor,
+            action,
+            AuditCategory.GRAPH,
+            result,
+            severity,
+            spaceId,
+            targetType,
+            targetId,
+            null,
+            summary,
+            metadata));
   }
 
   private void validateSpace(String spaceId) {

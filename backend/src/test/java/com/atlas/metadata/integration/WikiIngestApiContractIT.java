@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.atlas.metadata.config.AtlasAuthInterceptor;
 import com.atlas.metadata.controller.WikiIngestController;
 import com.atlas.metadata.dto.CreateWikiIngestRunRequest;
 import com.atlas.metadata.dto.WikiIngestRunResponse;
@@ -20,11 +21,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** API contract tests for deterministic Auto Wiki ingest v0. */
-@WebMvcTest(WikiIngestController.class)
+@WebMvcTest(
+    controllers = WikiIngestController.class,
+    excludeFilters =
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AtlasAuthInterceptor.class))
 class WikiIngestApiContractIT {
 
   @Autowired private MockMvc mockMvc;
@@ -53,7 +59,7 @@ class WikiIngestApiContractIT {
         .andExpect(jsonPath("$.data.runId").value("wiki-ingest-run-001"))
         .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
         .andExpect(jsonPath("$.data.mode").value("deterministic"))
-        .andExpect(jsonPath("$.data.createdPageIds[0]").value("wiki-auto-file-001"))
+        .andExpect(jsonPath("$.data.createdPageIds[0]").value("wiki-auto-ibm-i-modernization-file-001"))
         .andExpect(jsonPath("$.data.eligibleChunkCount").value(1))
         .andExpect(jsonPath("$.data.excludedChunkCount").value(2))
         .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
@@ -79,7 +85,7 @@ class WikiIngestApiContractIT {
         "ibm-i-modernization",
         "SUCCEEDED",
         "deterministic",
-        List.of("wiki-auto-file-001"),
+        List.of("wiki-auto-ibm-i-modernization-file-001"),
         List.of(),
         List.of(),
         1,

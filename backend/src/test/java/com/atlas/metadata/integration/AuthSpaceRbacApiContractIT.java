@@ -4,14 +4,17 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 class AuthSpaceRbacApiContractIT extends AbstractPostgresIT {
 
@@ -74,10 +77,54 @@ class AuthSpaceRbacApiContractIT extends AbstractPostgresIT {
   }
 
   @Test
+  void ownerCanCreateAndPatchMembershipByMembershipId() throws Exception {
+    MvcResult createResult =
+        mockMvc
+            .perform(
+                post("/api/spaces/ibm-i-modernization/members")
+                    .header("X-Atlas-User", "mock-owner")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "email": "contract-reviewer@example.test",
+                          "displayName": "Contract Reviewer",
+                          "role": "VIEWER",
+                          "status": "INVITED"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data.id").exists())
+            .andExpect(jsonPath("$.data.userId").exists())
+            .andExpect(jsonPath("$.data.email", is("contract-reviewer@example.test")))
+            .andExpect(jsonPath("$.data.role", is("VIEWER")))
+            .andExpect(jsonPath("$.data.status", is("INVITED")))
+            .andReturn();
+    String membershipId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
+
+    mockMvc
+        .perform(
+            patch("/api/spaces/ibm-i-modernization/members/" + membershipId)
+                .header("X-Atlas-User", "mock-owner")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "role": "EDITOR",
+                      "status": "ACTIVE"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.id", is(membershipId)))
+        .andExpect(jsonPath("$.data.role", is("EDITOR")))
+        .andExpect(jsonPath("$.data.status", is("ACTIVE")));
+  }
+
+  @Test
   void lastSpaceOwnerCannotBeRemoved() throws Exception {
     mockMvc
         .perform(
-            delete("/api/spaces/claims-knowledge-base/members/mock-owner")
+            delete("/api/spaces/claims-knowledge-base/members/membership-owner-claims")
                 .header("X-Atlas-User", "mock-owner"))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.error.code", is("CONFLICT")));
@@ -87,7 +134,7 @@ class AuthSpaceRbacApiContractIT extends AbstractPostgresIT {
   void lastSpaceOwnerCannotBeDemoted() throws Exception {
     mockMvc
         .perform(
-            put("/api/spaces/claims-knowledge-base/members/mock-owner")
+            patch("/api/spaces/claims-knowledge-base/members/membership-owner-claims")
                 .header("X-Atlas-User", "mock-owner")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

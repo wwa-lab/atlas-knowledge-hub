@@ -16,6 +16,9 @@ import com.atlas.metadata.dto.VectorQueryResponse;
 import com.atlas.metadata.dto.mapping.AskMapper;
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
+import com.atlas.metadata.enums.AuditCategory;
+import com.atlas.metadata.enums.AuditResult;
+import com.atlas.metadata.enums.AuditSeverity;
 import com.atlas.metadata.enums.ModelOperation;
 import com.atlas.metadata.enums.ModelRunStatus;
 import com.atlas.metadata.enums.ModelSourceReferenceType;
@@ -67,6 +70,7 @@ public class AskService {
   private final AskRunRepository askRunRepository;
   private final AskEvidenceRepository askEvidenceRepository;
   private final AskSummaryCalculator summaryCalculator;
+  private final AuditLogService auditLogService;
   private final Clock clock;
 
   /** Creates the trusted ask service. */
@@ -79,7 +83,8 @@ public class AskService {
       ModelService modelService,
       AskRunRepository askRunRepository,
       AskEvidenceRepository askEvidenceRepository,
-      AskSummaryCalculator summaryCalculator) {
+      AskSummaryCalculator summaryCalculator,
+      AuditLogService auditLogService) {
     this(
         spaceRepository,
         batchRepository,
@@ -89,6 +94,7 @@ public class AskService {
         askRunRepository,
         askEvidenceRepository,
         summaryCalculator,
+        auditLogService,
         Clock.systemUTC());
   }
 
@@ -102,6 +108,30 @@ public class AskService {
       AskEvidenceRepository askEvidenceRepository,
       AskSummaryCalculator summaryCalculator,
       Clock clock) {
+    this(
+        spaceRepository,
+        batchRepository,
+        fileItemRepository,
+        vectorService,
+        modelService,
+        askRunRepository,
+        askEvidenceRepository,
+        summaryCalculator,
+        null,
+        clock);
+  }
+
+  AskService(
+      SpaceRepository spaceRepository,
+      BatchRepository batchRepository,
+      FileItemRepository fileItemRepository,
+      VectorService vectorService,
+      ModelService modelService,
+      AskRunRepository askRunRepository,
+      AskEvidenceRepository askEvidenceRepository,
+      AskSummaryCalculator summaryCalculator,
+      AuditLogService auditLogService,
+      Clock clock) {
     this.spaceRepository = spaceRepository;
     this.batchRepository = batchRepository;
     this.fileItemRepository = fileItemRepository;
@@ -110,6 +140,7 @@ public class AskService {
     this.askRunRepository = askRunRepository;
     this.askEvidenceRepository = askEvidenceRepository;
     this.summaryCalculator = summaryCalculator;
+    this.auditLogService = auditLogService;
     this.clock = clock;
   }
 
@@ -152,6 +183,7 @@ public class AskService {
             null,
             "No eligible evidence was found for the trusted ask request.",
             OffsetDateTime.now(clock));
+        auditAsk(run, validated, AuditResult.SAFE_NOT_FOUND, AuditSeverity.NOTICE, 0);
         return response(run);
       }
 
@@ -171,6 +203,7 @@ public class AskService {
           modelRun.runId(),
           safeModelMessage(modelRun),
           OffsetDateTime.now(clock));
+      auditAsk(run, validated, AuditResult.SUCCEEDED, AuditSeverity.INFO, evidence.size());
       return response(run);
     } catch (RuntimeException ex) {
       run.complete(
@@ -180,8 +213,38 @@ public class AskService {
           null,
           sanitizeFailure(ex.getMessage()),
           OffsetDateTime.now(clock));
+      auditAsk(run, validated, AuditResult.FAILED, AuditSeverity.WARNING, 0);
       return response(run);
     }
+  }
+
+  private void auditAsk(
+      AskRun run,
+      ValidatedAsk validated,
+      AuditResult result,
+      AuditSeverity severity,
+      int evidenceCount) {
+    if (auditLogService == null) {
+      return;
+    }
+    auditLogService.recordIfEnabled(
+        new AuditLogService.CreateAuditEventCommand(
+            validated.requestedBy(),
+            validated.requestedBy(),
+            "TRUSTED_ASK_RUN",
+            AuditCategory.ASK,
+            result,
+            severity,
+            run.getSpaceId(),
+            "ask_run",
+            run.getId(),
+            null,
+            run.getSafeMessage() == null ? "Trusted Ask run completed." : run.getSafeMessage(),
+            Map.of(
+                "status", run.getStatus().name(),
+                "reviewPolicy", validated.reviewPolicy().name(),
+                "mode", validated.mode(),
+                "evidenceCount", evidenceCount)));
   }
 
   /** Gets one trusted ask run by id. */

@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.atlas.metadata.domain.Space;
 import com.atlas.metadata.enums.IndexStrategy;
 import com.atlas.metadata.enums.SpaceType;
-import com.atlas.metadata.repository.GraphAuditRecordRepository;
 import com.atlas.metadata.repository.SpaceRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.time.OffsetDateTime;
@@ -30,29 +29,22 @@ class KnowledgeGraphApiContractIT extends AbstractPostgresIT {
   private static final String GRAPH_SPACE_ID = "graph-contract-space";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private GraphAuditRecordRepository graphAuditRecordRepository;
   @Autowired private SpaceRepository spaceRepository;
 
   @Test
-  void graphEndpointsRequireAuthenticationAndAuthorization() throws Exception {
+  void graphEndpointsRequireAuthenticationAndAllowAuthorizedViewerReads() throws Exception {
     mockMvc
-        .perform(get("/api/spaces/ibm-i-modernization/graph"))
+        .perform(get("/api/spaces/ibm-i-modernization/graph").header("X-Atlas-User", "__missing__"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.success").value(false))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
     mockMvc
         .perform(get("/api/spaces/ibm-i-modernization/graph").header("X-Atlas-User", "viewer"))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.spaceId").value("ibm-i-modernization"))
         .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))));
-
-    assertThat(
-            graphAuditRecordRepository
-                .findByTargetTypeAndTargetIdOrderByCreatedAtAsc(
-                    "graph_access", "/api/spaces/ibm-i-modernization/graph"))
-        .extracting(record -> record.getAction())
-        .contains("ACCESS_DENIED");
   }
 
   @Test

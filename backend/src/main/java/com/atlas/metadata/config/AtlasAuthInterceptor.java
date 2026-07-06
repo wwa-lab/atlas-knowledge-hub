@@ -4,6 +4,7 @@ import com.atlas.metadata.dto.ApiEnvelope;
 import com.atlas.metadata.dto.ErrorBody;
 import com.atlas.metadata.service.AuthDecision;
 import com.atlas.metadata.service.AuthRequirement;
+import com.atlas.metadata.service.AuditLogService;
 import com.atlas.metadata.service.AuthorizationPathPolicy;
 import com.atlas.metadata.service.AuthorizationService;
 import com.atlas.metadata.service.CurrentUserContext;
@@ -25,16 +26,19 @@ public class AtlasAuthInterceptor implements HandlerInterceptor {
   private final CurrentUserService currentUserService;
   private final AuthorizationPathPolicy pathPolicy;
   private final AuthorizationService authorizationService;
+  private final AuditLogService auditLogService;
   private final ObjectMapper objectMapper;
 
   public AtlasAuthInterceptor(
       CurrentUserService currentUserService,
       AuthorizationPathPolicy pathPolicy,
       AuthorizationService authorizationService,
+      AuditLogService auditLogService,
       ObjectMapper objectMapper) {
     this.currentUserService = currentUserService;
     this.pathPolicy = pathPolicy;
     this.authorizationService = authorizationService;
+    this.auditLogService = auditLogService;
     this.objectMapper = objectMapper;
   }
 
@@ -50,19 +54,36 @@ public class AtlasAuthInterceptor implements HandlerInterceptor {
     }
     Optional<CurrentUserContext> context = currentUserService.resolve(request);
     if (context.isEmpty()) {
-      write(response, request, AuthDecision.unauthenticated());
+      AuthDecision decision = AuthDecision.unauthenticated();
+      auditDenied(null, requirement.get(), decision, request);
+      write(response, request, decision);
       return false;
     }
     if (currentUserService.isDisabled(context.get())) {
-      write(response, request, AuthDecision.forbidden());
+      AuthDecision decision = AuthDecision.forbidden();
+      auditDenied(context.get(), requirement.get(), decision, request);
+      write(response, request, decision);
       return false;
     }
     AuthDecision decision = authorizationService.evaluate(context.get(), requirement.get());
     if (!decision.result().name().equals("ALLOWED")) {
+      auditDenied(context.get(), requirement.get(), decision, request);
       write(response, request, decision);
       return false;
     }
     return true;
+  }
+
+  private void auditDenied(
+      CurrentUserContext context,
+      AuthRequirement requirement,
+      AuthDecision decision,
+      HttpServletRequest request) {
+    try {
+      auditLogService.recordAuthorizationDenied(context, requirement, decision, request);
+    } catch (RuntimeException ignored) {
+      // Authorization responses must remain user-safe even if audit persistence is unavailable.
+    }
   }
 
   private void write(HttpServletResponse response, HttpServletRequest request, AuthDecision decision)

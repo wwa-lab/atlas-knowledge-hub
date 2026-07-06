@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.atlas.metadata.config.AtlasAuthInterceptor;
 import com.atlas.metadata.controller.WikiLinkifyLintController;
 import com.atlas.metadata.dto.CreateWikiLinkifyLintRunRequest;
 import com.atlas.metadata.dto.WikiLinkifyLintRunResponse;
@@ -19,11 +20,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** API contract tests for deterministic Wiki linkify/lint runs. */
-@WebMvcTest(WikiLinkifyLintController.class)
+@WebMvcTest(
+    controllers = WikiLinkifyLintController.class,
+    excludeFilters =
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AtlasAuthInterceptor.class))
 class WikiLinkifyLintApiContractIT {
 
   @Autowired private MockMvc mockMvc;

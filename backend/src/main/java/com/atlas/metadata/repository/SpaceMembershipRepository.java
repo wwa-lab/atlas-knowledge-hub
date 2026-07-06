@@ -19,6 +19,9 @@ public interface SpaceMembershipRepository extends JpaRepository<SpaceMembership
   /** Finds one user's membership in a space. */
   Optional<SpaceMembership> findBySpaceIdAndUserId(String spaceId, String userId);
 
+  /** Finds one membership by id inside a space. */
+  Optional<SpaceMembership> findBySpaceIdAndId(String spaceId, String id);
+
   /** Counts active memberships for a role in one space. */
   long countBySpaceIdAndRoleAndStatus(String spaceId, AtlasRole role, MembershipStatus status);
 }

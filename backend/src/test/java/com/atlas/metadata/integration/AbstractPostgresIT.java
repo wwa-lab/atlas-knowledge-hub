@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -20,7 +21,11 @@ import org.testcontainers.utility.DockerImageName;
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Testcontainers
+@Import(AbstractPostgresIT.MockAtlasAuthConfiguration.class)
 abstract class AbstractPostgresIT {
+
+  private static final String TEST_USER_HEADER = "X-Atlas-User";
+  private static final String DEFAULT_TEST_USER = "mock-owner";
 
   private static final PostgreSQLContainer<?> POSTGRES =
       new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
@@ -46,7 +51,7 @@ abstract class AbstractPostgresIT {
     MockMvcBuilderCustomizer atlasDefaultAuthHeader() {
       return builder ->
           builder.defaultRequest(
-              MockMvcRequestBuilders.get("/").header("X-Atlas-User", "mock-owner"));
+              MockMvcRequestBuilders.get("/").header(TEST_USER_HEADER, DEFAULT_TEST_USER));
     }
   }
 }

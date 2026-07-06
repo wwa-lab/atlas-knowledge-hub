@@ -138,6 +138,9 @@ public class AuthorizationPathPolicy {
       return AuthRequirement.space(AtlasCapability.MEMBER_MANAGE, spaceId, false);
     }
     if ("GET".equals(method)) {
+      if (segments.size() >= 3 && "audit-events".equals(segments.get(2))) {
+        return AuthRequirement.space(AtlasCapability.GOVERNANCE_READ, spaceId, false);
+      }
       if (segments.size() >= 3 && "wiki-page-issues".equals(segments.get(2))) {
         return AuthRequirement.space(AtlasCapability.GOVERNANCE_READ, spaceId, false);
       }

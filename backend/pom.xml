@@ -88,11 +88,17 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>com.atlas.metadata.MetadataApiApplication</mainClass>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.2</version>
+        <configuration>
+          <reuseForks>false</reuseForks>
+        </configuration>
         <executions>
           <execution>
             <goals>

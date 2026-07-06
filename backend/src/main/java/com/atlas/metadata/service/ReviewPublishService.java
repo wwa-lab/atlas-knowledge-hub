@@ -16,6 +16,9 @@ import com.atlas.metadata.dto.WikiPageResponse;
 import com.atlas.metadata.dto.WikiPageIssueResponse;
 import com.atlas.metadata.dto.mapping.WikiPageMapper;
 import com.atlas.metadata.enums.FileStatus;
+import com.atlas.metadata.enums.AuditCategory;
+import com.atlas.metadata.enums.AuditResult;
+import com.atlas.metadata.enums.AuditSeverity;
 import com.atlas.metadata.enums.ReviewStatus;
 import com.atlas.metadata.exception.ConflictException;
 import com.atlas.metadata.exception.NotFoundException;
@@ -55,6 +58,7 @@ public class ReviewPublishService {
   private final WikiGenerationRunRepository wikiGenerationRunRepository;
   private final WikiLogEntryRepository wikiLogEntryRepository;
   private final WikiPageIssueRepository wikiPageIssueRepository;
+  private final AuditLogService auditLogService;
   private final Clock clock;
 
   /** Creates the service. */
@@ -68,7 +72,8 @@ public class ReviewPublishService {
       WikiFolderRepository wikiFolderRepository,
       WikiGenerationRunRepository wikiGenerationRunRepository,
       WikiLogEntryRepository wikiLogEntryRepository,
-      WikiPageIssueRepository wikiPageIssueRepository) {
+      WikiPageIssueRepository wikiPageIssueRepository,
+      AuditLogService auditLogService) {
     this(
         spaceService,
         batchRepository,
@@ -79,6 +84,7 @@ public class ReviewPublishService {
         wikiGenerationRunRepository,
         wikiLogEntryRepository,
         wikiPageIssueRepository,
+        auditLogService,
         Clock.systemUTC());
   }
 
@@ -93,6 +99,32 @@ public class ReviewPublishService {
       WikiLogEntryRepository wikiLogEntryRepository,
       WikiPageIssueRepository wikiPageIssueRepository,
       Clock clock) {
+    this(
+        spaceService,
+        batchRepository,
+        fileItemRepository,
+        sourceChunkRepository,
+        wikiPageRepository,
+        wikiFolderRepository,
+        wikiGenerationRunRepository,
+        wikiLogEntryRepository,
+        wikiPageIssueRepository,
+        null,
+        clock);
+  }
+
+  ReviewPublishService(
+      SpaceService spaceService,
+      BatchRepository batchRepository,
+      FileItemRepository fileItemRepository,
+      SourceChunkRepository sourceChunkRepository,
+      WikiPageRepository wikiPageRepository,
+      WikiFolderRepository wikiFolderRepository,
+      WikiGenerationRunRepository wikiGenerationRunRepository,
+      WikiLogEntryRepository wikiLogEntryRepository,
+      WikiPageIssueRepository wikiPageIssueRepository,
+      AuditLogService auditLogService,
+      Clock clock) {
     this.spaceService = spaceService;
     this.batchRepository = batchRepository;
     this.fileItemRepository = fileItemRepository;
@@ -102,6 +134,7 @@ public class ReviewPublishService {
     this.wikiGenerationRunRepository = wikiGenerationRunRepository;
     this.wikiLogEntryRepository = wikiLogEntryRepository;
     this.wikiPageIssueRepository = wikiPageIssueRepository;
+    this.auditLogService = auditLogService;
     this.clock = clock;
   }
 
@@ -173,7 +206,32 @@ public class ReviewPublishService {
                         file.getConfidence(),
                         request.owner(),
                         OffsetDateTime.now(clock)));
-    return WikiPageMapper.toResponse(wikiPageRepository.save(page));
+    WikiPage saved = wikiPageRepository.save(page);
+    auditPublish(batch.getSpaceId(), request.owner(), saved, chunks.size());
+    return WikiPageMapper.toResponse(saved);
+  }
+
+  private void auditPublish(String spaceId, String actor, WikiPage page, int chunkCount) {
+    if (auditLogService == null) {
+      return;
+    }
+    auditLogService.recordIfEnabled(
+        new AuditLogService.CreateAuditEventCommand(
+            actor,
+            actor,
+            "WIKI_PAGE_PUBLISHED",
+            AuditCategory.PUBLISH,
+            AuditResult.SUCCEEDED,
+            AuditSeverity.NOTICE,
+            spaceId,
+            "wiki_page",
+            page.getId(),
+            null,
+            "Published approved file to Wiki metadata.",
+            Map.of(
+                "pageType", page.getPageType(),
+                "reviewStatus", page.getReviewStatus().name(),
+                "sourceChunkCount", chunkCount)));
   }
 
   /** Lists published Wiki pages for one Knowledge Space. */

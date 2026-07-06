@@ -103,7 +103,7 @@ class WikiIngestServiceTest {
 
     assertThat(response.status()).isEqualTo("SUCCEEDED");
     assertThat(response.mode()).isEqualTo("deterministic");
-    assertThat(response.createdPageIds()).containsExactly("wiki-auto-file-approved");
+    assertThat(response.createdPageIds()).containsExactly("wiki-auto-space-file-approved");
     assertThat(response.updatedPageIds()).isEmpty();
     assertThat(response.eligibleChunkCount()).isEqualTo(1);
     assertThat(response.excludedChunkCount()).isEqualTo(2);
@@ -128,7 +128,7 @@ class WikiIngestServiceTest {
     FileItem approved = file("file-approved", FileStatus.MARKDOWN_GENERATED, ReviewStatus.APPROVED);
     WikiPage existing =
         WikiPage.generatedCandidate(
-            "wiki-auto-file-approved",
+            "wiki-auto-space-file-approved",
             "space",
             "file approved",
             "file-approved",
@@ -152,9 +152,28 @@ class WikiIngestServiceTest {
             "space", new CreateWikiIngestRunRequest(null, List.of("file-approved"), "knowledge-manager", false));
 
     assertThat(response.createdPageIds()).isEmpty();
-    assertThat(response.updatedPageIds()).containsExactly("wiki-auto-file-approved");
+    assertThat(response.updatedPageIds()).containsExactly("wiki-auto-space-file-approved");
     assertThat(existing.getVersion()).isEqualTo(2);
     assertThat(existing.getReviewStatus()).isEqualTo(ReviewStatus.REVIEW_REQUIRED);
+  }
+
+  @Test
+  void sameCandidateSlugInDifferentSpaceGetsDistinctPageId() {
+    FileItem approved = file("file-approved", FileStatus.MARKDOWN_GENERATED, ReviewStatus.APPROVED);
+    when(batchRepository.findBySpaceId("other-space")).thenReturn(List.of(batch("other-batch", "other-space")));
+    when(fileItemRepository.findByBatchIdIn(List.of("other-batch"))).thenReturn(List.of(approved));
+    when(sourceChunkRepository.findByFileItemIdIn(List.of("file-approved")))
+        .thenReturn(List.of(chunk("chunk-approved", "file-approved", ReviewStatus.APPROVED, "0.910")));
+    when(wikiPageRepository.findBySpaceIdAndSlug("other-space", "file-approved")).thenReturn(Optional.empty());
+    when(wikiPageRepository.save(any(WikiPage.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(wikiGenerationRunRepository.save(any(WikiGenerationRun.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    var response =
+        service.startIngestRun(
+            "other-space", new CreateWikiIngestRunRequest("deterministic", null, "knowledge-manager", false));
+
+    assertThat(response.createdPageIds()).containsExactly("wiki-auto-other-space-file-approved");
   }
 
   @Test
@@ -202,9 +221,13 @@ class WikiIngestServiceTest {
   }
 
   private Batch batch() {
+    return batch("batch", "space");
+  }
+
+  private Batch batch(String id, String spaceId) {
     return Batch.create(
-        "batch",
-        "space",
+        id,
+        spaceId,
         "Wiki Ingest Test",
         SourceKind.folder,
         "delivery-lead",
