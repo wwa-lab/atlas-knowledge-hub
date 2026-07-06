@@ -1075,6 +1075,7 @@ button:disabled {
 .atlas-account-settings,
 .atlas-space-info-panel,
 .atlas-member-settings,
+.atlas-audit-log-panel,
 .atlas-message-settings {
   position: relative;
   padding: 36px 48px;
@@ -1319,6 +1320,54 @@ button:disabled {
 
 .atlas-admin-boundary {
   margin-top: 14px;
+}
+
+.atlas-audit-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.atlas-audit-event {
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #e1e5ea;
+  border-radius: 8px;
+}
+
+.atlas-audit-event header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.atlas-audit-event header span,
+.atlas-audit-event p,
+.atlas-audit-event dd {
+  color: #64748b;
+}
+
+.atlas-audit-event dl {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.atlas-audit-event dl div {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.atlas-audit-event dt {
+  color: #334155;
+  font-weight: 700;
+}
+
+.atlas-audit-event dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .atlas-profile-card {

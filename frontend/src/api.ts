@@ -1,5 +1,6 @@
 import type {
   ApiAskRun,
+  ApiAuditEvent,
   ApiBatch,
   ApiEnvelope,
   ApiFileItem,
@@ -152,6 +153,17 @@ export async function listWikiPages(spaceId: string, includeDrafts = false) {
 export async function listWikiPageIssues(spaceId: string, status = 'OPEN') {
   const query = status ? `?status=${encodeURIComponent(status)}` : ''
   return atlasFetch<ApiWikiPageIssue[]>(`/api/spaces/${spaceId}/wiki-page-issues${query}`)
+}
+
+export async function listAuditEvents(spaceId: string, category?: string) {
+  const params = new URLSearchParams()
+  if (category) {
+    params.set('category', category)
+  }
+  const query = params.toString()
+  return atlasFetch<ApiAuditEvent[]>(
+    `/api/spaces/${spaceId}/audit-events${query ? `?${query}` : ''}`
+  )
 }
 
 export async function createGraphProjection(spaceId: string) {

@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test'
 
 const apiBaseUrl = process.env.ATLAS_API_BASE_URL ?? 'http://127.0.0.1:18080'
+const mockUser = process.env.VITE_ATLAS_MOCK_USER ?? 'frontend-demo'
 
 test('second-layer browser UI completes the P0 full-stack productization loop', async ({
   page,
@@ -48,7 +49,8 @@ test('second-layer browser UI completes the P0 full-stack productization loop', 
       requestedBy: 'second-layer-ui',
       mode: 'mock',
       items: [{ sourceChunkId: chunkId, vector: [0.1, 0.2, 0.3] }]
-    }
+    },
+    headers: requestHeaders()
   })
 
   await page.reload()
@@ -66,7 +68,9 @@ test('second-layer browser UI completes the P0 full-stack productization loop', 
 })
 
 async function latestBatchId(request: APIRequestContext) {
-  const response = await request.get(`${apiBaseUrl}/api/spaces/ibm-i-modernization/batches`)
+  const response = await request.get(`${apiBaseUrl}/api/spaces/ibm-i-modernization/batches`, {
+    headers: requestHeaders()
+  })
   expect(response.ok()).toBe(true)
   const envelope = await response.json()
   expect(envelope.success).toBe(true)
@@ -75,7 +79,13 @@ async function latestBatchId(request: APIRequestContext) {
 
 function graphWriteHeaders() {
   return {
-    'X-Atlas-User': 'second-layer-ui',
+    'X-Atlas-User': mockUser,
     'X-Atlas-Role': 'ADMIN'
+  }
+}
+
+function requestHeaders() {
+  return {
+    'X-Atlas-User': mockUser
   }
 }

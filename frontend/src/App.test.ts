@@ -224,6 +224,34 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-message-management"]').text()).toContain(
       '不执行真实 embedding'
     )
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '审计日志')!
+      .trigger('click')
+    await flushAsync()
+    const auditPanel = wrapper.get('[data-testid="vue-audit-log-panel"]').text()
+    expect(auditPanel).toContain('审计日志')
+    expect(auditPanel).toContain('AUTH_GOVERNANCE_READ_DENIED')
+    expect(auditPanel).toContain('MEMBERSHIP_ADDED')
+    expect(auditPanel).not.toContain('password')
+    expect(auditPanel).not.toContain('https://')
+    expect(auditPanel).not.toContain(`/${'Users'}/`)
+  })
+
+  it('hides the audit log settings entry without governance-read capability', async () => {
+    mockP0Api({ currentUser: authMe('VIEWER', ['CONTENT_READ', 'SPACE_READ']) })
+    const wrapper = mount(App)
+    await flushAsync()
+
+    const settingsButton = wrapper
+      .findAll('button')
+      .find(button => button.text().includes('全部设置'))
+    expect(settingsButton).toBeTruthy()
+    await settingsButton!.trigger('click')
+
+    expect(wrapper.findAll('button').some(button => button.text() === '审计日志')).toBe(false)
+    expect(wrapper.find('[data-testid="vue-audit-log-panel"]').exists()).toBe(false)
   })
 
   it('opens the create Knowledge Space flow and adds the created space to the library', async () => {
@@ -657,6 +685,10 @@ function mockP0Api(
       return jsonOk(state.wikiPublished ? [wikiIssue()] : [])
     }
 
+    if (url.includes('/api/spaces/ibm-i-modernization/audit-events')) {
+      return jsonOk(auditEvents())
+    }
+
     if (url.includes('/api/spaces/ibm-i-modernization/graph/projection-runs')) {
       state.graphProjectionCreated = true
       return jsonOk(
@@ -777,6 +809,49 @@ function jsonOk(data: unknown, status = 200) {
     status,
     json: async () => ({ success: true, data, error: null, meta: null })
   } as Response)
+}
+
+function auditEvents() {
+  return [
+    {
+      id: 'audit-auth-denied',
+      createdAt: '2026-07-06T00:00:00Z',
+      actorUserId: 'mock-viewer',
+      actorDisplay: 'Atlas Viewer',
+      action: 'AUTH_GOVERNANCE_READ_DENIED',
+      category: 'AUTH',
+      result: 'DENIED',
+      severity: 'SECURITY',
+      spaceId: 'ibm-i-modernization',
+      targetType: 'api_route',
+      targetId: '/api/spaces/ibm-i-modernization/audit-events',
+      requestId: 'req-audit-ui',
+      safeSummary: 'Access denied for required capability GOVERNANCE_READ.',
+      metadata: {
+        capability: 'GOVERNANCE_READ',
+        httpMethod: 'GET'
+      }
+    },
+    {
+      id: 'audit-member-added',
+      createdAt: '2026-07-06T00:01:00Z',
+      actorUserId: 'mock-owner',
+      actorDisplay: 'Atlas Owner',
+      action: 'MEMBERSHIP_ADDED',
+      category: 'MEMBERSHIP',
+      result: 'SUCCEEDED',
+      severity: 'NOTICE',
+      spaceId: 'ibm-i-modernization',
+      targetType: 'space_membership',
+      targetId: 'mock-viewer',
+      requestId: null,
+      safeSummary: 'Space membership added or reactivated.',
+      metadata: {
+        role: 'VIEWER',
+        status: 'ACTIVE'
+      }
+    }
+  ]
 }
 
 function space(

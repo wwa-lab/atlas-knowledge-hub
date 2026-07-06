@@ -12,6 +12,7 @@ import {
   getGraph,
   getGraphNode,
   getSpace,
+  listAuditEvents,
   listBatches,
   listChunks,
   listFiles,
@@ -27,6 +28,7 @@ import {
 } from '@/api'
 import type {
   ApiAskRun,
+  ApiAuditEvent,
   ApiBatch,
   ApiFileItem,
   ApiGraphEdge,
@@ -56,6 +58,7 @@ type SettingsPanel =
   | 'profile'
   | 'spaceInfo'
   | 'members'
+  | 'audit'
   | 'messages'
   | 'registration'
   | 'api'
@@ -65,7 +68,7 @@ type SettingsPanel =
   | 'storage'
 type PlaceholderSettingsPanel = Exclude<
   SettingsPanel,
-  'general' | 'profile' | 'spaceInfo' | 'members' | 'messages' | 'api' | 'models'
+  'general' | 'profile' | 'spaceInfo' | 'members' | 'audit' | 'messages' | 'api' | 'models'
 >
 type GeneralLanguage = 'zh-CN' | 'en-US'
 type GeneralThemeMode = 'light' | 'dark' | 'system'
@@ -323,6 +326,7 @@ const chunks = ref<ApiSourceChunk[]>([])
 const reviewQueues = ref<ApiReviewQueues | null>(null)
 const wikiPages = ref<ApiWikiPage[]>([])
 const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
+const auditEvents = ref<ApiAuditEvent[]>([])
 const askRun = ref<ApiAskRun | null>(null)
 const askQuestion = ref('What evidence was published for the P0 browser flow?')
 const workflowMessage = ref('')
@@ -343,6 +347,8 @@ const createSpaceError = ref('')
 const createSpaceStatus = ref('')
 const workflowError = ref('')
 const askError = ref('')
+const auditError = ref('')
+const isLoadingAuditEvents = ref(false)
 
 const graph = ref<ApiGraphView | null>(null)
 const selectedDetail = ref<ApiGraphNodeDetail | null>(null)
@@ -939,6 +945,7 @@ const canManageSpaces = computed(() => hasCapability('SPACE_MANAGE'))
 const canWriteContent = computed(() => hasCapability('CONTENT_WRITE'))
 const canOperateKnowledge = computed(() => hasCapability('KNOWLEDGE_OPERATE'))
 const canManageMembers = computed(() => hasCapability('MEMBER_MANAGE'))
+const canReadGovernance = computed(() => hasCapability('GOVERNANCE_READ'))
 const canApprove = computed(
   () =>
     canOperateKnowledge.value &&
@@ -1132,6 +1139,11 @@ const apiProcessingIssues = computed(() => [
   })),
   ...apiWikiIssueCards.value
 ])
+const auditSummary = computed(() => ({
+  total: auditEvents.value.length,
+  security: auditEvents.value.filter(event => event.severity === 'SECURITY').length,
+  denied: auditEvents.value.filter(event => event.result === 'DENIED').length
+}))
 const apiProductWikiPages = computed<ProductWikiPage[]>(() =>
   wikiPages.value.map(page => ({
     id: page.id,
@@ -1603,18 +1615,20 @@ async function loadSpaceContext(spaceId: string) {
   isLoadingSpace.value = true
   workflowError.value = ''
   try {
-    const [space, batchList, queues, pages, issues] = await Promise.all([
+    const [space, batchList, queues, pages, issues, audits] = await Promise.all([
       getSpace(spaceId),
       listBatches(spaceId),
       getReviewQueues(spaceId),
       listWikiPages(spaceId, true),
-      listWikiPageIssues(spaceId)
+      listWikiPageIssues(spaceId),
+      canReadGovernance.value ? listAuditEvents(spaceId) : Promise.resolve([])
     ])
     selectedSpace.value = space
     batches.value = batchList
     reviewQueues.value = queues
     wikiPages.value = pages
     wikiPageIssues.value = issues
+    auditEvents.value = audits
     const firstBatch = batchList[0]
     if (firstBatch) {
       await selectBatch(firstBatch.id)
@@ -2025,14 +2039,47 @@ function statusLabel(status: MockFileStatus) {
 }
 
 function openSettings(panel: SettingsPanel = 'general') {
+  if (panel === 'audit' && !canReadGovernance.value) {
+    settingsPanel.value = 'general'
+    settingsOpen.value = true
+    return
+  }
   settingsPanel.value = panel
   settingsOpen.value = true
+  if (panel === 'audit') {
+    void loadAuditEvents()
+  }
 }
 
 function closeSettings() {
   settingsOpen.value = false
   modelDraft.value = null
   activeSpaceInfoEditField.value = null
+}
+
+async function loadAuditEvents(spaceId = selectedSpaceId.value) {
+  if (!spaceId || !canReadGovernance.value) {
+    auditEvents.value = []
+    auditError.value = '当前账号没有审计日志读取权限。'
+    return
+  }
+  isLoadingAuditEvents.value = true
+  auditError.value = ''
+  try {
+    auditEvents.value = await listAuditEvents(spaceId)
+  } catch (error) {
+    auditError.value = safeError(error, 'Audit log API unavailable.')
+  } finally {
+    isLoadingAuditEvents.value = false
+  }
+}
+
+function auditMetadataLabel(metadata: ApiAuditEvent['metadata']) {
+  const entries = Object.entries(metadata ?? {})
+  if (entries.length === 0) {
+    return 'metadata none'
+  }
+  return entries.map(([key, value]) => `${key}: ${value}`).join(' · ')
 }
 
 function beginSpaceInfoEdit(field: keyof SpaceInfoDraft) {
@@ -3125,6 +3172,14 @@ function isDeepSeekDraft(model: VueModelConfig) {
             成员管理
           </button>
           <button
+            v-if="canReadGovernance"
+            :class="{ active: settingsPanel === 'audit' }"
+            type="button"
+            @click="openSettings('audit')"
+          >
+            审计日志
+          </button>
+          <button
             :class="{ active: settingsPanel === 'messages' }"
             type="button"
             @click="settingsPanel = 'messages'"
@@ -3594,6 +3649,75 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <p>
               当前成员管理为 mock-only：不发送邀请、不提交真实公司域名、不保存真实账号、 不执行生产
               RBAC，后续权限与审计必须由后端强制执行。
+            </p>
+          </section>
+        </section>
+
+        <section
+          v-else-if="settingsPanel === 'audit'"
+          class="atlas-audit-log-panel"
+          data-testid="vue-audit-log-panel"
+        >
+          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
+          <header class="atlas-admin-head" data-testid="vue-admin-panel">
+            <div>
+              <h1>审计日志</h1>
+              <p>{{ selectedProductSpace.name }} · {{ auditSummary.total }} events</p>
+            </div>
+            <span>Governance read</span>
+          </header>
+
+          <section class="atlas-admin-grid">
+            <article>
+              <strong>{{ auditSummary.security }}</strong>
+              <span>SECURITY</span>
+            </article>
+            <article>
+              <strong>{{ auditSummary.denied }}</strong>
+              <span>DENIED</span>
+            </article>
+            <article>
+              <strong>{{ auditEvents[0]?.createdAt ?? 'n/a' }}</strong>
+              <span>latest</span>
+            </article>
+          </section>
+
+          <section class="atlas-audit-list" aria-label="审计事件">
+            <p v-if="isLoadingAuditEvents" role="status">Loading audit events</p>
+            <p v-else-if="auditError" class="atlas-inline-success" role="status">
+              {{ auditError }}
+            </p>
+            <article v-for="event in auditEvents" :key="event.id" class="atlas-audit-event">
+              <header>
+                <strong>{{ event.action }}</strong>
+                <span>{{ event.category }} · {{ event.result }} · {{ event.severity }}</span>
+              </header>
+              <p>{{ event.safeSummary }}</p>
+              <dl>
+                <div>
+                  <dt>actor</dt>
+                  <dd>{{ event.actorDisplay }} · {{ event.actorUserId ?? 'anonymous' }}</dd>
+                </div>
+                <div>
+                  <dt>target</dt>
+                  <dd>{{ event.targetType }} · {{ event.targetId }}</dd>
+                </div>
+                <div>
+                  <dt>metadata</dt>
+                  <dd>{{ auditMetadataLabel(event.metadata) }}</dd>
+                </div>
+              </dl>
+            </article>
+            <p v-if="!isLoadingAuditEvents && !auditError && auditEvents.length === 0">
+              No audit events.
+            </p>
+          </section>
+
+          <section class="atlas-admin-boundary">
+            <strong>Production boundary</strong>
+            <p>
+              审计事件只显示后端返回的安全摘要与 allow-listed
+              metadata；原始正文、prompt、密钥和私有路径不进入此面板。
             </p>
           </section>
         </section>

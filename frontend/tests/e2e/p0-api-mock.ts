@@ -10,7 +10,18 @@ interface P0MockState {
   vectorRunCreated: boolean
 }
 
-export async function mockP0Api(page: Page) {
+type MockRole = 'VIEWER' | 'KNOWLEDGE_MANAGER' | 'SPACE_OWNER'
+
+interface MockCurrentUser {
+  role: MockRole
+  capabilities: string[]
+}
+
+interface P0MockOptions {
+  currentUser?: MockCurrentUser
+}
+
+export async function mockP0Api(page: Page, options: P0MockOptions = {}) {
   const state: P0MockState = {
     batchCreated: false,
     fileReviewStatus: 'REVIEW_REQUIRED',
@@ -18,12 +29,17 @@ export async function mockP0Api(page: Page) {
     graphProjectionCreated: false,
     vectorRunCreated: false
   }
+  const currentUser = options.currentUser ?? ownerUser()
 
   await page.route('**/api/**', async route => {
     const request = route.request()
     const url = new URL(request.url())
     const path = url.pathname
     const method = request.method()
+
+    if (path === '/api/auth/me') {
+      return fulfill(route, authMe(currentUser))
+    }
 
     if (path === '/api/spaces') {
       return fulfill(route, [space(state)])
@@ -34,6 +50,9 @@ export async function mockP0Api(page: Page) {
     }
 
     if (path === '/api/spaces/ibm-i-modernization/batches' && method === 'POST') {
+      if (!currentUser.capabilities.includes('CONTENT_WRITE')) {
+        return fulfillError(route, 403, 'FORBIDDEN', 'Action is not allowed.')
+      }
       state.batchCreated = true
       return fulfill(route, batch(), 201)
     }
@@ -70,6 +89,10 @@ export async function mockP0Api(page: Page) {
 
     if (path === '/api/spaces/ibm-i-modernization/wiki-page-issues') {
       return fulfill(route, state.wikiPublished ? [wikiIssue()] : [])
+    }
+
+    if (path === '/api/spaces/ibm-i-modernization/audit-events') {
+      return fulfill(route, auditEvents())
     }
 
     if (path === '/api/spaces/ibm-i-modernization/graph/projection-runs') {
@@ -136,6 +159,19 @@ async function fulfill(route: Route, data: unknown, status = 200, success = true
       success,
       data,
       error: success ? null : { code: 'NOT_FOUND', message: 'Mock route not found.' },
+      meta: null
+    })
+  })
+}
+
+async function fulfillError(route: Route, status: number, code: string, message: string) {
+  await route.fulfill({
+    status,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      success: false,
+      data: null,
+      error: { code, message },
       meta: null
     })
   })
@@ -374,4 +410,80 @@ function modelConfiguration(credentialStatus = 'MISSING') {
       externalNetwork: credentialStatus === 'MISSING' ? 'disabled' : 'enabled'
     }
   }
+}
+
+export function viewerUser(): MockCurrentUser {
+  return {
+    role: 'VIEWER',
+    capabilities: ['CONTENT_READ', 'SPACE_READ']
+  }
+}
+
+export function knowledgeManagerUser(): MockCurrentUser {
+  return {
+    role: 'KNOWLEDGE_MANAGER',
+    capabilities: ['CONTENT_READ', 'CONTENT_WRITE', 'GOVERNANCE_READ', 'KNOWLEDGE_OPERATE', 'SPACE_READ']
+  }
+}
+
+export function ownerUser(): MockCurrentUser {
+  return {
+    role: 'SPACE_OWNER',
+    capabilities: [
+      'CONTENT_READ',
+      'CONTENT_WRITE',
+      'GOVERNANCE_READ',
+      'KNOWLEDGE_OPERATE',
+      'MEMBER_MANAGE',
+      'SETTINGS_MANAGE',
+      'SPACE_MANAGE',
+      'SPACE_READ'
+    ]
+  }
+}
+
+function authMe(currentUser: MockCurrentUser) {
+  return {
+    user: {
+      id: 'frontend-demo',
+      email: 'frontend-demo@example.test',
+      displayName: 'Frontend Demo',
+      status: 'ACTIVE',
+      globalRoles: []
+    },
+    activeSpaceId: 'ibm-i-modernization',
+    memberships: [
+      {
+        id: 'membership-frontend-ibmi',
+        spaceId: 'ibm-i-modernization',
+        spaceName: 'IBM i Modernization',
+        role: currentUser.role,
+        status: 'ACTIVE'
+      }
+    ],
+    capabilities: currentUser.capabilities
+  }
+}
+
+function auditEvents() {
+  return [
+    {
+      id: 'audit-auth-denied',
+      createdAt: '2026-07-06T00:00:00Z',
+      actorUserId: 'mock-viewer',
+      actorDisplay: 'Atlas Viewer',
+      action: 'AUTH_GOVERNANCE_READ_DENIED',
+      category: 'AUTH',
+      result: 'DENIED',
+      severity: 'SECURITY',
+      spaceId: 'ibm-i-modernization',
+      targetType: 'api_route',
+      targetId: '/api/spaces/ibm-i-modernization/audit-events',
+      requestId: null,
+      safeSummary: 'Denied governance read request.',
+      metadata: {
+        capability: 'GOVERNANCE_READ'
+      }
+    }
+  ]
 }

@@ -260,6 +260,38 @@ export interface ApiEnvelope<T> {
   meta: unknown
 }
 
+export type ApiAuditCategory =
+  | 'AUTH'
+  | 'MEMBERSHIP'
+  | 'REVIEW'
+  | 'PUBLISH'
+  | 'WIKI'
+  | 'GRAPH'
+  | 'ASK'
+  | 'MODEL'
+  | 'ADAPTER'
+  | 'SETTINGS'
+export type ApiAuditResult =
+  'SUCCEEDED' | 'DENIED' | 'FAILED' | 'CONFLICT' | 'SKIPPED' | 'SAFE_NOT_FOUND'
+export type ApiAuditSeverity = 'INFO' | 'NOTICE' | 'WARNING' | 'SECURITY'
+
+export interface ApiAuditEvent {
+  id: string
+  createdAt: string
+  actorUserId: string | null
+  actorDisplay: string
+  action: string
+  category: ApiAuditCategory
+  result: ApiAuditResult
+  severity: ApiAuditSeverity
+  spaceId: string | null
+  targetType: string
+  targetId: string
+  requestId: string | null
+  safeSummary: string
+  metadata: Record<string, string | number | boolean>
+}
+
 export type ApiAtlasRole =
   'VIEWER' | 'EDITOR' | 'KNOWLEDGE_MANAGER' | 'SPACE_OWNER' | 'AUDITOR' | 'PLATFORM_ADMIN'
 

@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test'
 
 const apiBaseUrl = process.env.ATLAS_API_BASE_URL ?? 'http://127.0.0.1:18080'
+const mockUser = process.env.VITE_ATLAS_MOCK_USER ?? 'frontend-demo'
 const spaceId = 'ibm-i-modernization'
 
 test('second-layer local stack publishes trusted knowledge, projects graph, and answers with citations', async ({
@@ -144,8 +145,8 @@ async function expectApiOk(
 ) {
   const response =
     method === 'GET'
-      ? await request.get(`${apiBaseUrl}${path}`, { headers })
-      : await request.post(`${apiBaseUrl}${path}`, { data: body, headers })
+      ? await request.get(`${apiBaseUrl}${path}`, { headers: requestHeaders(headers) })
+      : await request.post(`${apiBaseUrl}${path}`, { data: body, headers: requestHeaders(headers) })
   expect(response.ok(), `${method} ${path} returned ${response.status()}`).toBe(true)
   const envelope = await response.json()
   expect(envelope.success, `${method} ${path} envelope should be successful`).toBe(true)
@@ -155,14 +156,21 @@ async function expectApiOk(
 
 function graphReadHeaders() {
   return {
-    'X-Atlas-User': 'second-layer-e2e',
+    'X-Atlas-User': mockUser,
     'X-Atlas-Role': 'VIEWER'
   }
 }
 
 function graphWriteHeaders() {
   return {
-    'X-Atlas-User': 'second-layer-e2e',
+    'X-Atlas-User': mockUser,
     'X-Atlas-Role': 'ADMIN'
+  }
+}
+
+function requestHeaders(headers: Record<string, string> = {}) {
+  return {
+    'X-Atlas-User': mockUser,
+    ...headers
   }
 }
