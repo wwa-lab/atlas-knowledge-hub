@@ -11,10 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.atlas.metadata.domain.Space;
+import com.atlas.metadata.domain.WikiPage;
 import com.atlas.metadata.enums.IndexStrategy;
 import com.atlas.metadata.enums.SpaceType;
+import com.atlas.metadata.repository.SourceChunkRepository;
 import com.atlas.metadata.repository.SpaceRepository;
+import com.atlas.metadata.repository.WikiPageRepository;
 import com.jayway.jsonpath.JsonPath;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -30,6 +34,8 @@ class KnowledgeGraphApiContractIT extends AbstractPostgresIT {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private SpaceRepository spaceRepository;
+  @Autowired private SourceChunkRepository sourceChunkRepository;
+  @Autowired private WikiPageRepository wikiPageRepository;
 
   @Test
   void graphEndpointsRequireAuthenticationAndAllowAuthorizedViewerReads() throws Exception {
@@ -148,10 +154,116 @@ class KnowledgeGraphApiContractIT extends AbstractPostgresIT {
         .andExpect(jsonPath("$.error.fields.action").exists());
   }
 
+  @Test
+  void graphProjectionExtractsFromEligibleWikiPagesAndReturnsMixedEvidence() throws Exception {
+    String spaceId = "graph-wiki-extraction-space";
+    createGraphSpace(spaceId);
+    String batchId = createApprovedBatch(spaceId);
+    String fileId = firstFileId(batchId);
+    String approvedChunkId = chunkIds(fileId).getFirst();
+    var approvedChunk = sourceChunkRepository.findById(approvedChunkId).orElseThrow();
+    wikiPageRepository.save(
+        WikiPage.publish(
+            "wiki-graph-derived",
+            spaceId,
+            "Wiki Derived Architecture",
+            "generated/markdown/wiki-derived-architecture.md",
+            new String[] {fileId},
+            List.of(approvedChunk),
+            new BigDecimal("0.930"),
+            "sme",
+            OffsetDateTime.now()));
+    wikiPageRepository.save(
+        WikiPage.publish(
+            "wiki-low-confidence",
+            spaceId,
+            "Low Confidence Wiki",
+            "generated/markdown/low-confidence.md",
+            new String[] {fileId},
+            List.of(approvedChunk),
+            new BigDecimal("0.700"),
+            "sme",
+            OffsetDateTime.now()));
+
+    MvcResult runResult =
+        mockMvc
+            .perform(
+                post("/api/spaces/" + spaceId + "/graph/projection-runs")
+                    .header("X-Atlas-User", "delivery-lead")
+                    .header("X-Atlas-Role", "ADMIN")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "scope": "APPROVED_ONLY",
+                          "adapterId": "deterministic",
+                          "dryRun": false
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data.summary.createdCount").value(greaterThanOrEqualTo(4)))
+            .andExpect(jsonPath("$.data.summary.skippedCount").value(1))
+            .andExpect(jsonPath("$.data.items[*].reasonCode", hasItem("LOW_CONFIDENCE_WIKI_PAGE")))
+            .andReturn();
+
+    mockMvc
+        .perform(
+            post("/api/spaces/" + spaceId + "/graph/projection-runs")
+                .header("X-Atlas-User", "delivery-lead")
+                .header("X-Atlas-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "scope": "APPROVED_ONLY",
+                      "adapterId": "deterministic",
+                      "dryRun": false
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.data.summary.updatedCount").value(greaterThanOrEqualTo(4)));
+
+    MvcResult graphResult =
+        mockMvc
+            .perform(
+                get("/api/spaces/" + spaceId + "/graph")
+                    .header("X-Atlas-User", "viewer")
+                    .header("X-Atlas-Role", "VIEWER")
+                    .param("q", "Wiki Derived")
+                    .param("limit", "20"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.nodes[*].type", hasItem("WIKI_PAGE")))
+            .andExpect(jsonPath("$.data.nodes[*].label", hasItem("Wiki Derived Architecture")))
+            .andReturn();
+
+    List<String> nodeIds = JsonPath.read(graphResult.getResponse().getContentAsString(), "$.data.nodes[*].id");
+    String wikiNodeId = nodeIds.stream().filter(id -> id.contains("wiki-graph-derived")).findFirst().orElseThrow();
+
+    mockMvc
+        .perform(
+            get("/api/spaces/" + spaceId + "/graph/nodes/" + wikiNodeId)
+                .header("X-Atlas-User", "viewer")
+                .header("X-Atlas-Role", "VIEWER"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.evidenceReferences[*].referenceType", hasItem("WIKI_PAGE")))
+        .andExpect(jsonPath("$.data.evidenceReferences[*].referenceType", hasItem("SOURCE_CHUNK")))
+        .andExpect(jsonPath("$.data.evidenceReferences[*].wikiPageId", hasItem("wiki-graph-derived")))
+        .andExpect(jsonPath("$.data.evidenceReferences[*].sourceChunkId", hasItem(approvedChunkId)))
+        .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
+        .andExpect(jsonPath("$").value(not(containsString("https://"))));
+
+    String runId = JsonPath.read(runResult.getResponse().getContentAsString(), "$.data.runId");
+    assertThat(runId).startsWith("graph-run-");
+  }
+
   private void createGraphSpace() {
+    createGraphSpace(GRAPH_SPACE_ID);
+  }
+
+  private void createGraphSpace(String spaceId) {
     spaceRepository.save(
         Space.create(
-            GRAPH_SPACE_ID,
+            spaceId,
             "Graph Contract Space",
             "Mock-only knowledge graph contract space.",
             SpaceType.document,

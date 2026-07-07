@@ -343,7 +343,23 @@ function graphDetail() {
     adjacentNodes: [],
     adjacentEdges: [],
     evidenceReferences: [
-      { sourceChunkId: 'chunk-p0', sourceFile: 'productization.md', page: 1, section: p0Section, confidence: 0.93, reviewStatus: 'APPROVED' }
+      {
+        referenceType: 'SOURCE_CHUNK',
+        sourceChunkId: 'chunk-p0',
+        sourceFile: 'productization.md',
+        page: 1,
+        section: p0Section,
+        confidence: 0.93,
+        reviewStatus: 'APPROVED'
+      },
+      {
+        referenceType: 'WIKI_PAGE',
+        wikiPageId: 'wiki-p0',
+        label: p0Section,
+        section: 'p0-browser-evidence',
+        confidence: 0.93,
+        reviewStatus: 'PUBLISHED'
+      }
     ]
   }
 }

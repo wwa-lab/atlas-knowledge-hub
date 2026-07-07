@@ -231,8 +231,11 @@ export interface ApiGraphEdge {
 }
 
 export interface ApiGraphEvidenceReference {
-  sourceChunkId: string
-  sourceFile: string
+  referenceType?: 'SOURCE_CHUNK' | 'WIKI_PAGE'
+  sourceChunkId?: string | null
+  wikiPageId?: string | null
+  label?: string | null
+  sourceFile?: string | null
   page?: number
   section?: string
   confidence: number | null

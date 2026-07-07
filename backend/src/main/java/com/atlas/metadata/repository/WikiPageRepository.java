@@ -17,6 +17,10 @@ public interface WikiPageRepository extends JpaRepository<WikiPage, String> {
   /** Finds all Wiki pages for a Knowledge Space, including review-required drafts. */
   List<WikiPage> findBySpaceIdOrderByTitleAsc(String spaceId);
 
+  /** Finds all Wiki pages for a Knowledge Space by review status. */
+  List<WikiPage> findBySpaceIdAndReviewStatusInOrderByTitleAsc(
+      String spaceId, List<ReviewStatus> reviewStatuses);
+
   /** Finds a Wiki page by its space-scoped slug regardless of review status. */
   Optional<WikiPage> findBySpaceIdAndSlug(String spaceId, String slug);
 

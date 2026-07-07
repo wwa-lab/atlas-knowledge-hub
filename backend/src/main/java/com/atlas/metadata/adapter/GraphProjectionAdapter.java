@@ -13,7 +13,8 @@ public interface GraphProjectionAdapter {
 
   GraphProjectionResult project(GraphProjectionRequest request);
 
-  record GraphProjectionRequest(String spaceId, List<GraphSourceDescriptor> sources) {}
+  record GraphProjectionRequest(
+      String spaceId, List<GraphSourceDescriptor> sources, List<GraphWikiPageDescriptor> wikiPages) {}
 
   record GraphSourceDescriptor(
       String sourceChunkId,
@@ -24,6 +25,18 @@ public interface GraphProjectionAdapter {
       BigDecimal confidence,
       ReviewStatus reviewStatus) {}
 
+  record GraphWikiPageDescriptor(
+      String wikiPageId,
+      String title,
+      String slug,
+      List<String> sourceDocumentIds,
+      List<GraphWikiEvidenceDescriptor> chunkRefs,
+      List<String> outLinks,
+      BigDecimal confidence,
+      ReviewStatus reviewStatus) {}
+
+  record GraphWikiEvidenceDescriptor(String referenceId, String label, String locator) {}
+
   record GraphProjectionResult(List<ProjectedNode> nodes, List<ProjectedEdge> edges) {}
 
   record ProjectedNode(
@@ -32,6 +45,7 @@ public interface GraphProjectionAdapter {
       GraphNodeType type,
       ReviewStatus reviewStatus,
       List<String> evidenceChunkIds,
+      List<String> evidenceWikiPageIds,
       BigDecimal confidence) {}
 
   record ProjectedEdge(
@@ -41,5 +55,6 @@ public interface GraphProjectionAdapter {
       GraphEdgeType type,
       ReviewStatus reviewStatus,
       List<String> evidenceChunkIds,
+      List<String> evidenceWikiPageIds,
       BigDecimal confidence) {}
 }

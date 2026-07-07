@@ -18,6 +18,8 @@ test('Graph tab searches, filters, selects evidence-backed graph objects', async
 
   await page.getByTestId('vue-graph-node').filter({ hasText: 'RPGLE modernization' }).click()
   await expect(page.getByTestId('vue-graph-detail')).toContainText('chunk-file-001-p12-b02')
+  await expect(page.getByTestId('vue-graph-detail')).toContainText('Wiki page')
+  await expect(page.getByTestId('vue-graph-detail')).toContainText('wiki-rpgle-modernization')
   await expect(page.getByTestId('vue-graph-detail')).toContainText('confidence 0.93')
   await expect(page.getByTestId('vue-graph-detail')).toContainText('APPROVED')
 
@@ -98,12 +100,21 @@ async function mockGraphApi(page: Page, state: 'ready' | 'unauthorized' | 'empty
             adjacentEdges: [],
             evidenceReferences: [
               {
+                referenceType: 'SOURCE_CHUNK',
                 sourceChunkId: 'chunk-file-001-p12-b02',
                 sourceFile: 'Graph/Modernization.md',
                 page: 1,
                 section: 'RPGLE modernization',
                 confidence: 0.93,
                 reviewStatus: 'APPROVED'
+              },
+              {
+                referenceType: 'WIKI_PAGE',
+                wikiPageId: 'wiki-rpgle-modernization',
+                label: 'RPGLE modernization',
+                section: 'rpgle-modernization',
+                confidence: 0.93,
+                reviewStatus: 'PUBLISHED'
               }
             ]
           },

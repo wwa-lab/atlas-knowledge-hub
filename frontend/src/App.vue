@@ -38,6 +38,7 @@ import type {
   ApiFileItem,
   ApiGraphEdge,
   ApiGraphEdgeType,
+  ApiGraphEvidenceReference,
   ApiGraphNode,
   ApiGraphNodeDetail,
   ApiGraphNodeType,
@@ -1304,10 +1305,7 @@ const selectedProductGraphEvidence = computed(() => {
   const node = selectedProductGraphNode.value
   const apiEvidence = selectedDetail.value?.evidenceReferences ?? []
   if (apiEvidence.length > 0 && apiProductGraphNodes.value.some(item => item.id === node.id)) {
-    return apiEvidence.map(
-      evidence =>
-        `${evidence.sourceChunkId} · ${evidence.sourceFile} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · confidence ${evidence.confidence ?? 'n/a'}`
-    )
+    return apiEvidence.map(formatGraphEvidenceReference)
   }
   return [
     node.sourceTrace,
@@ -1982,6 +1980,14 @@ function wikiSourceTrace(page: ApiWikiPage) {
     return sourceRefs.join('; ')
   }
   return `sources ${page.sourceDocumentIds.join(', ') || 'none'} / ${page.markdownPath}`
+}
+
+function formatGraphEvidenceReference(evidence: ApiGraphEvidenceReference) {
+  const referenceType = evidence.referenceType ?? 'SOURCE_CHUNK'
+  if (referenceType === 'WIKI_PAGE') {
+    return `Wiki page ${evidence.label ?? evidence.wikiPageId ?? 'unknown'} · ${evidence.wikiPageId ?? 'wiki n/a'} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · confidence ${evidence.confidence ?? 'n/a'}`
+  }
+  return `Source chunk ${evidence.sourceChunkId ?? 'chunk n/a'} · ${evidence.sourceFile ?? 'source n/a'} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · confidence ${evidence.confidence ?? 'n/a'}`
 }
 
 function productGraphNodeType(type: ApiGraphNodeType): ProductGraphNode['type'] {
@@ -4782,10 +4788,11 @@ function isDeepSeekDraft(model: VueModelConfig) {
         >
         <h2>Source Trace</h2>
         <ul v-if="evidenceReferences.length > 0">
-          <li v-for="evidence in evidenceReferences" :key="evidence.sourceChunkId">
-            {{ evidence.sourceChunkId }} · {{ evidence.sourceFile }} ·
-            {{ evidence.section ?? 'section n/a' }} · confidence
-            {{ evidence.confidence ?? 'n/a' }} · {{ evidence.reviewStatus }}
+          <li
+            v-for="evidence in evidenceReferences"
+            :key="`${evidence.referenceType ?? 'SOURCE_CHUNK'}-${evidence.sourceChunkId ?? evidence.wikiPageId}`"
+          >
+            {{ formatGraphEvidenceReference(evidence) }}
           </li>
         </ul>
         <p v-else class="graph-empty">No source-trace evidence is attached to this graph object.</p>

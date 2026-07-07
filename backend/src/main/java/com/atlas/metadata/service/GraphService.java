@@ -2,6 +2,8 @@ package com.atlas.metadata.service;
 
 import com.atlas.metadata.adapter.GraphProjectionAdapter;
 import com.atlas.metadata.adapter.GraphProjectionAdapter.GraphSourceDescriptor;
+import com.atlas.metadata.adapter.GraphProjectionAdapter.GraphWikiEvidenceDescriptor;
+import com.atlas.metadata.adapter.GraphProjectionAdapter.GraphWikiPageDescriptor;
 import com.atlas.metadata.domain.Batch;
 import com.atlas.metadata.domain.FileItem;
 import com.atlas.metadata.domain.GraphAuditRecord;
@@ -11,6 +13,8 @@ import com.atlas.metadata.domain.GraphProjectionItem;
 import com.atlas.metadata.domain.GraphProjectionRun;
 import com.atlas.metadata.domain.ReviewRecord;
 import com.atlas.metadata.domain.SourceChunk;
+import com.atlas.metadata.domain.WikiPage;
+import com.atlas.metadata.domain.WikiReference;
 import com.atlas.metadata.dto.CreateGraphEdgeReviewRequest;
 import com.atlas.metadata.dto.CreateGraphProjectionRunRequest;
 import com.atlas.metadata.dto.GraphEdgeResponse;
@@ -44,9 +48,12 @@ import com.atlas.metadata.repository.GraphProjectionRunRepository;
 import com.atlas.metadata.repository.ReviewRecordRepository;
 import com.atlas.metadata.repository.SourceChunkRepository;
 import com.atlas.metadata.repository.SpaceRepository;
+import com.atlas.metadata.repository.WikiPageRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -68,6 +75,7 @@ public class GraphService {
 
   private static final int DEFAULT_LIMIT = 200;
   private static final int MAX_LIMIT = 500;
+  private static final BigDecimal MIN_WIKI_CONFIDENCE = new BigDecimal("0.800");
   private static final List<ReviewStatus> TRUSTED_STATUSES =
       List.of(ReviewStatus.APPROVED, ReviewStatus.PUBLISHED);
 
@@ -81,6 +89,7 @@ public class GraphService {
   private final GraphProjectionItemRepository graphProjectionItemRepository;
   private final GraphAuditRecordRepository graphAuditRecordRepository;
   private final ReviewRecordRepository reviewRecordRepository;
+  private final WikiPageRepository wikiPageRepository;
   private final GraphProjectionAdapter projectionAdapter;
   private final AuditLogService auditLogService;
   private final Clock clock;
@@ -97,6 +106,7 @@ public class GraphService {
       GraphProjectionItemRepository graphProjectionItemRepository,
       GraphAuditRecordRepository graphAuditRecordRepository,
       ReviewRecordRepository reviewRecordRepository,
+      WikiPageRepository wikiPageRepository,
       GraphProjectionAdapter projectionAdapter,
       AuditLogService auditLogService) {
     this(
@@ -110,6 +120,7 @@ public class GraphService {
         graphProjectionItemRepository,
         graphAuditRecordRepository,
         reviewRecordRepository,
+        wikiPageRepository,
         projectionAdapter,
         auditLogService,
         Clock.systemUTC());
@@ -125,6 +136,7 @@ public class GraphService {
       GraphProjectionRunRepository graphProjectionRunRepository,
       GraphProjectionItemRepository graphProjectionItemRepository,
       GraphAuditRecordRepository graphAuditRecordRepository,
+      WikiPageRepository wikiPageRepository,
       GraphProjectionAdapter projectionAdapter,
       Clock clock) {
     this(
@@ -138,6 +150,7 @@ public class GraphService {
         graphProjectionItemRepository,
         graphAuditRecordRepository,
         null,
+        wikiPageRepository,
         projectionAdapter,
         null,
         clock);
@@ -154,6 +167,7 @@ public class GraphService {
       GraphProjectionItemRepository graphProjectionItemRepository,
       GraphAuditRecordRepository graphAuditRecordRepository,
       ReviewRecordRepository reviewRecordRepository,
+      WikiPageRepository wikiPageRepository,
       GraphProjectionAdapter projectionAdapter,
       AuditLogService auditLogService,
       Clock clock) {
@@ -167,6 +181,7 @@ public class GraphService {
     this.graphProjectionItemRepository = graphProjectionItemRepository;
     this.graphAuditRecordRepository = graphAuditRecordRepository;
     this.reviewRecordRepository = reviewRecordRepository;
+    this.wikiPageRepository = wikiPageRepository;
     this.projectionAdapter = projectionAdapter;
     this.auditLogService = auditLogService;
     this.clock = clock;
@@ -194,14 +209,30 @@ public class GraphService {
     run.markRunning();
     graphProjectionRunRepository.save(run);
 
-    List<SourceChunk> chunks = targetChunks(spaceId);
-    List<SourceChunk> eligible =
+    List<WikiPage> wikiPages = wikiPageRepository.findBySpaceIdOrderByTitleAsc(spaceId);
+    List<WikiPage> eligibleWikiPages = wikiPages.stream().filter(this::isEligibleWikiPage).toList();
+    List<GraphProjectionItem> skipped = new ArrayList<>();
+    wikiPages.stream()
+        .filter(page -> !isEligibleWikiPage(page))
+        .map(
+            page ->
+                saveItem(
+                    run,
+                    "wiki_page",
+                    page.getId(),
+                    "skip",
+                    null,
+                    GraphProjectionItemStatus.SKIPPED,
+                    skipReason(page)))
+        .forEach(skipped::add);
+
+    List<SourceChunk> chunks = eligibleWikiPages.isEmpty() ? targetChunks(spaceId) : List.of();
+    List<SourceChunk> eligibleChunks =
         chunks.stream()
             .filter(chunk -> TRUSTED_STATUSES.contains(chunk.getReviewStatus()))
             .filter(this::hasSourceTrace)
             .toList();
-    List<GraphProjectionItem> skipped =
-        chunks.stream()
+    chunks.stream()
             .filter(chunk -> !TRUSTED_STATUSES.contains(chunk.getReviewStatus()) || !hasSourceTrace(chunk))
             .map(
                 chunk ->
@@ -213,13 +244,13 @@ public class GraphService {
                         null,
                         GraphProjectionItemStatus.SKIPPED,
                         skipReason(chunk)))
-            .toList();
+            .forEach(skipped::add);
 
     var result =
         projectionAdapter.project(
             new GraphProjectionAdapter.GraphProjectionRequest(
                 spaceId,
-                eligible.stream()
+                eligibleChunks.stream()
                     .map(
                         chunk ->
                             new GraphSourceDescriptor(
@@ -230,10 +261,13 @@ public class GraphService {
                                 chunk.getSection(),
                                 chunk.getConfidence(),
                                 chunk.getReviewStatus()))
-                    .toList()));
+                    .toList(),
+                eligibleWikiPages.stream().map(this::wikiDescriptor).toList()));
 
     int created = 0;
+    int updated = 0;
     for (var projected : result.nodes()) {
+      boolean existed = graphNodeRepository.existsById(projected.id());
       GraphNode node =
           GraphNode.create(
               projected.id(),
@@ -242,22 +276,26 @@ public class GraphService {
               projected.type(),
               projected.reviewStatus(),
               toArray(projected.evidenceChunkIds()),
-              null,
+              toArray(projected.evidenceWikiPageIds()),
               projected.confidence(),
               OffsetDateTime.now(clock));
       graphNodeRepository.save(node);
       saveItem(
           run,
-          "source_chunk",
-          firstOrFallback(projected.evidenceChunkIds(), projected.id()),
+          sourceType(projected.evidenceWikiPageIds()),
+          firstOrFallback(projected.evidenceWikiPageIds(), firstOrFallback(projected.evidenceChunkIds(), projected.id())),
           "node",
           projected.id(),
-          GraphProjectionItemStatus.CREATED,
+          existed ? GraphProjectionItemStatus.UPDATED : GraphProjectionItemStatus.CREATED,
           null);
-      created++;
+      if (existed) {
+        updated++;
+      } else {
+        created++;
+      }
     }
     for (var projected : result.edges()) {
-      if (projected.evidenceChunkIds() == null || projected.evidenceChunkIds().isEmpty()) {
+      if (isEmpty(projected.evidenceChunkIds()) && isEmpty(projected.evidenceWikiPageIds())) {
         saveItem(
             run,
             "candidate_edge",
@@ -268,6 +306,7 @@ public class GraphService {
             "NO_EVIDENCE");
         continue;
       }
+      boolean existed = graphEdgeRepository.existsById(projected.id());
       GraphEdge edge =
           GraphEdge.create(
               projected.id(),
@@ -276,26 +315,30 @@ public class GraphService {
               projected.targetNodeId(),
               projected.type(),
               toArray(projected.evidenceChunkIds()),
-              null,
+              toArray(projected.evidenceWikiPageIds()),
               projected.confidence(),
               projected.reviewStatus(),
               OffsetDateTime.now(clock));
       graphEdgeRepository.save(edge);
       saveItem(
           run,
-          "source_chunk",
-          firstOrFallback(projected.evidenceChunkIds(), projected.id()),
+          sourceType(projected.evidenceWikiPageIds()),
+          firstOrFallback(projected.evidenceWikiPageIds(), firstOrFallback(projected.evidenceChunkIds(), projected.id())),
           "edge",
           projected.id(),
-          GraphProjectionItemStatus.CREATED,
+          existed ? GraphProjectionItemStatus.UPDATED : GraphProjectionItemStatus.CREATED,
           null);
-      created++;
+      if (existed) {
+        updated++;
+      } else {
+        created++;
+      }
     }
 
     int skippedCount = skipped.size();
     GraphProjectionStatus status =
         skippedCount > 0 ? GraphProjectionStatus.PARTIAL_FAILED : GraphProjectionStatus.SUCCEEDED;
-    run.complete(status, created, 0, skippedCount, 0, OffsetDateTime.now(clock), "Graph projection completed.");
+    run.complete(status, created, updated, skippedCount, 0, OffsetDateTime.now(clock), "Graph projection completed.");
     graphProjectionRunRepository.save(run);
     graphAuditRecordRepository.save(
         GraphAuditRecord.create(
@@ -319,6 +362,7 @@ public class GraphService {
         Map.of(
             "status", run.getStatus().name(),
             "createdCount", run.getCreatedCount(),
+            "updatedCount", run.getUpdatedCount(),
             "skippedCount", run.getSkippedCount()));
     return projectionRunResponse(run);
   }
@@ -397,11 +441,15 @@ public class GraphService {
             .stream()
             .collect(Collectors.toMap(GraphNode::getId, Function.identity(), (left, right) -> left));
     Map<String, SourceChunk> chunks = evidenceChunks(node.getEvidenceChunkIds(), adjacent);
+    Map<String, WikiPage> wikiPages = evidenceWikiPages(node.getEvidenceWikiPageIds(), adjacent);
     return new GraphNodeDetailResponse(
         nodeResponse(node),
         nodesById.values().stream().map(this::nodeResponse).toList(),
         adjacent.stream().map(this::edgeResponse).toList(),
-        chunks.values().stream().map(this::evidenceResponse).toList());
+        java.util.stream.Stream.concat(
+                chunks.values().stream().map(this::evidenceResponse),
+                wikiPages.values().stream().map(this::evidenceResponse))
+            .toList());
   }
 
   /** Gets a projection run report. */
@@ -600,12 +648,28 @@ public class GraphService {
 
   private GraphEvidenceReferenceResponse evidenceResponse(SourceChunk chunk) {
     return new GraphEvidenceReferenceResponse(
+        "SOURCE_CHUNK",
         chunk.getId(),
+        null,
+        chunk.getSection() == null || chunk.getSection().isBlank() ? chunk.getId() : chunk.getSection(),
         chunk.getSourceFile(),
         chunk.getPage(),
         chunk.getSection(),
         chunk.getConfidence(),
         chunk.getReviewStatus());
+  }
+
+  private GraphEvidenceReferenceResponse evidenceResponse(WikiPage page) {
+    return new GraphEvidenceReferenceResponse(
+        "WIKI_PAGE",
+        null,
+        page.getId(),
+        page.getTitle(),
+        null,
+        null,
+        page.getSlug(),
+        page.getConfidence(),
+        page.getReviewStatus());
   }
 
   private Map<String, SourceChunk> evidenceChunks(String[] nodeEvidence, List<GraphEdge> adjacent) {
@@ -621,6 +685,21 @@ public class GraphService {
     List<String> allIds = java.util.stream.Stream.concat(ids.stream(), edgeIds.stream()).distinct().toList();
     return sourceChunkRepository.findAllById(allIds).stream()
         .collect(Collectors.toMap(SourceChunk::getId, Function.identity(), (left, right) -> left, LinkedHashMap::new));
+  }
+
+  private Map<String, WikiPage> evidenceWikiPages(String[] nodeEvidence, List<GraphEdge> adjacent) {
+    List<String> ids =
+        Arrays.stream(nodeEvidence == null ? new String[0] : nodeEvidence)
+            .filter(Objects::nonNull)
+            .toList();
+    List<String> edgeIds =
+        adjacent.stream()
+            .flatMap(edge -> Arrays.stream(edge.getEvidenceWikiPageIds() == null ? new String[0] : edge.getEvidenceWikiPageIds()))
+            .filter(Objects::nonNull)
+            .toList();
+    List<String> allIds = java.util.stream.Stream.concat(ids.stream(), edgeIds.stream()).distinct().toList();
+    return wikiPageRepository.findAllById(allIds).stream()
+        .collect(Collectors.toMap(WikiPage::getId, Function.identity(), (left, right) -> left, LinkedHashMap::new));
   }
 
   private int effectiveLimit(Integer limit) {
@@ -645,8 +724,30 @@ public class GraphService {
     return chunk.getSourceFile() != null && !chunk.getSourceFile().isBlank();
   }
 
+  private boolean isEligibleWikiPage(WikiPage page) {
+    return TRUSTED_STATUSES.contains(page.getReviewStatus())
+        && hasWikiSourceTrace(page)
+        && (page.getConfidence() == null || page.getConfidence().compareTo(MIN_WIKI_CONFIDENCE) >= 0);
+  }
+
+  private boolean hasWikiSourceTrace(WikiPage page) {
+    return !page.getSourceRefs().isEmpty()
+        || !page.getChunkRefs().isEmpty()
+        || page.getSourceDocumentIds().length > 0;
+  }
+
   private String skipReason(SourceChunk chunk) {
     return TRUSTED_STATUSES.contains(chunk.getReviewStatus()) ? "MISSING_SOURCE_TRACE" : "UNAPPROVED_SOURCE";
+  }
+
+  private String skipReason(WikiPage page) {
+    if (!TRUSTED_STATUSES.contains(page.getReviewStatus())) {
+      return "UNAPPROVED_WIKI_PAGE";
+    }
+    if (!hasWikiSourceTrace(page)) {
+      return "MISSING_WIKI_SOURCE_TRACE";
+    }
+    return "LOW_CONFIDENCE_WIKI_PAGE";
   }
 
   private int evidenceCount(String[] values) {
@@ -659,6 +760,30 @@ public class GraphService {
 
   private String firstOrFallback(List<String> values, String fallback) {
     return values == null || values.isEmpty() ? fallback : values.getFirst();
+  }
+
+  private boolean isEmpty(List<String> values) {
+    return values == null || values.isEmpty();
+  }
+
+  private String sourceType(List<String> wikiPageIds) {
+    return wikiPageIds == null || wikiPageIds.isEmpty() ? "source_chunk" : "wiki_page";
+  }
+
+  private GraphWikiPageDescriptor wikiDescriptor(WikiPage page) {
+    return new GraphWikiPageDescriptor(
+        page.getId(),
+        page.getTitle(),
+        page.getSlug(),
+        Arrays.stream(page.getSourceDocumentIds()).filter(id -> id != null && !id.isBlank()).sorted().toList(),
+        page.getChunkRefs().stream().map(this::wikiEvidenceDescriptor).toList(),
+        Arrays.stream(page.getOutLinks()).filter(id -> id != null && !id.isBlank()).sorted().toList(),
+        page.getConfidence(),
+        page.getReviewStatus());
+  }
+
+  private GraphWikiEvidenceDescriptor wikiEvidenceDescriptor(WikiReference reference) {
+    return new GraphWikiEvidenceDescriptor(reference.id(), reference.label(), reference.locator());
   }
 
   private String runId(OffsetDateTime now) {

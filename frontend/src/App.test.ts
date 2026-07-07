@@ -403,6 +403,7 @@ describe('Atlas P0 full-stack productization shell', () => {
       .trigger('click')
     expect(wrapper.get('[data-testid="vue-product-graph"]').text()).toContain('P0 Browser Evidence')
     expect(wrapper.get('[data-testid="vue-graph-detail"]').text()).toContain('chunk-p0')
+    expect(wrapper.get('[data-testid="vue-graph-detail"]').text()).toContain('Wiki page')
 
     await wrapper
       .findAll('button')
@@ -455,6 +456,7 @@ describe('Atlas P0 full-stack productization shell', () => {
     const graphDetail = wrapper.get('[data-testid="vue-graph-detail"]').text()
     expect(graphDetail).toContain('APPROVED')
     expect(graphDetail).toContain('productization.md')
+    expect(graphDetail).toContain('wiki-p0')
 
     await wrapper
       .findAll('button')
@@ -1052,12 +1054,21 @@ function graphDetail() {
     adjacentEdges: [],
     evidenceReferences: [
       {
+        referenceType: 'SOURCE_CHUNK',
         sourceChunkId: 'chunk-p0',
         sourceFile: 'productization.md',
         page: 1,
         section: 'P0 Browser Evidence',
         confidence: 0.93,
         reviewStatus: 'APPROVED'
+      },
+      {
+        referenceType: 'WIKI_PAGE',
+        wikiPageId: 'wiki-p0',
+        label: 'P0 Browser Evidence',
+        section: 'p0-browser-evidence',
+        confidence: 0.93,
+        reviewStatus: 'PUBLISHED'
       }
     ]
   }
