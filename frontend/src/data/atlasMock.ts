@@ -1,5 +1,6 @@
 import type {
   ApiAskRun,
+  ApiManualUrlSource,
   AskSource,
   BatchMetric,
   GraphNode,
@@ -290,6 +291,29 @@ export const trustedAskRun: ApiAskRun = {
     }
   ]
 }
+
+export const manualUrlSources: ApiManualUrlSource[] = [
+  {
+    id: 'url-src-sample',
+    spaceId: 'ibm-i-modernization',
+    displayUrl: 'https://example.com/reference/page',
+    host: 'example.com',
+    title: 'Vendor reference page',
+    description: 'Sample-safe manual URL metadata seed.',
+    fetchIntent: 'FETCH_LATER',
+    fetchPolicy: 'NO_FETCH_METADATA_ONLY',
+    ingestStatus: 'REVIEW_REQUIRED',
+    reviewStatus: 'REVIEW_REQUIRED',
+    eligibilityStatus: 'REVIEW_REQUIRED_ONLY',
+    confidence: 0.3,
+    sourceTrace: 'Manual URL metadata: https://example.com/reference/page',
+    batchId: 'batch-manual-url-sample',
+    fileItemId: 'file-manual-url-sample',
+    createdBy: 'frontend-demo',
+    createdAt: '2026-07-07T00:00:00Z',
+    updatedAt: '2026-07-07T00:00:00Z'
+  }
+]
 
 export const modelConfigs: ModelConfig[] = [
   {

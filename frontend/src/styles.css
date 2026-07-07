@@ -649,6 +649,42 @@ button:disabled {
   border-radius: 8px;
 }
 
+.manual-url-ingest {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(140px, 0.8fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.manual-url-ingest label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.manual-url-ingest input,
+.manual-url-ingest select {
+  min-height: 36px;
+  border: 1px solid #d9dee6;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.manual-url-card {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.manual-url-card span,
+.manual-url-card small {
+  overflow-wrap: anywhere;
+}
+
 .atlas-api-grid button {
   min-height: 34px;
   text-align: left;
@@ -663,6 +699,12 @@ button:disabled {
   padding-left: 18px;
   color: #435064;
   line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .manual-url-ingest {
+    grid-template-columns: 1fr;
+  }
 }
 
 .atlas-api-review-queues {

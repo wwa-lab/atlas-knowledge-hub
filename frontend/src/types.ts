@@ -43,8 +43,8 @@ export type FileStatus =
 
 export type ReviewStatus =
   'REVIEW_REQUIRED' | 'APPROVED' | 'NEED_FIX' | 'OCR_REQUIRED' | 'PUBLISHED'
-export type SourceKind = 'folder' | 'zip'
-export type SourceType = 'pptx' | 'docx' | 'pdf' | 'xlsx' | 'image' | 'unsupported'
+export type SourceKind = 'folder' | 'zip' | 'url'
+export type SourceType = 'pptx' | 'docx' | 'pdf' | 'xlsx' | 'image' | 'url' | 'unsupported'
 export type UploadFlowState =
   'IDLE' | 'INVENTORY_READY' | 'INVENTORY_EMPTY' | 'BATCH_CREATED' | 'REPORT_OPEN'
 
@@ -374,10 +374,44 @@ export interface ApiBatch {
   id: string
   spaceId: string
   name: string
-  sourceKind: 'folder' | 'zip'
+  sourceKind: SourceKind
   owner: string
   uploadedAt: string
   metrics: ApiBatchMetrics
+}
+
+export type ManualUrlFetchIntent = 'METADATA_ONLY' | 'FETCH_LATER'
+export type ManualUrlFetchPolicy = 'NO_FETCH_METADATA_ONLY'
+export type ManualUrlIngestStatus = 'REGISTERED' | 'FETCH_INTENT_RECORDED' | 'REVIEW_REQUIRED'
+export type ManualUrlEligibilityStatus = 'REVIEW_REQUIRED_ONLY'
+
+export interface ApiManualUrlSource {
+  id: string
+  spaceId: string
+  displayUrl: string
+  host: string
+  title: string | null
+  description: string | null
+  fetchIntent: ManualUrlFetchIntent
+  fetchPolicy: ManualUrlFetchPolicy
+  ingestStatus: ManualUrlIngestStatus
+  reviewStatus: Extract<ApiReviewStatus, 'REVIEW_REQUIRED'>
+  eligibilityStatus: ManualUrlEligibilityStatus
+  confidence: number
+  sourceTrace: string
+  batchId: string
+  fileItemId: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateManualUrlSourceRequest {
+  url: string
+  title?: string
+  description?: string
+  fetchIntent?: ManualUrlFetchIntent
+  createdBy?: string
 }
 
 export interface ApiFileItem {

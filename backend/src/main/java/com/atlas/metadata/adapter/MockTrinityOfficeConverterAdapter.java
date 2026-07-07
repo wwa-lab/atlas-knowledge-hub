@@ -46,7 +46,7 @@ public class MockTrinityOfficeConverterAdapter implements ConverterAdapter {
       case image ->
           new ConverterResult.ConverterFileResult(
               file.fileId(), FileStatus.OCR_REQUIRED, null, BigDecimal.ZERO, "OCR is required.");
-      case unsupported ->
+      case url, unsupported ->
           new ConverterResult.ConverterFileResult(
               file.fileId(), FileStatus.UNSUPPORTED, null, BigDecimal.ZERO, "Unsupported source type.");
     };

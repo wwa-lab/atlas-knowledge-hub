@@ -1,4 +1,4 @@
-import type { Page, Route } from '@playwright/test'
+import type { Page, Request, Route } from '@playwright/test'
 
 export const p0Section = 'P0 Browser Evidence'
 
@@ -8,6 +8,7 @@ interface P0MockState {
   wikiPublished: boolean
   graphProjectionCreated: boolean
   vectorRunCreated: boolean
+  manualUrlSources: ReturnType<typeof manualUrlSource>[]
 }
 
 type MockRole = 'VIEWER' | 'KNOWLEDGE_MANAGER' | 'SPACE_OWNER'
@@ -27,7 +28,8 @@ export async function mockP0Api(page: Page, options: P0MockOptions = {}) {
     fileReviewStatus: 'REVIEW_REQUIRED',
     wikiPublished: false,
     graphProjectionCreated: false,
-    vectorRunCreated: false
+    vectorRunCreated: false,
+    manualUrlSources: [manualUrlSource()]
   }
   const currentUser = options.currentUser ?? ownerUser()
 
@@ -59,6 +61,22 @@ export async function mockP0Api(page: Page, options: P0MockOptions = {}) {
 
     if (path === '/api/spaces/ibm-i-modernization/batches') {
       return fulfill(route, state.batchCreated ? [batch()] : [])
+    }
+
+    if (path === '/api/spaces/ibm-i-modernization/manual-url-sources' && method === 'POST') {
+      const body = postJson(request)
+      const source = manualUrlSource({
+        displayUrl: body.url ?? 'https://example.com/reference/page',
+        title: body.title ?? 'Manual URL source',
+        fetchIntent: body.fetchIntent ?? 'METADATA_ONLY'
+      })
+      state.manualUrlSources = [source, ...state.manualUrlSources]
+      state.batchCreated = true
+      return fulfill(route, source, 201)
+    }
+
+    if (path === '/api/spaces/ibm-i-modernization/manual-url-sources') {
+      return fulfill(route, state.manualUrlSources)
     }
 
     if (path === '/api/batches/batch-p0/files') {
@@ -189,6 +207,14 @@ async function fulfillError(route: Route, status: number, code: string, message:
   })
 }
 
+function postJson(request: Request) {
+  try {
+    return request.postDataJSON() as Record<string, string>
+  } catch {
+    return {}
+  }
+}
+
 function space(state: P0MockState) {
   return {
     id: 'ibm-i-modernization',
@@ -215,6 +241,36 @@ function batch() {
     owner: 'P0 Browser',
     uploadedAt: '2026-07-03T00:00:00Z',
     metrics: { totalFiles: 1, pdfConverted: 0, markdownGenerated: 1, reviewRequired: 1, failed: 0, unsupported: 0 }
+  }
+}
+
+function manualUrlSource(
+  overrides: Partial<{
+    displayUrl: string
+    title: string
+    fetchIntent: 'METADATA_ONLY' | 'FETCH_LATER'
+  }> = {}
+) {
+  const displayUrl = overrides.displayUrl ?? 'https://example.com/reference/page'
+  return {
+    id: 'url-src-p0',
+    spaceId: 'ibm-i-modernization',
+    displayUrl,
+    host: 'example.com',
+    title: overrides.title ?? 'Vendor reference page',
+    description: 'Sample-safe manual URL metadata.',
+    fetchIntent: overrides.fetchIntent ?? 'FETCH_LATER',
+    fetchPolicy: 'NO_FETCH_METADATA_ONLY',
+    ingestStatus: 'REVIEW_REQUIRED',
+    reviewStatus: 'REVIEW_REQUIRED',
+    eligibilityStatus: 'REVIEW_REQUIRED_ONLY',
+    confidence: 0.3,
+    sourceTrace: `Manual URL metadata: ${displayUrl}`,
+    batchId: 'batch-p0',
+    fileItemId: 'file-p0',
+    createdBy: 'frontend-user',
+    createdAt: '2026-07-07T00:00:00Z',
+    updatedAt: '2026-07-07T00:00:00Z'
   }
 }
 

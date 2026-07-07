@@ -5,6 +5,7 @@ import {
   approveFile as approveFileApi,
   clearDeepSeekConfiguration,
   createAskRun,
+  createManualUrlSource,
   createSampleBatch,
   createSpace as createSpaceApi,
   getAskQualityMetrics,
@@ -20,6 +21,7 @@ import {
   listBatches,
   listChunks,
   listFiles,
+  listManualUrlSources,
   listModelAdapters,
   listSpaces,
   listWikiPageIssues,
@@ -45,6 +47,7 @@ import type {
   ApiGraphNodeType,
   ApiGraphView,
   ApiMe,
+  ApiManualUrlSource,
   ApiModelCapability,
   ApiModelConfiguration,
   ApiSecretStatus,
@@ -55,6 +58,7 @@ import type {
   ApiSpace,
   ApiWikiPage,
   ApiWikiPageIssue,
+  ManualUrlFetchIntent,
   SafeErrorCode
 } from '@/types'
 
@@ -362,6 +366,13 @@ const selectedBatchId = ref('')
 const files = ref<ApiFileItem[]>([])
 const selectedFileId = ref('')
 const chunks = ref<ApiSourceChunk[]>([])
+const manualUrlSources = ref<ApiManualUrlSource[]>([])
+const manualUrlDraft = ref({
+  url: 'https://example.com/reference/page',
+  title: 'Vendor reference page',
+  description: 'Sample-safe manual URL metadata seed.',
+  fetchIntent: 'FETCH_LATER' as ManualUrlFetchIntent
+})
 const reviewQueues = ref<ApiReviewQueues | null>(null)
 const wikiPages = ref<ApiWikiPage[]>([])
 const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
@@ -379,6 +390,7 @@ const isLoadingSpace = ref(false)
 const isCreateSpaceOpen = ref(false)
 const isCreatingSpace = ref(false)
 const isCreatingBatch = ref(false)
+const isCreatingManualUrl = ref(false)
 const isReviewing = ref(false)
 const isPublishing = ref(false)
 const isRefreshingEvidence = ref(false)
@@ -388,6 +400,7 @@ const authError = ref('')
 const createSpaceError = ref('')
 const createSpaceStatus = ref('')
 const workflowError = ref('')
+const manualUrlError = ref('')
 const askError = ref('')
 const askQualityError = ref('')
 const askSessionError = ref('')
@@ -1158,6 +1171,9 @@ const apiBatchMetrics = computed(() => {
     chunkCount: chunks.value.length
   }
 })
+const manualUrlReviewRequiredCount = computed(
+  () => manualUrlSources.value.filter(source => source.reviewStatus === 'REVIEW_REQUIRED').length
+)
 const reviewQueueCards = computed(() => reviewQueues.value?.queues ?? [])
 const apiReadyToPublishCount = computed(
   () => reviewQueueCards.value.find(queue => queue.type === 'READY_TO_PUBLISH')?.count ?? 0
@@ -1714,9 +1730,10 @@ async function loadSpaceContext(spaceId: string) {
   isLoadingSpace.value = true
   workflowError.value = ''
   try {
-    const [space, batchList, queues, pages, issues, audits] = await Promise.all([
+    const [space, batchList, urlSources, queues, pages, issues, audits] = await Promise.all([
       getSpace(spaceId),
       listBatches(spaceId),
+      listManualUrlSources(spaceId),
       getReviewQueues(spaceId),
       listWikiPages(spaceId, true),
       listWikiPageIssues(spaceId),
@@ -1724,6 +1741,7 @@ async function loadSpaceContext(spaceId: string) {
     ])
     selectedSpace.value = space
     batches.value = batchList
+    manualUrlSources.value = urlSources
     reviewQueues.value = queues
     wikiPages.value = pages
     wikiPageIssues.value = issues
@@ -1804,6 +1822,30 @@ async function handleDocumentUpload(event: { target: unknown }) {
     workflowError.value = safeError(error, 'Document upload failed safely.')
   } finally {
     isCreatingBatch.value = false
+  }
+}
+
+async function submitManualUrlSource() {
+  if (!selectedSpaceId.value || !canWriteContent.value) {
+    return
+  }
+  isCreatingManualUrl.value = true
+  manualUrlError.value = ''
+  workflowMessage.value = ''
+  try {
+    const source = await createManualUrlSource(selectedSpaceId.value, {
+      url: manualUrlDraft.value.url.trim(),
+      title: manualUrlDraft.value.title.trim() || undefined,
+      description: manualUrlDraft.value.description.trim() || undefined,
+      fetchIntent: manualUrlDraft.value.fetchIntent,
+      createdBy: 'frontend-user'
+    })
+    workflowMessage.value = `Manual URL registered for review: ${source.host}`
+    await refreshWorkflow(source.batchId, source.fileItemId)
+  } catch (error) {
+    manualUrlError.value = safeError(error, 'Manual URL registration failed safely.')
+  } finally {
+    isCreatingManualUrl.value = false
   }
 }
 
@@ -1911,13 +1953,15 @@ async function submitProductAsk() {
 }
 
 async function refreshWorkflow(batchId = selectedBatchId.value, fileId = selectedFileId.value) {
-  const [batchList, queues, pages, issues] = await Promise.all([
+  const [batchList, urlSources, queues, pages, issues] = await Promise.all([
     listBatches(selectedSpaceId.value),
+    listManualUrlSources(selectedSpaceId.value),
     getReviewQueues(selectedSpaceId.value),
     listWikiPages(selectedSpaceId.value, true),
     listWikiPageIssues(selectedSpaceId.value)
   ])
   batches.value = batchList
+  manualUrlSources.value = urlSources
   reviewQueues.value = queues
   wikiPages.value = pages
   wikiPageIssues.value = issues
@@ -2913,10 +2957,61 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   <span>Chunks {{ apiBatchMetrics.chunkCount }}</span>
                   <span>Markdown {{ apiBatchMetrics.markdownGenerated }}</span>
                   <span>Review required {{ apiBatchMetrics.reviewRequired }}</span>
+                  <span>Manual URLs {{ manualUrlSources.length }}</span>
                 </div>
+                <form
+                  class="manual-url-ingest"
+                  data-testid="vue-manual-url-ingest"
+                  @submit.prevent="submitManualUrlSource"
+                >
+                  <label>
+                    <span>Manual URL source</span>
+                    <input
+                      v-model="manualUrlDraft.url"
+                      data-testid="vue-manual-url-input"
+                      type="url"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label>
+                    <span>Title</span>
+                    <input
+                      v-model="manualUrlDraft.title"
+                      data-testid="vue-manual-url-title"
+                      type="text"
+                    />
+                  </label>
+                  <label>
+                    <span>Fetch intent</span>
+                    <select v-model="manualUrlDraft.fetchIntent" data-testid="vue-manual-url-intent">
+                      <option value="METADATA_ONLY">Metadata only</option>
+                      <option value="FETCH_LATER">Fetch later</option>
+                    </select>
+                  </label>
+                  <button
+                    data-testid="vue-manual-url-submit"
+                    type="submit"
+                    :disabled="isCreatingManualUrl || !canWriteContent"
+                  >
+                    {{ isCreatingManualUrl ? 'Registering...' : 'Register URL' }}
+                  </button>
+                  <p v-if="manualUrlError" class="atlas-inline-warning">{{ manualUrlError }}</p>
+                </form>
                 <p v-if="workflowMessage">{{ workflowMessage }}</p>
                 <p v-if="workflowError" class="atlas-inline-warning">{{ workflowError }}</p>
                 <div class="atlas-api-grid">
+                  <article data-testid="vue-manual-url-status">
+                    <strong>Manual URL sources</strong>
+                    <p v-if="manualUrlSources.length === 0">No manual URL sources yet.</p>
+                    <div v-for="source in manualUrlSources" :key="source.id" class="manual-url-card">
+                      <span>{{ source.displayUrl }}</span>
+                      <small>
+                        {{ source.ingestStatus }} · {{ source.reviewStatus }} ·
+                        {{ source.fetchPolicy }} · confidence {{ source.confidence.toFixed(2) }}
+                      </small>
+                      <small>{{ source.eligibilityStatus }} · {{ source.sourceTrace }}</small>
+                    </div>
+                  </article>
                   <article>
                     <strong>Batches</strong>
                     <p v-if="batches.length === 0">No API batches yet.</p>
@@ -3080,6 +3175,10 @@ function isDeepSeekDraft(model: VueModelConfig) {
               <article>
                 <strong>{{ apiReadyToPublishCount }}</strong
                 ><span>API ready to publish</span>
+              </article>
+              <article data-testid="vue-processing-manual-url-count">
+                <strong>{{ manualUrlReviewRequiredCount }}</strong
+                ><span>manual URL review</span>
               </article>
               <article>
                 <strong>{{ productBatchMetrics.total }}</strong

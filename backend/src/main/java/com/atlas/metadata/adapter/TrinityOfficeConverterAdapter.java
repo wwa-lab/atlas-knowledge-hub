@@ -223,7 +223,7 @@ public class TrinityOfficeConverterAdapter implements ConverterAdapter {
   private FileStatus failureStatus(ConverterRequest.ConverterFile file) {
     return switch (file.sourceType()) {
       case image -> FileStatus.OCR_REQUIRED;
-      case unsupported -> FileStatus.UNSUPPORTED;
+      case url, unsupported -> FileStatus.UNSUPPORTED;
       default -> FileStatus.PDF_CONVERT_FAILED;
     };
   }

@@ -82,6 +82,31 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.html()).not.toContain('runtime-secret')
   })
 
+  it('registers a manual URL source as review-required metadata with source trace visible', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await flushAsync()
+    await wrapper.findAll('button').find(button => button.text().includes('文档'))!.trigger('click')
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-manual-url-status"]').text()).toContain(
+      'REVIEW_REQUIRED'
+    )
+    await wrapper.get('[data-testid="vue-manual-url-input"]').setValue('https://example.com/docs/url')
+    await wrapper.get('[data-testid="vue-manual-url-title"]').setValue('Manual URL Fixture')
+    await wrapper.get('[data-testid="vue-manual-url-ingest"]').trigger('submit')
+    await flushAsync()
+
+    const status = wrapper.get('[data-testid="vue-manual-url-status"]').text()
+    expect(status).toContain('https://example.com/docs/url')
+    expect(status).toContain('NO_FETCH_METADATA_ONLY')
+    expect(status).toContain('REVIEW_REQUIRED_ONLY')
+    expect(status).toContain('Manual URL metadata: https://example.com/docs/url')
+  })
+
   it('renders real Vue administration panels without exposing production secrets', async () => {
     mockP0Api()
     const wrapper = mount(App)
@@ -626,7 +651,8 @@ function mockP0Api(
     vectorRunCreated: false,
     lastModelConfigurationSave: null as unknown,
     lastCreatedSpace: null as unknown,
-    createdSpaces: [] as ReturnType<typeof space>[]
+    createdSpaces: [] as ReturnType<typeof space>[],
+    manualUrlSources: [manualUrlSource()]
   }
 
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
@@ -669,6 +695,26 @@ function mockP0Api(
 
     if (url.endsWith('/api/spaces/ibm-i-modernization/batches')) {
       return jsonOk(state.batchCreated ? [batch()] : [])
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/manual-url-sources') && method === 'POST') {
+      const body = JSON.parse(String(init?.body ?? '{}'))
+      const source = manualUrlSource({
+        displayUrl: body.url,
+        title: body.title,
+        fetchIntent: body.fetchIntent ?? 'METADATA_ONLY'
+      })
+      state.manualUrlSources = [source, ...state.manualUrlSources]
+      state.batchCreated = true
+      return jsonOk(source, 201)
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/manual-url-sources')) {
+      return jsonOk(state.manualUrlSources)
+    }
+
+    if (url.includes('/api/manual-url-sources/url-src-p0')) {
+      return jsonOk(state.manualUrlSources[0])
     }
 
     if (url.endsWith('/api/batches/batch-p0/files')) {
@@ -954,6 +1000,37 @@ function batch() {
       failed: 0,
       unsupported: 0
     }
+  }
+}
+
+function manualUrlSource(
+  overrides: Partial<{
+    id: string
+    displayUrl: string
+    title: string
+    fetchIntent: 'METADATA_ONLY' | 'FETCH_LATER'
+  }> = {}
+) {
+  const displayUrl = overrides.displayUrl ?? 'https://example.com/reference/page'
+  return {
+    id: overrides.id ?? 'url-src-p0',
+    spaceId: 'ibm-i-modernization',
+    displayUrl,
+    host: 'example.com',
+    title: overrides.title ?? 'Vendor reference page',
+    description: 'Sample-safe manual URL metadata.',
+    fetchIntent: overrides.fetchIntent ?? 'FETCH_LATER',
+    fetchPolicy: 'NO_FETCH_METADATA_ONLY',
+    ingestStatus: 'REVIEW_REQUIRED',
+    reviewStatus: 'REVIEW_REQUIRED',
+    eligibilityStatus: 'REVIEW_REQUIRED_ONLY',
+    confidence: 0.3,
+    sourceTrace: `Manual URL metadata: ${displayUrl}`,
+    batchId: 'batch-p0',
+    fileItemId: 'file-p0',
+    createdBy: 'frontend-user',
+    createdAt: '2026-07-07T00:00:00Z',
+    updatedAt: '2026-07-07T00:00:00Z'
   }
 }
 

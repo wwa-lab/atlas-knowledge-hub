@@ -12,6 +12,7 @@ import type {
   ApiGraphView,
   ApiIngestionResponse,
   ApiMe,
+  ApiManualUrlSource,
   ApiModelCapability,
   ApiModelConfiguration,
   ApiReview,
@@ -25,6 +26,7 @@ import type {
   ApiVectorRun,
   ApiWikiPage,
   ApiWikiPageIssue,
+  CreateManualUrlSourceRequest,
   SafeErrorCode
 } from '@/types'
 
@@ -96,6 +98,24 @@ export async function createSpace(payload: {
 
 export async function listBatches(spaceId: string) {
   return atlasFetch<ApiBatch[]>(`/api/spaces/${spaceId}/batches`)
+}
+
+export async function listManualUrlSources(spaceId: string) {
+  return atlasFetch<ApiManualUrlSource[]>(`/api/spaces/${spaceId}/manual-url-sources`)
+}
+
+export async function createManualUrlSource(
+  spaceId: string,
+  payload: CreateManualUrlSourceRequest
+) {
+  return atlasFetch<ApiManualUrlSource>(`/api/spaces/${spaceId}/manual-url-sources`, {
+    method: 'POST',
+    body: payload
+  })
+}
+
+export async function getManualUrlSource(sourceId: string) {
+  return atlasFetch<ApiManualUrlSource>(`/api/manual-url-sources/${sourceId}`)
 }
 
 export async function createSampleBatch(spaceId: string, section: string) {

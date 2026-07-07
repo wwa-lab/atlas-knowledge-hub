@@ -23,6 +23,13 @@ test('Phase I1-I3 real Vue product surfaces use Atlas API metadata and review qu
 
   await page.getByRole('button', { name: '文档' }).click()
   await expect(page.getByTestId('vue-api-metadata')).toContainText('Batches 0')
+  await expect(page.getByTestId('vue-manual-url-status')).toContainText('REVIEW_REQUIRED')
+  await page.getByTestId('vue-manual-url-input').fill('https://example.com/docs/url')
+  await page.getByTestId('vue-manual-url-title').fill('Manual URL Fixture')
+  await page.getByTestId('vue-manual-url-submit').click()
+  await expect(page.getByTestId('vue-manual-url-status')).toContainText('https://example.com/docs/url')
+  await expect(page.getByTestId('vue-manual-url-status')).toContainText('NO_FETCH_METADATA_ONLY')
+  await expect(page.getByTestId('vue-manual-url-status')).toContainText('REVIEW_REQUIRED_ONLY')
   await page.getByTestId('vue-api-create-batch').click()
   await expect(page.getByTestId('vue-api-metadata')).toContainText('P0 Browser Batch')
   await expect(page.getByTestId('vue-api-metadata')).toContainText('samples/p0/productization.md')
@@ -37,6 +44,12 @@ test('Phase I1-I3 real Vue product surfaces use Atlas API metadata and review qu
   expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/spaces/ibm-i-modernization']))
   expect(apiRequests).toEqual(
     expect.arrayContaining(['GET /api/spaces/ibm-i-modernization/batches'])
+  )
+  expect(apiRequests).toEqual(
+    expect.arrayContaining(['GET /api/spaces/ibm-i-modernization/manual-url-sources'])
+  )
+  expect(apiRequests).toEqual(
+    expect.arrayContaining(['POST /api/spaces/ibm-i-modernization/manual-url-sources'])
   )
   expect(apiRequests).toEqual(expect.arrayContaining(['POST /api/spaces/ibm-i-modernization/batches']))
   expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/batches/batch-p0/files']))

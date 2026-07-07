@@ -7,5 +7,6 @@ public enum SourceType {
   pdf,
   xlsx,
   image,
+  url,
   unsupported
 }
