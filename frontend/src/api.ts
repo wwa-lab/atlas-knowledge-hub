@@ -1,4 +1,5 @@
 import type {
+  ApiAnswerReviewStatus,
   ApiAskRun,
   ApiAskSessionDetail,
   ApiAskSessionSummary,
@@ -293,6 +294,17 @@ export async function listAskSessions(spaceId: string) {
 
 export async function getAskSession(sessionId: string) {
   return atlasFetch<ApiAskSessionDetail>(`/api/ask-sessions/${sessionId}`)
+}
+
+export async function reviewAskAnswer(
+  spaceId: string,
+  runId: string,
+  payload: { status: ApiAnswerReviewStatus; reviewer: string; reason?: string }
+) {
+  return atlasFetch<ApiAskRun>(`/api/spaces/${spaceId}/ask/${runId}/review-actions`, {
+    method: 'POST',
+    body: payload
+  })
 }
 
 export async function listModelAdapters() {

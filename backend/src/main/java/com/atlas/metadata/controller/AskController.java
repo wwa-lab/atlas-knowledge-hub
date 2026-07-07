@@ -5,6 +5,7 @@ import com.atlas.metadata.dto.AskRunResponse;
 import com.atlas.metadata.dto.AskSessionDetailResponse;
 import com.atlas.metadata.dto.AskSessionSummaryResponse;
 import com.atlas.metadata.dto.CreateAskRequest;
+import com.atlas.metadata.dto.ReviewAskAnswerRequest;
 import com.atlas.metadata.service.AskService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,15 @@ public class AskController {
   @GetMapping("/ask-runs/{runId}")
   public ApiEnvelope<AskRunResponse> getAskRun(@PathVariable String runId) {
     return ApiEnvelope.ok(askService.getRun(runId));
+  }
+
+  /** Updates answer-level review governance metadata for one trusted ask run. */
+  @PostMapping("/spaces/{spaceId}/ask/{runId}/review-actions")
+  public ApiEnvelope<AskRunResponse> reviewAskAnswer(
+      @PathVariable String spaceId,
+      @PathVariable String runId,
+      @RequestBody ReviewAskAnswerRequest request) {
+    return ApiEnvelope.ok(askService.reviewAnswer(spaceId, runId, request));
   }
 
   /** Lists recent trusted ask sessions for a Knowledge Space. */

@@ -1,6 +1,7 @@
 package com.atlas.metadata.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,11 +15,13 @@ import com.atlas.metadata.domain.FileItem;
 import com.atlas.metadata.dto.CreateAskRequest;
 import com.atlas.metadata.dto.ModelOutputResponse;
 import com.atlas.metadata.dto.ModelRunResponse;
+import com.atlas.metadata.dto.ReviewAskAnswerRequest;
 import com.atlas.metadata.dto.VectorQueryMatchResponse;
 import com.atlas.metadata.dto.VectorQueryResponse;
 import com.atlas.metadata.enums.AskCitationStatus;
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
+import com.atlas.metadata.enums.AnswerReviewStatus;
 import com.atlas.metadata.enums.FileStatus;
 import com.atlas.metadata.enums.ModelOperation;
 import com.atlas.metadata.enums.ModelOutputKind;
@@ -28,6 +31,7 @@ import com.atlas.metadata.enums.ReviewStatus;
 import com.atlas.metadata.enums.SourceKind;
 import com.atlas.metadata.enums.SourceType;
 import com.atlas.metadata.enums.VectorReviewPolicy;
+import com.atlas.metadata.exception.RequestValidationException;
 import com.atlas.metadata.repository.AskEvidenceRepository;
 import com.atlas.metadata.repository.AskRunRepository;
 import com.atlas.metadata.repository.AskSessionRepository;
@@ -76,6 +80,9 @@ class AskServiceTest {
 
   @BeforeEach
   void setUp() {
+    savedEvidence.clear();
+    savedRuns.clear();
+    savedSessions.clear();
     when(spaceRepository.existsById("space")).thenReturn(true);
     when(batchRepository.findBySpaceId("space"))
         .thenReturn(
@@ -118,6 +125,12 @@ class AskServiceTest {
                 savedRuns.stream()
                     .filter(run -> invocation.getArgument(0).equals(run.getSessionId()))
                     .toList());
+    when(askRunRepository.findById(any()))
+        .thenAnswer(
+            invocation ->
+                savedRuns.stream()
+                    .filter(run -> invocation.getArgument(0).equals(run.getId()))
+                    .findFirst());
     when(askEvidenceRepository.saveAll(any()))
         .thenAnswer(
             invocation -> {
@@ -155,7 +168,9 @@ class AskServiceTest {
     assertThat(response.sessionId()).startsWith("ask-session-");
     assertThat(response.sessionTitle()).isEqualTo("Which scope is approved?");
     assertThat(response.answer()).contains("Mock trusted ask answer");
-    assertThat(response.answerReviewStatus()).isEqualTo(ReviewStatus.REVIEW_REQUIRED);
+    assertThat(response.answerReviewStatus()).isEqualTo(AnswerReviewStatus.REVIEW_REQUIRED);
+    assertThat(response.answerReviewLabel()).isEqualTo("Review required");
+    assertThat(response.answerReusable()).isFalse();
     assertThat(response.evidence()).extracting(item -> item.sourceChunkId()).containsExactly("chunk-approved");
     assertThat(response.evidence().get(0).citationId()).startsWith("ask-cite-");
     assertThat(response.evidence().get(0).evidenceLabel()).isEqualTo("Trusted/BRD.pdf page 12");
@@ -271,6 +286,53 @@ class AskServiceTest {
 
     assertThat(response.status()).isEqualTo(AskRunStatus.NO_EVIDENCE);
     verify(modelService, never()).createRun(any());
+  }
+
+  @Test
+  void reviewAnswerApprovesEligibleAnswerAndPreservesEvidence() {
+    AskService service = service();
+    var created =
+        service.createRun(
+            "space",
+            new CreateAskRequest(
+                "Which scope is approved?", "delivery-lead", AskReviewPolicy.APPROVED_ONLY, 5, "mock", null));
+
+    var reviewed =
+        service.reviewAnswer(
+            "space",
+            created.runId(),
+            new ReviewAskAnswerRequest(
+                AnswerReviewStatus.APPROVED, "sme.alex", "Answer is supported by approved evidence."));
+
+    assertThat(reviewed.answerReviewStatus()).isEqualTo(AnswerReviewStatus.APPROVED);
+    assertThat(reviewed.answerReviewLabel()).isEqualTo("Approved answer");
+    assertThat(reviewed.answerReusable()).isTrue();
+    assertThat(reviewed.answerReviewedBy()).isEqualTo("sme.alex");
+    assertThat(reviewed.answerReviewReason()).isEqualTo("Answer is supported by approved evidence.");
+    assertThat(reviewed.answerReviewedAt()).isEqualTo(OffsetDateTime.now(CLOCK));
+    assertThat(reviewed.evidence()).extracting(item -> item.sourceChunkId()).containsExactly("chunk-approved");
+  }
+
+  @Test
+  void reviewAnswerRejectsApprovalWithoutEligibleEvidence() {
+    when(vectorService.query(any(), any()))
+        .thenReturn(
+            new VectorQueryResponse(
+                "space", "mock-vector", "mock", VectorReviewPolicy.APPROVED_ONLY, 5, "No matches.", List.of()));
+    AskService service = service();
+    var created =
+        service.createRun(
+            "space",
+            new CreateAskRequest(
+                "Which scope is approved?", "delivery-lead", AskReviewPolicy.APPROVED_ONLY, 5, "mock", null));
+
+    assertThatThrownBy(
+            () ->
+                service.reviewAnswer(
+                    "space",
+                    created.runId(),
+                    new ReviewAskAnswerRequest(AnswerReviewStatus.APPROVED, "sme.alex", null)))
+        .isInstanceOf(RequestValidationException.class);
   }
 
   private AskService service() {

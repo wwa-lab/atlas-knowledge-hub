@@ -465,6 +465,12 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
       'Evidence citations'
     )
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'Review required'
+    )
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'Not approved reusable knowledge'
+    )
     await wrapper.get('[data-testid="vue-ask-mode"]').setValue('refusal')
     expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
       'NO_APPROVED_EVIDENCE'
@@ -472,6 +478,9 @@ describe('Atlas P0 full-stack productization shell', () => {
     await wrapper.get('[data-testid="vue-ask-mode"]').setValue('review-warning')
     expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
       'REVIEW_REQUIRED'
+    )
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
+      'Needs revision'
     )
   })
 
@@ -588,6 +597,8 @@ describe('Atlas P0 full-stack productization shell', () => {
   it('maps trusted Ask mock state to review-required answer evidence', () => {
     expect(trustedAskRun.status).toBe('SUCCEEDED')
     expect(trustedAskRun.answerReviewStatus).toBe('REVIEW_REQUIRED')
+    expect(trustedAskRun.answerReviewLabel).toBe('Review required')
+    expect(trustedAskRun.answerReusable).toBe(false)
     expect(trustedAskRun.reviewPolicy).toBe('INCLUDE_REVIEW_REQUIRED')
     expect(trustedAskRun.evidence[0].reviewStatus).toBe('APPROVED')
     expect(trustedAskRun.safeMessage).not.toContain('https://')
@@ -1088,6 +1099,11 @@ function askRun() {
     answer: 'Mock chat summary for the referenced Atlas evidence.',
     answerConfidence: 0.82,
     answerReviewStatus: 'REVIEW_REQUIRED',
+    answerReviewLabel: 'Review required',
+    answerReviewReason: null,
+    answerReviewedBy: null,
+    answerReviewedAt: null,
+    answerReusable: false,
     modelRunId: 'model-run-p0',
     safeMessage: 'Trusted ask completed.',
     evidence: [

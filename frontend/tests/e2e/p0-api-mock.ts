@@ -378,6 +378,11 @@ function askRun() {
     answer: 'Mock chat summary for the referenced Atlas evidence.',
     answerConfidence: 0.82,
     answerReviewStatus: 'REVIEW_REQUIRED',
+    answerReviewLabel: 'Review required',
+    answerReviewReason: null,
+    answerReviewedBy: null,
+    answerReviewedAt: null,
+    answerReusable: false,
     modelRunId: 'model-run-p0',
     safeMessage: 'Trusted ask completed.',
     evidence: [

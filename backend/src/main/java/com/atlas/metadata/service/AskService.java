@@ -13,10 +13,12 @@ import com.atlas.metadata.dto.CreateModelRunRequest;
 import com.atlas.metadata.dto.ModelOutputResponse;
 import com.atlas.metadata.dto.ModelRunResponse;
 import com.atlas.metadata.dto.ModelSourceReferenceRequest;
+import com.atlas.metadata.dto.ReviewAskAnswerRequest;
 import com.atlas.metadata.dto.VectorQueryMatchResponse;
 import com.atlas.metadata.dto.VectorQueryRequestDto;
 import com.atlas.metadata.dto.VectorQueryResponse;
 import com.atlas.metadata.dto.mapping.AskMapper;
+import com.atlas.metadata.enums.AnswerReviewStatus;
 import com.atlas.metadata.enums.AskCitationStatus;
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
@@ -275,6 +277,21 @@ public class AskService {
     return response(run);
   }
 
+  /** Updates reviewer-safe answer governance metadata for one trusted ask run. */
+  @Transactional
+  public AskRunResponse reviewAnswer(String spaceId, String runId, ReviewAskAnswerRequest request) {
+    AskRun run =
+        askRunRepository
+            .findById(runId)
+            .filter(candidate -> candidate.getSpaceId().equals(spaceId))
+            .orElseThrow(() -> new NotFoundException("Ask run was not found."));
+    List<AskEvidence> evidence = askEvidenceRepository.findByAskRunIdOrderByCreatedAtAsc(run.getId());
+    ValidatedAnswerReview review = validateReview(run, evidence, request);
+    run.reviewAnswer(review.status(), review.reviewer(), review.reason(), OffsetDateTime.now(clock));
+    askRunRepository.save(run);
+    return response(run);
+  }
+
   private AskRunResponse response(AskRun run) {
     AskSession session = findSession(run.getSessionId()).orElse(null);
     return response(run, session);
@@ -410,6 +427,46 @@ public class AskService {
           || reviewStatus == ReviewStatus.REVIEW_REQUIRED;
     }
     return reviewStatus == ReviewStatus.APPROVED || reviewStatus == ReviewStatus.PUBLISHED;
+  }
+
+  private ValidatedAnswerReview validateReview(
+      AskRun run, List<AskEvidence> evidence, ReviewAskAnswerRequest request) {
+    Map<String, String> fields = new LinkedHashMap<>();
+    if (request == null) {
+      throw new RequestValidationException(Map.of("body", "is required"));
+    }
+    AnswerReviewStatus status = request.status();
+    if (status == null) {
+      fields.put("status", "is required");
+    }
+    String reviewer = normalize(request.reviewer());
+    if (reviewer == null) {
+      fields.put("reviewer", "is required");
+    } else if (!isSafeText(reviewer)) {
+      fields.put("reviewer", "must not include secrets, endpoints, or private paths");
+    }
+    String reason = normalize(request.reason());
+    if ((status == AnswerReviewStatus.REJECTED || status == AnswerReviewStatus.NEEDS_REVISION)
+        && reason == null) {
+      fields.put("reason", "is required for rejected or needs-revision answers");
+    } else if (reason != null && !isSafeText(reason)) {
+      fields.put("reason", "must not include secrets, endpoints, or private paths");
+    }
+    if (status == AnswerReviewStatus.APPROVED && !canApprove(run, evidence)) {
+      fields.put("status", "approved answers require successful answer text and eligible evidence");
+    }
+    if (!fields.isEmpty()) {
+      throw new RequestValidationException(fields);
+    }
+    return new ValidatedAnswerReview(status, reviewer, reason);
+  }
+
+  private boolean canApprove(AskRun run, List<AskEvidence> evidence) {
+    boolean terminalWithAnswer =
+        (run.getStatus() == AskRunStatus.SUCCEEDED || run.getStatus() == AskRunStatus.PARTIAL_FAILED)
+            && run.getAnswer() != null
+            && !run.getAnswer().isBlank();
+    return terminalWithAnswer && evidence.stream().anyMatch(AskEvidence::isReviewEligible);
   }
 
   private ValidatedAsk validate(String spaceId, CreateAskRequest request) {
@@ -661,4 +718,6 @@ public class AskService {
       AskCitationStatus citationStatus,
       boolean reviewEligible,
       String excludedReason) {}
+
+  private record ValidatedAnswerReview(AnswerReviewStatus status, String reviewer, String reason) {}
 }

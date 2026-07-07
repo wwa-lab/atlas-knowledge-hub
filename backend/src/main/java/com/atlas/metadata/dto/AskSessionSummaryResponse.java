@@ -1,7 +1,7 @@
 package com.atlas.metadata.dto;
 
 import com.atlas.metadata.enums.AskRunStatus;
-import com.atlas.metadata.enums.ReviewStatus;
+import com.atlas.metadata.enums.AnswerReviewStatus;
 import java.time.OffsetDateTime;
 
 /** Recent Trusted Ask session summary for a Knowledge Space. */
@@ -12,6 +12,6 @@ public record AskSessionSummaryResponse(
     String createdBy,
     int runCount,
     AskRunStatus latestStatus,
-    ReviewStatus latestAnswerReviewStatus,
+    AnswerReviewStatus latestAnswerReviewStatus,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}

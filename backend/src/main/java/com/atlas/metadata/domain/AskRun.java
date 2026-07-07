@@ -2,7 +2,7 @@ package com.atlas.metadata.domain;
 
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
-import com.atlas.metadata.enums.ReviewStatus;
+import com.atlas.metadata.enums.AnswerReviewStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -52,7 +52,16 @@ public class AskRun {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "answer_review_status", nullable = false, columnDefinition = "text")
-  private ReviewStatus answerReviewStatus;
+  private AnswerReviewStatus answerReviewStatus;
+
+  @Column(name = "answer_review_reason", columnDefinition = "text")
+  private String answerReviewReason;
+
+  @Column(name = "answer_reviewed_by", columnDefinition = "text")
+  private String answerReviewedBy;
+
+  @Column(name = "answer_reviewed_at")
+  private OffsetDateTime answerReviewedAt;
 
   @Column(name = "model_run_id", columnDefinition = "text")
   private String modelRunId;
@@ -99,7 +108,7 @@ public class AskRun {
     run.reviewPolicy = reviewPolicy == null ? AskReviewPolicy.APPROVED_ONLY : reviewPolicy;
     run.mode = mode;
     run.requestedBy = requestedBy;
-    run.answerReviewStatus = ReviewStatus.REVIEW_REQUIRED;
+    run.answerReviewStatus = AnswerReviewStatus.REVIEW_REQUIRED;
     run.createdAt = createdAt;
     return run;
   }
@@ -132,7 +141,19 @@ public class AskRun {
     this.modelRunId = modelRunId;
     this.safeMessage = safeMessage;
     this.completedAt = completedAt;
-    this.answerReviewStatus = ReviewStatus.REVIEW_REQUIRED;
+    this.answerReviewStatus = AnswerReviewStatus.REVIEW_REQUIRED;
+    this.answerReviewReason = null;
+    this.answerReviewedBy = null;
+    this.answerReviewedAt = null;
+  }
+
+  /** Updates answer-level governance metadata without changing source evidence. */
+  public void reviewAnswer(
+      AnswerReviewStatus status, String reviewer, String reason, OffsetDateTime reviewedAt) {
+    this.answerReviewStatus = status;
+    this.answerReviewedBy = reviewer;
+    this.answerReviewReason = reason;
+    this.answerReviewedAt = reviewedAt;
   }
 
   private void requireActive() {
@@ -188,8 +209,20 @@ public class AskRun {
     return answerConfidence;
   }
 
-  public ReviewStatus getAnswerReviewStatus() {
+  public AnswerReviewStatus getAnswerReviewStatus() {
     return answerReviewStatus;
+  }
+
+  public String getAnswerReviewReason() {
+    return answerReviewReason;
+  }
+
+  public String getAnswerReviewedBy() {
+    return answerReviewedBy;
+  }
+
+  public OffsetDateTime getAnswerReviewedAt() {
+    return answerReviewedAt;
   }
 
   public String getModelRunId() {

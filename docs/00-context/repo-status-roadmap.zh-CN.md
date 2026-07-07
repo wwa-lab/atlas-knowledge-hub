@@ -13,7 +13,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 当前最准确的表述是：
 
-> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation，Wave 4 Ask And Graph Productization 的 `ask-session-citations` 已完成 session-scoped citation snapshots，当前 `graph-from-wiki-extraction` 已完成从 eligible reviewed/published Wiki pages 确定性抽取 graph nodes、edges 与 evidence snapshots 的 prototype implementation 与本地验证。它让 Graph surface 由可信 Wiki content 与 source trace 驱动；仍不是 retrieval-quality metrics、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production approval operations、production RBAC/audit automation、production secret manager、production distributed quota、alerting/SLO、SSO/OIDC 或 SIEM/export 系统。
+> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction` 与 `answer-review-governance` 已完成 session-scoped citation snapshots、safe source trace、Wiki-derived graph evidence snapshots、answer-specific review states、reviewer-safe metadata、review-action API、reusable eligibility 与 Trusted Ask governance labels。它们仍不是 production approval operations、reviewer queue、answer reuse indexing、retrieval quality metrics、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、alerting/SLO、SSO/OIDC 或 SIEM/export 系统。
 
 ## 2. 目前应该如何读仓库
 
@@ -80,13 +80,13 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 字段 | 当前值 |
 |---|---|
 | Wave | Wave 4 / Ask And Graph Productization |
-| Slice | `graph-from-wiki-extraction` |
+| Slice | `answer-review-governance` |
 | 文档状态 | 双语 SDD 已生成并按预授权接受；traceability、slice roadmap 与 repo status 已对齐实现证据 |
-| 工作区状态 | Graph-from-Wiki backend/frontend/tests/docs 已完成本地验证；当前 worktree 同时存在其他未提交 Wave 4 变更，提交/推送前必须 scoped staging |
-| 成熟度 | Implemented prototype Wiki-derived Graph foundation；不等于 production graph quality, layout optimization, ML deduplication, manual editing, or external graph service readiness |
-| 前置依赖 | Wiki data model、review/publish、source trace、Graph API-backed surface 与已完成的 `ask-session-citations` baseline；`answer-review-governance` 与 `retrieval-quality-metrics` 保持独立 slice boundary |
-| 下一门禁 | 完成本 slice closeout gate、diff/secret/network scans，并只在可干净 scoped staging 时提交/推送 `develop-leo` |
-| 实现规则 | 不扩大到 retrieval-quality metrics、answer-review governance、ask-session citations、model-assisted extraction、external graph services、production graph layout/optimization、manual graph editor 或 production RBAC/audit semantics |
+| 工作区状态 | Ask session/citation baseline 已在上一提交完成；Answer governance backend/frontend/tests/docs 已完成本地验证，准备提交并推送到 `develop-leo` |
+| 成熟度 | Implemented prototype answer-review governance foundation；不等于 production approval operations、reviewer queue 或 answer reuse indexing readiness |
+| 前置依赖 | `ask-rag` 已完成 API-backed Ask baseline；`ask-session-citations` 已提供 session/citation foundation；graph extraction 与 retrieval metrics 仍保持独立 slice boundary |
+| 下一门禁 | 完成 commit/push 后进入人工 review；后续可继续独立处理 Wave 4 其他 slices |
+| 实现规则 | 不扩大到 production workflow queues、notifications、legal/compliance sign-off、production RBAC/audit automation、provider strategy、graph extraction 或 retrieval-quality metrics |
 
 ## 7. Slice / Wave 队列
 
@@ -118,6 +118,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 3 | `rate-limit-safe-errors` | ✅ prototype rate-limit/safe-error foundation 已实现 | Production distributed quota、alerting/SLO dashboard、SSO/OIDC、SIEM/export 与 production secret manager 保留为未来工作 |
 | 4 | `ask-session-citations` | ✅ session-scoped Trusted Ask citation snapshot foundation 已实现 | Answer governance、retrieval quality metrics、graph extraction 与 production prompt/cost/quota controls 保留为未来工作 |
 | 5 | `graph-from-wiki-extraction` | ✅ prototype Wiki-derived Graph foundation 已实现并通过本地 backend/frontend/Graph E2E verification | Retrieval-quality metrics、model-assisted graph extraction、production graph layout/optimization、manual graph editor 与 external graph services 保留为未来工作 |
+| 6 | `answer-review-governance` | ✅ prototype answer-review governance foundation 已实现并通过本地 backend/frontend verification | Production approval operations、reviewer queues、answer reuse indexing、retrieval-quality metrics 与 production RBAC/audit automation 保留为未来工作 |
 
 ### 后续产品化方向
 
@@ -141,8 +142,8 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 ## 9. 当前建议执行顺序
 
-1. 完成 `graph-from-wiki-extraction` closeout gate，并在不混入其他 Wave 4 变更的前提下提交/推送到 `develop-leo`。
-2. 继续处理 Wave 4 中已排队但独立的 `answer-review-governance` 后续收口或 `retrieval-quality-metrics`。
+1. 推送 `answer-review-governance` 到 `develop-leo` 并进行人工 review。
+2. 继续处理 Wave 4 中独立的 `graph-from-wiki-extraction` 或 `retrieval-quality-metrics`。
 3. 根据治理优先级继续 production secret-manager hardening、production quota/observability 或其他 operations 后续切片。
 
 不要同时推进多个 slice。Master roadmap 可以管理队列，但执行必须一次一个 slice。

@@ -262,6 +262,11 @@ export const trustedAskRun: ApiAskRun = {
     'Source Trace keeps every generated answer tied to source files, pages, and chunks for SME review.',
   answerConfidence: 0.82,
   answerReviewStatus: 'REVIEW_REQUIRED',
+  answerReviewLabel: 'Review required',
+  answerReviewReason: null,
+  answerReviewedBy: null,
+  answerReviewedAt: null,
+  answerReusable: false,
   modelRunId: 'model-run-mock-001',
   safeMessage: 'Mock trusted ask completed.',
   evidence: [

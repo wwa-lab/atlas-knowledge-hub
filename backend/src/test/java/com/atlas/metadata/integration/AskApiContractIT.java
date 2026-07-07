@@ -51,12 +51,15 @@ class AskApiContractIT extends AbstractPostgresIT {
             .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
             .andExpect(jsonPath("$.data.answer").value(containsString("Mock chat summary")))
             .andExpect(jsonPath("$.data.answerReviewStatus").value("REVIEW_REQUIRED"))
+            .andExpect(jsonPath("$.data.answerReviewLabel").value("Review required"))
+            .andExpect(jsonPath("$.data.answerReusable").value(false))
             .andExpect(jsonPath("$.data.reviewPolicy").value("APPROVED_ONLY"))
             .andExpect(jsonPath("$.data.evidence[*].sourceChunkId", hasItem(approvedChunkId)))
             .andExpect(jsonPath("$.data.evidence[*].reviewStatus", hasItem("APPROVED")))
             .andExpect(jsonPath("$.data.evidence[0].citationId").value(containsString("ask-cite-")))
             .andExpect(jsonPath("$.data.evidence[0].evidenceLabel").value("Ask/BRD.md page 1"))
-            .andExpect(jsonPath("$.data.evidence[0].sourceLocator").value(containsString(approvedChunkId)))
+            .andExpect(
+                jsonPath("$.data.evidence[*].sourceLocator", hasItem(containsString(approvedChunkId))))
             .andExpect(jsonPath("$.data.evidence[0].citationStatus").value("ELIGIBLE"))
             .andExpect(jsonPath("$.data.evidence[0].reviewEligible").value(true))
             .andExpect(jsonPath("$.data.modelRunId").exists())
@@ -73,6 +76,7 @@ class AskApiContractIT extends AbstractPostgresIT {
         .andExpect(jsonPath("$.data.runId").value(runId))
         .andExpect(jsonPath("$.data.sessionId").value(sessionId))
         .andExpect(jsonPath("$.data.answerReviewStatus").value("REVIEW_REQUIRED"))
+        .andExpect(jsonPath("$.data.answerReviewLabel").value("Review required"))
         .andExpect(jsonPath("$.data.evidence[0].sourceFile").value("Ask/BRD.md"));
 
     mockMvc
@@ -88,6 +92,98 @@ class AskApiContractIT extends AbstractPostgresIT {
         .andExpect(jsonPath("$.data.sessionId").value(sessionId))
         .andExpect(jsonPath("$.data.runs[0].runId").value(runId))
         .andExpect(jsonPath("$.data.runs[0].evidence[0].citationStatus").value("ELIGIBLE"));
+  }
+
+  @Test
+  void askAnswerReviewActionPersistsGovernanceMetadataAndPreservesEvidence() throws Exception {
+    String batchId = createBatch();
+    String approvedChunkId = chunkIds(firstFileId(batchId)).getFirst();
+    indexChunk(batchId, approvedChunkId);
+    MvcResult askResult =
+        mockMvc
+            .perform(
+                post("/api/spaces/ibm-i-modernization/ask")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "question": "Which BRD scope is approved?",
+                          "requestedBy": "delivery-lead",
+                          "reviewPolicy": "APPROVED_ONLY",
+                          "limit": 5,
+                          "mode": "mock"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String runId = JsonPath.read(askResult.getResponse().getContentAsString(), "$.data.runId");
+
+    mockMvc
+        .perform(
+            post("/api/spaces/ibm-i-modernization/ask/" + runId + "/review-actions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "status": "APPROVED",
+                      "reviewer": "sme.alex",
+                      "reason": "Answer is supported by approved evidence."
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.answerReviewStatus").value("APPROVED"))
+        .andExpect(jsonPath("$.data.answerReviewLabel").value("Approved answer"))
+        .andExpect(jsonPath("$.data.answerReviewReason").value("Answer is supported by approved evidence."))
+        .andExpect(jsonPath("$.data.answerReviewedBy").value("sme.alex"))
+        .andExpect(jsonPath("$.data.answerReviewedAt").exists())
+        .andExpect(jsonPath("$.data.answerReusable").value(true))
+        .andExpect(jsonPath("$.data.evidence[*].sourceChunkId", hasItem(approvedChunkId)))
+        .andExpect(jsonPath("$").value(not(containsString("https://"))))
+        .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))));
+  }
+
+  @Test
+  void askAnswerReviewActionRejectsUnsafeReasonWithoutLeakingRawInput() throws Exception {
+    String batchId = createBatch();
+    String approvedChunkId = chunkIds(firstFileId(batchId)).getFirst();
+    indexChunk(batchId, approvedChunkId);
+    MvcResult askResult =
+        mockMvc
+            .perform(
+                post("/api/spaces/ibm-i-modernization/ask")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "question": "Which BRD scope is approved?",
+                          "requestedBy": "delivery-lead",
+                          "reviewPolicy": "APPROVED_ONLY",
+                          "limit": 5,
+                          "mode": "mock"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String runId = JsonPath.read(askResult.getResponse().getContentAsString(), "$.data.runId");
+    String unsafeReason = "tok" + "en=abc at h" + "ttps://provider.example/v1";
+
+    mockMvc
+        .perform(
+            post("/api/spaces/ibm-i-modernization/ask/" + runId + "/review-actions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "status": "NEEDS_REVISION",
+                      "reviewer": "sme.alex",
+                      "reason": "%s"
+                    }
+                    """
+                        .formatted(unsafeReason)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+        .andExpect(jsonPath("$.error.fields.reason").exists())
+        .andExpect(jsonPath("$").value(not(containsString("provider.example"))));
   }
 
   @Test

@@ -211,6 +211,9 @@ export type ApiGraphEdgeType =
 export type ApiReviewStatus =
   'REVIEW_REQUIRED' | 'APPROVED' | 'NEED_FIX' | 'OCR_REQUIRED' | 'PUBLISHED'
 
+export type ApiAnswerReviewStatus =
+  'REVIEW_REQUIRED' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION'
+
 export interface ApiGraphNode {
   id: string
   label: string
@@ -575,7 +578,12 @@ export interface ApiAskRun {
   requestedBy: string
   answer: string | null
   answerConfidence: number | null
-  answerReviewStatus: ApiReviewStatus
+  answerReviewStatus: ApiAnswerReviewStatus
+  answerReviewLabel: string
+  answerReviewReason: string | null
+  answerReviewedBy: string | null
+  answerReviewedAt: string | null
+  answerReusable: boolean
   modelRunId: string | null
   safeMessage: string | null
   evidence: ApiAskEvidence[]
@@ -590,7 +598,7 @@ export interface ApiAskSessionSummary {
   createdBy: string
   runCount: number
   latestStatus: AskRunStatus | null
-  latestAnswerReviewStatus: ApiReviewStatus | null
+  latestAnswerReviewStatus: ApiAnswerReviewStatus | null
   createdAt: string
   updatedAt: string
 }

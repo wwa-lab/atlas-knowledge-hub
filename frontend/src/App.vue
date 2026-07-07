@@ -1320,6 +1320,9 @@ const productAskAnswer = computed(() => {
       status: askRun.value.status,
       title: 'API-backed trusted answer',
       body: askRun.value.answer ?? askRun.value.safeMessage ?? 'Trusted Ask completed safely.',
+      governanceLabel: askRun.value.answerReviewLabel,
+      governanceReason: answerReviewReasonLine(askRun.value),
+      reuseHint: answerReuseHint(askRun.value),
       evidence: askRun.value.evidence.map(
         evidence =>
           `${evidence.citationId} · ${evidence.sourceChunkId} · ${evidence.evidenceLabel} · ${evidence.citationStatus} · score ${evidence.score ?? 'n/a'}`
@@ -1332,6 +1335,9 @@ const productAskAnswer = computed(() => {
       status: 'NO_APPROVED_EVIDENCE',
       title: '证据不足，已可信拒答',
       body: '当前问题只命中 OCR required、low confidence 或缺少 source_trace 的内容；这些内容不会进入可信答案。',
+      governanceLabel: 'Review required',
+      governanceReason: 'No approved answer has been reviewed.',
+      reuseHint: 'Not approved reusable knowledge.',
       evidence: [] as string[],
       warning: 'Excluded: PDF_CONVERT_FAILED, OCR_REQUIRED, LOW_CONFIDENCE, MISSING_SOURCE_TRACE'
     }
@@ -1341,6 +1347,9 @@ const productAskAnswer = computed(() => {
       status: 'REVIEW_REQUIRED',
       title: '答案需要 SME 审核',
       body: '可以基于已溯源内容生成草案，但其中包含 review-required evidence，因此答案不能被视为已发布知识。',
+      governanceLabel: 'Needs revision',
+      governanceReason: 'Reviewer should resolve review-required evidence before reuse.',
+      reuseHint: 'Not approved reusable knowledge.',
       evidence: [
         'RPG_Scan_Result.xlsx / sheet Programs / row 42 · REVIEW_REQUIRED · confidence 0.67'
       ],
@@ -1351,6 +1360,9 @@ const productAskAnswer = computed(() => {
     status: 'SUCCEEDED',
     title: '可信答案',
     body: '已发布的 Modernization Index 和已批准的 BRD Methodology 共同支持该知识空间进入 Wiki 和图谱展示；未审核低置信内容仍被排除。',
+    governanceLabel: 'Review required',
+    governanceReason: 'No reviewer reason recorded.',
+    reuseHint: 'Not approved reusable knowledge.',
     evidence: [
       'modernization-index.md / section index / chunk wiki-001 · PUBLISHED · confidence 0.96',
       'BRD_Methodology.pdf / page 12 / chunk brd-012 · APPROVED · confidence 0.94'
@@ -1358,6 +1370,17 @@ const productAskAnswer = computed(() => {
     warning: 'Generated answer remains REVIEW_REQUIRED until SME verification.'
   }
 })
+
+function answerReviewReasonLine(run: ApiAskRun) {
+  if (run.answerReviewReason) {
+    return `${run.answerReviewReason} · ${run.answerReviewedBy ?? 'reviewer n/a'}`
+  }
+  return 'No reviewer reason recorded.'
+}
+
+function answerReuseHint(run: ApiAskRun) {
+  return run.answerReusable ? 'Approved reusable knowledge.' : 'Not approved reusable knowledge.'
+}
 function isPlaceholderSettingsPanel(panel: SettingsPanel): panel is PlaceholderSettingsPanel {
   return (
     panel !== 'general' &&
@@ -2710,6 +2733,10 @@ function isDeepSeekDraft(model: VueModelConfig) {
               <h2>{{ productAskAnswer.title }}</h2>
             </header>
             <p>{{ productAskAnswer.body }}</p>
+            <p class="source-line">
+              {{ productAskAnswer.governanceLabel }} · {{ productAskAnswer.reuseHint }}
+            </p>
+            <p class="source-line">{{ productAskAnswer.governanceReason }}</p>
             <strong>Evidence citations</strong>
             <ul v-if="productAskAnswer.evidence.length > 0">
               <li v-for="evidence in productAskAnswer.evidence" :key="evidence">{{ evidence }}</li>
@@ -4581,9 +4608,12 @@ function isDeepSeekDraft(model: VueModelConfig) {
             <article v-if="askRun" class="ask-answer" data-testid="ask-answer">
               <strong
                 >{{ askRun.status }} · {{ askRun.answerReviewStatus }} ·
+                {{ askRun.answerReviewLabel }} ·
                 {{ askRun.sessionTitle ?? askRun.sessionId }}</strong
               >
               <p>{{ askRun.answer ?? askRun.safeMessage }}</p>
+              <p class="source-line">{{ answerReuseHint(askRun) }}</p>
+              <p class="source-line">{{ answerReviewReasonLine(askRun) }}</p>
               <span>confidence {{ askRun.answerConfidence ?? 'n/a' }}</span>
               <ul>
                 <li v-for="evidence in askRun.evidence" :key="evidence.evidenceId">
