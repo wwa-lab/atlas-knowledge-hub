@@ -56,6 +56,7 @@ test('second-layer local stack publishes trusted knowledge, projects graph, and 
     title: `Second Layer Wiki ${timestamp}`,
     owner: 'second-layer-e2e'
   })
+  const wikiTitle = wikiEnvelope.data.title as string
   expect(wikiEnvelope.data.reviewStatus).toBe('PUBLISHED')
   expect(wikiEnvelope.data.sourceDocumentIds).toContain(fileId)
 
@@ -76,15 +77,15 @@ test('second-layer local stack publishes trusted knowledge, projects graph, and 
   const graphEnvelope = await expectApiOk(
     request,
     'GET',
-    `/api/spaces/${spaceId}/graph?q=${encodeURIComponent(section)}&evidenceOnly=true`,
+    `/api/spaces/${spaceId}/graph?q=${encodeURIComponent(wikiTitle)}&evidenceOnly=true`,
     undefined,
     graphReadHeaders()
   )
   const graphNode = graphEnvelope.data.nodes.find(
-    (node: { label: string; id: string }) => node.label === section
+    (node: { label: string; id: string }) => node.label === wikiTitle
   )
   if (!graphNode) {
-    throw new Error(`Projected graph node was not found for ${section}`)
+    throw new Error(`Projected graph node was not found for ${wikiTitle}`)
   }
 
   const graphDetailEnvelope = await expectApiOk(
@@ -99,6 +100,9 @@ test('second-layer local stack publishes trusted knowledge, projects graph, and 
       (evidence: { sourceChunkId: string }) => evidence.sourceChunkId
     )
   ).toContain(chunkId)
+  expect(
+    graphDetailEnvelope.data.evidenceReferences.map((evidence: { section: string }) => evidence.section)
+  ).toContain(section)
 
   await expectApiOk(request, 'POST', `/api/spaces/${spaceId}/vector-runs`, {
     adapterKey: 'mock-vector',

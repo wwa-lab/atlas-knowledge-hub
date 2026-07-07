@@ -11,12 +11,20 @@ Before making changes, always read:
 - `DEVELOPMENT_STANDARDS.md`
 - Relevant files in `docs/`
 
+## Workflow Precedence
+
+- Use the Atlas project workflow and rules as the default operating model for this repository.
+- Treat external or generic workflows, including ECC, Superpowers, generic TDD workflows, and plugin-provided rituals, as optional references only.
+- Do not let external workflows override Atlas SDD, phase discipline, mock-only constraints, adapter boundaries, security/data rules, or verification gates.
+- Use the lightest Atlas workflow tier that safely fits the task. Do not add heavyweight planning, multi-agent orchestration, full TDD ceremony, or broad review loops unless the current Atlas slice, project documents, or user instruction explicitly requires them.
+- Apply TDD-style tests when they match the Atlas phase and layer being changed, especially Phase 1+ frontend logic, backend APIs, adapters, and critical workflows. Do not require 80% coverage or E2E ceremony for Phase 0 documentation, static prototype copy, or small scoped maintenance unless requested.
+
 ## Product Direction
 
 - Keep Atlas Knowledge Hub product-first, not script-first.
-- For MVP, focus on the UI prototype, batch workflow model, Markdown standard, review workflow, and lightweight graph design.
-- Prefer a simple static prototype before introducing frameworks.
-- Do not create a production backend, production database, authentication, or complex permission logic until explicitly requested.
+- The product has moved past the original static-prototype MVP. It now has a real Spring Boot backend (`metadata-api`, Java 21 + PostgreSQL + Flyway) and a Vue 3 + Vite + TypeScript SPA frontend (currently a single-component `App.vue` prototype, pending componentization). See `README.md` → "Current Status" for the accurate picture.
+- Do not expand backend scope, authentication/RBAC, production database schema, or complex permission logic beyond what the accepted SDD slices and `PROJECT_RULES.md` allow. New behavior must be represented in `docs/03-spec/` and traced to a slice before implementation.
+- Keep the frontend honest about its prototype state; componentization happens only after the relevant SDD slice is accepted.
 
 ## Reference Product Policy
 

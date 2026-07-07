@@ -24,7 +24,7 @@ echo "Running frontend Playwright E2E..."
 npm --prefix frontend run e2e
 
 echo "Running backend API, adapter, graph, and Ask contract verification..."
-mvn -f backend/pom.xml verify
+mvn -f backend/pom.xml clean verify
 
 echo "Checking diff whitespace hygiene..."
 git diff --check

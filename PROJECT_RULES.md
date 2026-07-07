@@ -168,12 +168,12 @@ Use `wwa-lab/Agentic-SDLC-Control-Tower` as a reference source for mature projec
 
 ## Prototype To Product
 
-The static prototype is a product behavior blueprint, not throwaway artwork.
+The static prototype (`prototypes/index.html`) and the current Vue SPA are product behavior blueprints, not throwaway artwork.
 
 - Preserve accepted prototype behavior unless the spec explicitly changes it.
-- Phase 1 frontend implementation should first reproduce the prototype with mock data.
-- Do not introduce backend, database, authentication, external model calls, or production storage only to support prototype behavior.
-- Split the prototype into components only after the relevant SDD slice is accepted.
+- The Vue SPA currently reproduces the prototype with mock data through the backend API; do not re-add backend, database, authentication, external model calls, or production storage that already exists or that the current slice does not require.
+- Split the monolithic `App.vue` into components only after the relevant SDD slice is accepted.
+- Do not expand backend scope, schema, or auth/RBAC beyond what accepted SDD slices and these rules allow.
 
 ## Parser Neutral
 
@@ -245,7 +245,7 @@ For real implementation:
 
 ## Lightweight MVP
 
-Keep the MVP small and understandable. Prefer static HTML/CSS/JS and documentation before introducing a framework, service mesh, database, or queue.
+Keep each slice small and understandable. The original static-HTML MVP phase is behind us, but the underlying principle still applies per slice: prefer the minimum sufficient change that satisfies the accepted spec, and avoid pulling in a service mesh, queue, or extra infrastructure that the current slice does not require.
 
 ## Phase Discipline
 
@@ -262,11 +262,10 @@ Do not skip phases unless the spec and tasks explicitly approve the change.
 ## Technology Decisions
 
 - Use lightweight SDD for feature planning when implementation begins.
-- Frontend direction: Vue 3 + Vite + TypeScript after prototype validation.
-- Backend direction: Java + Spring Boot.
-- Database direction: PostgreSQL.
-- Migration direction: Flyway.
-- Do not introduce framework scaffolding, a production database, or migration files before the project reaches the relevant implementation phase or the user explicitly asks.
+- Frontend stack: Vue 3 + Vite + TypeScript (the SPA prototype is already scaffolded under `frontend/`; componentization is a planned slice).
+- Backend stack: Java 21 + Spring Boot (artifact `metadata-api`, already scaffolded under `backend/`).
+- Database: PostgreSQL with Flyway migrations (already in place under `backend/src/main/resources/db/migration`).
+- The framework/backend/database scaffolding now exists and must not be re-introduced. New capability must be traced to an accepted SDD slice and added behind existing adapter boundaries, not by spinning up new infrastructure ad hoc.
 
 ## Workspace Separation
 

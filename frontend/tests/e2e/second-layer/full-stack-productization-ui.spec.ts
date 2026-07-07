@@ -56,8 +56,10 @@ test('second-layer browser UI completes the P0 full-stack productization loop', 
   await page.reload()
   await page.getByTestId('vue-space-card-ibm-i-modernization').click()
   await page.getByRole('button', { name: '图谱', exact: true }).click()
-  await expect(page.getByTestId('vue-product-graph')).toContainText(sectionPrefix)
+  await page.getByTestId('vue-graph-search').fill('P0 Wiki')
+  await page.getByTestId('vue-graph-node').filter({ hasText: 'P0 Wiki' }).first().click()
   await expect(page.getByTestId('vue-graph-detail')).toContainText(chunkId!)
+  await expect(page.getByTestId('vue-graph-detail')).toContainText(sectionPrefix)
   await expect(page.getByTestId('vue-graph-detail')).toContainText('APPROVED')
 
   await page.getByRole('button', { name: /对话/ }).click()
