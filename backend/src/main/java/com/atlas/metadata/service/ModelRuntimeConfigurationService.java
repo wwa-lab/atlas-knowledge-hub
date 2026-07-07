@@ -3,10 +3,13 @@ package com.atlas.metadata.service;
 import com.atlas.metadata.adapter.ModelConfigurationProvider;
 import com.atlas.metadata.dto.ModelConfigurationResponse;
 import com.atlas.metadata.dto.SaveModelConfigurationRequest;
+import com.atlas.metadata.dto.SecretStatusResponse;
+import com.atlas.metadata.dto.mapping.SecretStatusMapper;
 import com.atlas.metadata.exception.RequestValidationException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,12 @@ public class ModelRuntimeConfigurationService implements ModelConfigurationProvi
         hasRuntime && hasCredential ? "CONFIGURED" : hasCredential ? "ENV_CONFIGURED" : "MISSING";
     String endpointStatus = hasEndpoint ? "CONFIGURED" : "MISSING";
     String mode = hasRuntime ? "runtime" : hasCredential ? "environment" : "missing";
+    Map<String, String> maskedSummary =
+        Map.of(
+            "provider", DEEPSEEK,
+            "credential", credentialStatus.toLowerCase().replace('_', '-'),
+            "endpoint", endpointStatus.toLowerCase(),
+            "externalNetwork", hasCredential && hasEndpoint ? "enabled" : "disabled");
     return new ModelConfigurationResponse(
         DEEPSEEK,
         DEEPSEEK,
@@ -50,11 +59,8 @@ public class ModelRuntimeConfigurationService implements ModelConfigurationProvi
         credentialStatus,
         endpointStatus,
         mode,
-        Map.of(
-            "provider", DEEPSEEK,
-            "credential", credentialStatus.toLowerCase().replace('_', '-'),
-            "endpoint", endpointStatus.toLowerCase(),
-            "externalNetwork", hasCredential && hasEndpoint ? "enabled" : "disabled"));
+        secretStatuses(maskedSummary, hasRuntime, hasCredential),
+        maskedSummary);
   }
 
   /** Saves runtime chat configuration and returns masked state. */
@@ -140,6 +146,12 @@ public class ModelRuntimeConfigurationService implements ModelConfigurationProvi
 
   private static boolean hasValue(String value) {
     return value != null && !value.isBlank();
+  }
+
+  private static List<SecretStatusResponse> secretStatuses(
+      Map<String, String> maskedSummary, boolean hasRuntime, boolean hasCredential) {
+    String source = hasRuntime ? "runtime" : hasCredential ? "environment" : "none";
+    return SecretStatusMapper.fromSummary(DEEPSEEK, "model-configuration", maskedSummary, source);
   }
 
   private static String trim(String value) {

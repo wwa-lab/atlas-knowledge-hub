@@ -41,6 +41,7 @@ samples/output/*
 
 # Local agent/editor settings
 .claude/settings.local.json
+.codegraph/
 
 # Local environment and credentials
 .env

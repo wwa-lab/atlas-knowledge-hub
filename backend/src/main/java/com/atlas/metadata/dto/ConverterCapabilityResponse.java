@@ -14,4 +14,5 @@ public record ConverterCapabilityResponse(
     List<SourceType> supportedSourceTypes,
     boolean defaultAdapter,
     ConverterAdapterStatus status,
+    List<SecretStatusResponse> secretStatuses,
     Map<String, String> maskedConfigSummary) {}

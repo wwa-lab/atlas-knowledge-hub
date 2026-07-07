@@ -23,6 +23,8 @@ public final class StorageMapper {
         capability.supportedLayers(),
         capability.defaultAdapter(),
         capability.status(),
+        SecretStatusMapper.fromSummary(
+            capability.adapterKey(), "storage-adapter", capability.maskedConfigSummary(), "adapter"),
         capability.maskedConfigSummary());
   }
 

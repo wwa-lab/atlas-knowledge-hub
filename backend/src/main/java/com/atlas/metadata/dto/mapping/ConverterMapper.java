@@ -26,6 +26,8 @@ public final class ConverterMapper {
         capability.supportedSourceTypes(),
         capability.defaultAdapter(),
         capability.status(),
+        SecretStatusMapper.fromSummary(
+            capability.adapterKey(), "converter-runtime", capability.maskedConfigSummary(), "adapter"),
         capability.maskedConfigSummary());
   }
 

@@ -549,6 +549,24 @@ export interface ApiAskRun {
 
 export type ApiModelType = 'CHAT' | 'EMBEDDING' | 'RERANK' | 'VISION' | 'SPEECH'
 export type ApiModelAdapterStatus = 'AVAILABLE' | 'DISABLED' | 'MISCONFIGURED'
+export type ApiSecretStatusValue =
+  'CONFIGURED' | 'ENV_CONFIGURED' | 'MISSING' | 'DISABLED' | 'NOT_REQUIRED'
+
+export interface ApiSecretReference {
+  provider: string
+  scope: string
+  key: string
+  displayName: string
+}
+
+export interface ApiSecretStatus {
+  reference: ApiSecretReference
+  status: ApiSecretStatusValue
+  source: string
+  maskedLabel: string
+  replaceable: boolean
+  removable: boolean
+}
 
 export interface ApiModelCapability {
   adapterKey: string
@@ -560,6 +578,7 @@ export interface ApiModelCapability {
   defaultModel: boolean
   status: ApiModelAdapterStatus
   contextLimit: number | null
+  secretStatuses: ApiSecretStatus[]
   maskedConfigSummary: Record<string, string>
 }
 
@@ -570,6 +589,7 @@ export interface ApiModelConfiguration {
   credentialStatus: 'CONFIGURED' | 'ENV_CONFIGURED' | 'MISSING'
   endpointStatus: 'CONFIGURED' | 'MISSING'
   mode: 'runtime' | 'environment' | 'missing'
+  secretStatuses: ApiSecretStatus[]
   maskedConfigSummary: Record<string, string>
 }
 

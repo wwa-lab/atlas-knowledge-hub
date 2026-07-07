@@ -66,6 +66,7 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | Wave 3 / Runtime Readiness | `runtime-smoke-config-and-runbook` | 为 approved local `trinity-office` 与 `document-normalize` checks 定义 runtime smoke environment contract、safe evidence rules 与双语 runbook | ✅ 已作为 command-level runtime smoke readiness 实现；默认 CI 仍保持 mock-safe，approved local pass evidence 在提供 commands 前保持 skipped | 当前成熟度目标已关闭；不代表 production operations readiness |
 | Wave 3 / Trust And Governance | `auth-space-rbac` | 后端强制 current-user context、本地 mock auth、未来 SSO/OIDC boundary、space membership、role matrix、protected API guards 与 permission-aware UI contract | ✅ 已按接受切片完成 closeout verification，包含 dedicated role E2E；不代表 production SSO/OIDC readiness | 验收 review 关注 role semantics 与 `/api/spaces` list visibility；production SSO/OIDC 留在未来工作 |
 | Wave 3 / Trust And Governance | `audit-log-foundation` | 面向核心治理操作的 safe append-only audit event capture、RBAC-protected audit read APIs 与只读 audit UI | ✅ 已按接受版 SDD 完成 prototype implementation | Production retention/SIEM/export 与 historical graph-audit backfill 仍不在本切片范围内 |
+| Wave 3 / Trust And Governance | `secret-manager-integration` | 覆盖 model configuration 与 adapter capability metadata 的 secret-reference 和 masked-status contract foundation | ✅ 已完成实现并通过本地 closeout verification | Production secret manager storage、rotation 与 policy automation 保持为 future work |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。
 

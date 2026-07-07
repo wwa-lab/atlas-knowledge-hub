@@ -5,7 +5,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -111,9 +113,48 @@ class ModelApiContractIT extends AbstractPostgresIT {
         .andExpect(jsonPath("$.data[*].modelKey", hasItem("deepseek-flash")))
         .andExpect(jsonPath("$.data[*].modelType", hasItem("CHAT")))
         .andExpect(jsonPath("$.data[*].supportedOperations[0]", hasItem("CHAT")))
+        .andExpect(jsonPath("$.data[*].secretStatuses[*].reference.key", hasItem("credential")))
         .andExpect(jsonPath("$.data[0].maskedConfigSummary.externalNetwork").value("disabled"))
         .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
         .andExpect(jsonPath("$").value(not(containsString("password"))));
+  }
+
+  @Test
+  void modelConfigurationEndpointsReturnSecretReferencesOnly() throws Exception {
+    MvcResult saved =
+        mockMvc
+            .perform(
+                put("/api/model-configurations/deepseek")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "provider": "deepseek",
+                          "endpoint": "https://public.example.invalid/v1",
+                          "modelName": "deepseek-chat",
+                          "apiKey": "redaction-check-value"
+                        }
+                        """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.credentialStatus").value("CONFIGURED"))
+            .andExpect(jsonPath("$.data.secretStatuses[*].reference.key", hasItem("credential")))
+            .andExpect(jsonPath("$.data.secretStatuses[*].status", hasItem("CONFIGURED")))
+            .andReturn();
+
+    assertThat(saved.getResponse().getContentAsString())
+        .doesNotContain("redaction-check-value", "public.example.invalid");
+
+    mockMvc
+        .perform(get("/api/model-configurations/deepseek"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.secretStatuses[*].reference.scope", hasItem("model-configuration")))
+        .andExpect(jsonPath("$").value(not(containsString("redaction-check-value"))))
+        .andExpect(jsonPath("$").value(not(containsString("public.example.invalid"))));
+
+    mockMvc
+        .perform(delete("/api/model-configurations/deepseek"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.secretStatuses[*].reference.key", hasItem("credential")));
   }
 
   @Test

@@ -28,6 +28,8 @@ public final class ModelMapper {
         capability.defaultModel(),
         capability.status(),
         capability.contextLimit(),
+        SecretStatusMapper.fromSummary(
+            capability.providerFamily(), "model-adapter", capability.maskedConfigSummary(), "adapter"),
         capability.maskedConfigSummary());
   }
 

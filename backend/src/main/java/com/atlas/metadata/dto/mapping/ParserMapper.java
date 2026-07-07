@@ -29,6 +29,8 @@ public final class ParserMapper {
         capability.defaultAdapter(),
         capability.status(),
         capability.lowConfidenceThreshold(),
+        SecretStatusMapper.fromSummary(
+            capability.adapterKey(), "parser-runtime", capability.maskedConfigSummary(), "adapter"),
         capability.maskedConfigSummary());
   }
 

@@ -1076,7 +1076,10 @@ function modelAdapters(deepSeekConfigured = false) {
         credential: 'mock',
         endpoint: 'not_configured',
         externalNetwork: 'disabled'
-      }
+      },
+      secretStatuses: [
+        secretStatus('built-in mock', 'model-adapter', 'credential', 'NOT_REQUIRED', 'mock')
+      ]
     }
   ]
   if (deepSeekConfigured) {
@@ -1095,7 +1098,11 @@ function modelAdapters(deepSeekConfigured = false) {
           credential: 'configured',
           endpoint: 'configured',
           externalNetwork: 'enabled'
-        }
+        },
+        secretStatuses: [
+          secretStatus('deepseek', 'model-configuration', 'credential', 'CONFIGURED', 'runtime'),
+          secretStatus('deepseek', 'model-configuration', 'endpoint', 'CONFIGURED', 'runtime')
+        ]
       },
       ...adapters
     ]
@@ -1116,7 +1123,39 @@ function modelConfiguration(credentialStatus = 'MISSING') {
       credential: credentialStatus.toLowerCase().replace('_', '-'),
       endpoint: 'configured',
       externalNetwork: credentialStatus === 'MISSING' ? 'disabled' : 'enabled'
-    }
+    },
+    secretStatuses: [
+      secretStatus(
+        'deepseek',
+        'model-configuration',
+        'credential',
+        credentialStatus === 'ENV_CONFIGURED' ? 'ENV_CONFIGURED' : credentialStatus,
+        credentialStatus === 'MISSING' ? 'none' : 'runtime'
+      ),
+      secretStatus('deepseek', 'model-configuration', 'endpoint', 'CONFIGURED', 'runtime')
+    ]
+  }
+}
+
+function secretStatus(
+  provider: string,
+  scope: string,
+  key: string,
+  status: string,
+  source: string
+) {
+  return {
+    reference: {
+      provider,
+      scope,
+      key,
+      displayName: key === 'credential' ? 'Credential' : 'Endpoint'
+    },
+    status,
+    source,
+    maskedLabel: status === 'MISSING' ? 'Missing' : 'Configured',
+    replaceable: true,
+    removable: status !== 'MISSING'
   }
 }
 

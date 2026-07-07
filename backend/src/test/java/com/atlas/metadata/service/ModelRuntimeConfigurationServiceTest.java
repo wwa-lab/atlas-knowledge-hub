@@ -31,6 +31,14 @@ class ModelRuntimeConfigurationServiceTest {
 
     assertThat(envState.credentialStatus()).isEqualTo("ENV_CONFIGURED");
     assertThat(envState.modelKey()).isEqualTo("deepseek-env");
+    assertThat(envState.secretStatuses())
+        .anySatisfy(
+            status -> {
+              assertThat(status.reference().key()).isEqualTo("credential");
+              assertThat(status.status()).isEqualTo("ENV_CONFIGURED");
+              assertThat(status.reference().provider()).isEqualTo("deepseek");
+              assertThat(status.maskedLabel()).isEqualTo("Configured from environment");
+            });
     assertThat(envState.toString()).doesNotContain("env-secret", "api.deepseek.com");
 
     var saved =
@@ -40,6 +48,13 @@ class ModelRuntimeConfigurationServiceTest {
 
     assertThat(saved.credentialStatus()).isEqualTo("CONFIGURED");
     assertThat(saved.modelKey()).isEqualTo("deepseek-chat");
+    assertThat(saved.secretStatuses())
+        .anySatisfy(
+            status -> {
+              assertThat(status.reference().key()).isEqualTo("credential");
+              assertThat(status.status()).isEqualTo("CONFIGURED");
+              assertThat(status.source()).isEqualTo("runtime");
+            });
     assertThat(saved.toString()).doesNotContain("runtime-secret", "api.deepseek.com");
     assertThat(service.effectiveEnvironment())
         .containsEntry("ATLAS_MODEL_API_KEY", "runtime-secret")

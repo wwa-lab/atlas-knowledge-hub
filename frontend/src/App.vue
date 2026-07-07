@@ -40,6 +40,7 @@ import type {
   ApiMe,
   ApiModelCapability,
   ApiModelConfiguration,
+  ApiSecretStatus,
   ApiReviewQueues,
   ApiReviewStatus,
   ApiSourceChunk,
@@ -251,6 +252,7 @@ interface VueModelConfig {
   name: string
   baseUrl: string
   apiKeyStatus: 'configured' | 'not_configured'
+  secretStatuses: ApiSecretStatus[]
   supportsMultimodal: boolean
   thinkingFormat: ThinkingFormat
   createdInSettings?: boolean
@@ -398,6 +400,7 @@ const models = ref<VueModelConfig[]>([
     name: 'deepseek-v4-flash',
     baseUrl: 'mock://deepseek-compatible',
     apiKeyStatus: 'configured',
+    secretStatuses: [],
     supportsMultimodal: true,
     thinkingFormat: 'none'
   },
@@ -410,6 +413,7 @@ const models = ref<VueModelConfig[]>([
     name: 'text-embedding-v4',
     baseUrl: 'mock://dashscope-compatible',
     apiKeyStatus: 'configured',
+    secretStatuses: [],
     supportsMultimodal: false,
     thinkingFormat: 'none'
   }
@@ -892,6 +896,11 @@ const settingsSurfaces: Record<PlaceholderSettingsPanel, SettingsSurface> = {
     rows: [
       { label: 'Active adapter', value: 'mock-vector', note: '自动化验证不需要真实向量库。' },
       {
+        label: 'Secret reference',
+        value: 'status only',
+        note: 'endpoint 与 credential 只显示配置状态。'
+      },
+      {
         label: 'Review policy',
         value: 'APPROVED_ONLY',
         note: 'review-required evidence 默认排除。'
@@ -905,6 +914,7 @@ const settingsSurfaces: Record<PlaceholderSettingsPanel, SettingsSurface> = {
     summary: '展示 document-normalize 这类内部能力的适配器状态，产品界面不依赖单一实现。',
     rows: [
       { label: 'PDF parser', value: 'mock-parser', note: '真实 parser runtime 留在 adapter 后。' },
+      { label: 'Runtime command', value: 'masked status', note: '不展示本地命令或私有路径。' },
       {
         label: 'OCR route',
         value: 'queued when required',
@@ -926,6 +936,11 @@ const settingsSurfaces: Record<PlaceholderSettingsPanel, SettingsSurface> = {
         label: 'Object storage',
         value: 'mock-s3-compatible',
         note: '无真实 bucket 或 credential。'
+      },
+      {
+        label: 'Secret reference',
+        value: 'missing / configured',
+        note: '只显示状态，不显示 endpoint。'
       },
       { label: 'Generated assets', value: 'relative product paths', note: '禁止私有绝对路径。' },
       { label: 'Retention', value: 'review evidence kept', note: '原始机密文档不进入样例数据。' }
@@ -1932,15 +1947,12 @@ function productGraphNodeType(type: ApiGraphNodeType): ProductGraphNode['type'] 
 }
 
 function modelCapabilityToVueModel(capability: ApiModelCapability): VueModelConfig {
-  const runtimeCredential = deepSeekConfiguration.value?.credentialStatus
-    .toLowerCase()
-    .replace('_', '-')
-  const credential =
+  const configurationCredential =
     capability.adapterKey === 'deepseek'
-      ? runtimeCredential && runtimeCredential !== 'missing'
-        ? runtimeCredential
-        : capability.maskedConfigSummary.credential
-      : capability.maskedConfigSummary.credential
+      ? secretStatusByKey(deepSeekConfiguration.value?.secretStatuses, 'credential')
+      : undefined
+  const capabilityCredential = secretStatusByKey(capability.secretStatuses, 'credential')
+  const credential = configurationCredential ?? capabilityCredential
   return {
     id: capability.modelKey,
     category: modelTypeToCategory(capability.modelType),
@@ -1948,14 +1960,12 @@ function modelCapabilityToVueModel(capability: ApiModelCapability): VueModelConf
     provider: capability.providerFamily,
     source: 'API',
     name: capability.modelKey,
-    baseUrl:
-      capability.adapterKey === 'deepseek'
-        ? 'https://api.deepseek.com'
-        : (capability.maskedConfigSummary.endpoint ?? ''),
-    apiKeyStatus:
-      credential === 'configured' || credential === 'env-configured' || credential === 'mock'
-        ? 'configured'
-        : 'not_configured',
+    baseUrl: '',
+    apiKeyStatus: isSecretConfigured(credential) ? 'configured' : 'not_configured',
+    secretStatuses:
+      capability.adapterKey === 'deepseek' && deepSeekConfiguration.value
+        ? deepSeekConfiguration.value.secretStatuses
+        : capability.secretStatuses,
     supportsMultimodal: capability.modelType === 'VISION',
     thinkingFormat: 'none',
     sourceLabel: `${capability.adapterKey} · ${capability.status}`
@@ -2257,6 +2267,31 @@ function modelDetail(model: VueModelConfig) {
   return ''
 }
 
+function secretStatusByKey(statuses: ApiSecretStatus[] | undefined, key: string) {
+  return statuses?.find(status => status.reference.key === key)
+}
+
+function isSecretConfigured(status: ApiSecretStatus | undefined) {
+  return (
+    status?.status === 'CONFIGURED' ||
+    status?.status === 'ENV_CONFIGURED' ||
+    status?.status === 'NOT_REQUIRED'
+  )
+}
+
+function modelSecretLabel(model: VueModelConfig) {
+  const credential = secretStatusByKey(model.secretStatuses, 'credential')
+  if (!credential) return model.apiKeyStatus === 'configured' ? '已配置' : '未配置'
+  const labels: Record<ApiSecretStatus['status'], string> = {
+    CONFIGURED: '已配置',
+    ENV_CONFIGURED: '环境已配置',
+    MISSING: '未配置',
+    DISABLED: '已禁用',
+    NOT_REQUIRED: '无需密钥'
+  }
+  return labels[credential.status]
+}
+
 function openModelEditor(model: VueModelConfig) {
   selectedModelId.value = model.id
   isModelAddMenuOpen.value = false
@@ -2291,7 +2326,12 @@ async function removeApiKey() {
     if (isDeepSeekDraft(modelDraft.value)) {
       deepSeekConfiguration.value = await clearDeepSeekConfiguration()
     }
-    modelDraft.value = { ...modelDraft.value, apiKeyStatus: 'not_configured', apiKeyEditing: false }
+    modelDraft.value = {
+      ...modelDraft.value,
+      apiKeyStatus: 'not_configured',
+      apiKeyEditing: false,
+      secretStatuses: deepSeekConfiguration.value?.secretStatuses ?? modelDraft.value.secretStatuses
+    }
     apiKeyInput.value = ''
     modelTestStatus.value = 'API key state cleared.'
   } catch (error) {
@@ -2371,8 +2411,13 @@ async function saveModelEditor() {
       modelApiError.value = safeError(error, 'Model configuration save failed safely.')
       return
     }
-    persisted.apiKeyStatus =
-      deepSeekConfiguration.value.credentialStatus === 'MISSING' ? 'not_configured' : 'configured'
+    persisted.apiKeyStatus = isSecretConfigured(
+      secretStatusByKey(deepSeekConfiguration.value.secretStatuses, 'credential')
+    )
+      ? 'configured'
+      : 'not_configured'
+    persisted.secretStatuses = deepSeekConfiguration.value.secretStatuses
+    persisted.baseUrl = ''
   } else if (persisted.category !== 'chat') {
     persisted.apiKeyStatus = 'not_configured'
   }
@@ -4091,8 +4136,11 @@ function isDeepSeekDraft(model: VueModelConfig) {
           <div class="vue-key-field">
             <strong>API Key（可选）</strong>
             <div class="vue-key-row">
-              <span :class="{ empty: modelDraft.apiKeyStatus !== 'configured' }">
-                {{ modelDraft.apiKeyStatus === 'configured' ? '已配置' : '未配置' }}
+              <span
+                :class="{ empty: modelDraft.apiKeyStatus !== 'configured' }"
+                data-testid="vue-key-status"
+              >
+                {{ modelSecretLabel(modelDraft) }}
               </span>
               <span>
                 <button data-testid="vue-key-replace" type="button" @click="startApiKeyReplace">

@@ -16,4 +16,5 @@ public record ParserCapabilityResponse(
     boolean defaultAdapter,
     ParserAdapterStatus status,
     BigDecimal lowConfidenceThreshold,
+    List<SecretStatusResponse> secretStatuses,
     Map<String, String> maskedConfigSummary) {}

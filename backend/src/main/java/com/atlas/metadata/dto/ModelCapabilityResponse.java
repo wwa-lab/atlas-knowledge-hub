@@ -17,4 +17,5 @@ public record ModelCapabilityResponse(
     boolean defaultModel,
     ModelAdapterStatus status,
     int contextLimit,
+    List<SecretStatusResponse> secretStatuses,
     Map<String, String> maskedConfigSummary) {}

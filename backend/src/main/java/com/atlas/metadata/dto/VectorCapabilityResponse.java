@@ -13,4 +13,5 @@ public record VectorCapabilityResponse(
     List<String> supportedOperations,
     boolean defaultAdapter,
     VectorAdapterStatus status,
+    List<SecretStatusResponse> secretStatuses,
     Map<String, String> maskedConfigSummary) {}

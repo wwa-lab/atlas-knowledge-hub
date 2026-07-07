@@ -13,4 +13,5 @@ public record StorageCapabilityResponse(
     List<StorageLayer> supportedLayers,
     boolean defaultAdapter,
     StorageAdapterStatus status,
+    List<SecretStatusResponse> secretStatuses,
     Map<String, String> maskedConfigSummary) {}

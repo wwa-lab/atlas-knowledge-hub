@@ -30,6 +30,8 @@ public final class VectorMapper {
         capability.supportedOperations(),
         capability.defaultAdapter(),
         capability.status(),
+        SecretStatusMapper.fromSummary(
+            capability.adapterKey(), "vector-adapter", capability.maskedConfigSummary(), "adapter"),
         capability.maskedConfigSummary());
   }
 
