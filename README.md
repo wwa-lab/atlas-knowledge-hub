@@ -61,6 +61,7 @@ See `DEVELOPMENT_STANDARDS.md` for the full standard covering goal-driven SDD, c
 New contributors can start with `docs/getting-started.md` for a step-by-step onboarding guide.
 Use `docs/local-runbook.md` when you need command-by-command local startup and verification steps.
 Chinese VS Code users can use `docs/local-runbook.zh-CN.md`.
+Use `docs/05-design/runbooks/deployment-monitoring-runbook.md` for deployment readiness, monitoring signal, incident triage, rollback, and closeout evidence guidance.
 
 Reusable acceptance findings are captured in `docs/00-context/lessons-learned.md` and should update the rule, spec, checklist, or test that prevents recurrence.
 

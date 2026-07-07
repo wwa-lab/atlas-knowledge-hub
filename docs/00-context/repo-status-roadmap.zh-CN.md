@@ -13,7 +13,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 当前最准确的表述是：
 
-> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；当前 Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation。它允许用户手动登记安全 URL metadata、fetch intent、source trace、ingest status、eligibility metadata 与 review-required output；仍不是 connector-sync-v0、scheduled/recursive crawl、真实 external fetch、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、alerting/SLO、SSO/OIDC 或 SIEM/export 系统。
+> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation，`deployment-monitoring-runbook` 已完成 documentation-only operations contract。它们仍不是 connector-sync-v0、scheduled/recursive crawl、真实 external fetch、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、真实 alerting/SLO、SSO/OIDC、SIEM/export、生产部署自动化或 production incident tooling 系统。
 
 ## 2. 目前应该如何读仓库
 
@@ -80,13 +80,13 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 字段 | 当前值 |
 |---|---|
 | Wave | Wave 5 / Connector And Operations |
-| Slice | `manual-url-knowledge-ingest` |
-| 文档状态 | 双语 SDD 已生成并按预授权接受；traceability、slice roadmap 与 repo status 已对齐 implementation 和 verification evidence |
-| 工作区状态 | Manual URL backend/frontend/tests/docs 已完成实现并通过 full verification、closeout gate、diff/secret/network scans；提交/推送前必须保持 scoped staging |
-| 成熟度 | Implemented metadata-only manual URL ingest foundation；不等于 connector-sync-v0、production crawl readiness、真实 external fetch、production compliance scanning 或 connector secret management |
-| 前置依赖 | Knowledge Space、batch/file/source metadata、Wiki ingest、review/publish、safe errors、rate limiting、Processing Center 与 API-backed Vue baseline |
-| 下一门禁 | 推送 `develop-leo` 并进行人工 review；后续 Wave 5 slice 必须先生成并接受各自 SDD |
-| 实现规则 | 不扩大到 connector sync、scheduled/recursive crawl、browser automation、real external URL fetch、production compliance scanning、connector secrets、auth/RBAC/audit/secret/rate-limit/provider semantic changes 或 approved Wiki/Ask/Graph use of unreviewed content |
+| Slice | `deployment-monitoring-runbook` |
+| 文档状态 | 双语 SDD、runbook、tasks、traceability 与 completion report 已生成并按预授权接受 |
+| 工作区状态 | Documentation-only operations contract 已交付，覆盖 deployment readiness、post-delivery verification、monitoring signals、alert severity、incident triage、rollback/recovery、safe evidence 与 closeout |
+| 成熟度 | L4 readiness preparation / operations contract；不等于 L5 production observability、真实 alerting、生产部署自动化或 production incident tooling |
+| 前置依赖 | `manual-url-knowledge-ingest`、`runtime-smoke-config-and-runbook`、`secret-manager-integration`、`rate-limit-safe-errors`、`ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance`、`retrieval-quality-metrics` 作为 operational signal grounding |
+| 下一门禁 | 推送 `develop-leo` 并进行人工 review；后续 production monitoring、alert routing、deployment automation 与 incident tooling 需独立 slice |
+| 实现规则 | 不接入真实 monitoring platform、alert channel、cloud SDK、外部 network dependency、production secret、真实 logs、真实公司数据、auth/RBAC/audit/secret/provider behavior 或 workflow gate 行为 |
 
 ## 7. Slice / Wave 队列
 
@@ -121,6 +121,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 6 | `answer-review-governance` | ✅ prototype answer-review governance foundation 已实现并通过本地 backend/frontend verification | Production approval operations、reviewer queues、answer reuse indexing 与 production RBAC/audit automation 保留为未来工作 |
 | 7 | `retrieval-quality-metrics` | ✅ mock/sample-safe retrieval quality metrics foundation 已实现 | Online evaluation、provider/model changes 与 production cost/quota controls 保留为未来工作 |
 | 8 | `manual-url-knowledge-ingest` | ✅ metadata-only manual URL source registration foundation 已实现并通过 verification | Connector sync、scheduled/recursive crawl、真实 external fetch、production compliance scanning、connector secrets 与 approved Wiki/Ask/Graph 使用未审核内容保留为未来工作 |
+| 9 | `deployment-monitoring-runbook` | ✅ documentation-only deployment monitoring operations contract 已交付 | Real monitoring platforms、alert channels、production deployment automation、production health/SLO dashboards、connector/worker automation 与 production incident tooling 保留为未来工作 |
 
 ### 后续产品化方向
 
@@ -144,8 +145,8 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 ## 9. 当前建议执行顺序
 
-1. 推送 `manual-url-knowledge-ingest` 到 `develop-leo` 并进行人工 review。
-2. 按 Wave 5 方向继续 `connector-sync-v0`、`worker-retry-dead-letter` 或 `deployment-monitoring-runbook`，但必须先生成并接受各自 SDD。
+1. 推送 `deployment-monitoring-runbook` 到 `develop-leo` 并进行人工 review。
+2. 按 Wave 5 方向继续 `connector-sync-v0`、`worker-retry-dead-letter` 或 production observability / deployment automation 后续切片，但必须先生成并接受各自 SDD。
 3. 根据治理优先级继续 production secret-manager hardening、production quota/observability 或其他 operations 后续切片。
 
 不要同时推进多个 slice。Master roadmap 可以管理队列，但执行必须一次一个 slice。
