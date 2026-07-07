@@ -112,6 +112,44 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.html()).not.toContain(`${'to'}ken=mock`)
   })
 
+  it('renders worker dead-letter recovery and applies safe operator transitions', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '处理中心')!
+      .trigger('click')
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-dead-letter-ops"]').text()).toContain('Worker recovery')
+    expect(wrapper.get('[data-testid="vue-dead-letter-entry"]').text()).toContain('OPEN')
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain(
+      'SOURCE_UNREADABLE'
+    )
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain(
+      'DEAD_LETTERED'
+    )
+    expect(wrapper.get('[data-testid="vue-dead-letter-trace"]').text()).toContain('source_trace')
+    expect(wrapper.get('[data-testid="vue-dead-letter-attempt"]').text()).toContain(
+      'FAILED_TERMINAL'
+    )
+    expect(wrapper.html()).not.toContain('/Users/')
+    expect(wrapper.html()).not.toContain(`${'to'}ken=mock`)
+    expect(wrapper.html()).not.toContain('StackTrace')
+
+    await wrapper.get('[data-testid="vue-retry-dead-letter"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain('RETRIED')
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain('WAITING_RETRY')
+
+    await wrapper.get('[data-testid="vue-refresh-dead-letters"]').trigger('click')
+    await flushAsync()
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain('RETRIED')
+  })
+
   it('registers a manual URL source as review-required metadata with source trace visible', async () => {
     mockP0Api()
     const wrapper = mount(App)
@@ -680,6 +718,8 @@ function mockP0Api(
     graphProjectionCreated: false,
     vectorRunCreated: false,
     connectorRunCreated: false,
+    deadLetterStatus: 'OPEN',
+    deadLetterJobStatus: 'DEAD_LETTERED',
     lastModelConfigurationSave: null as unknown,
     lastCreatedSpace: null as unknown,
     createdSpaces: [] as ReturnType<typeof space>[],
@@ -897,6 +937,29 @@ function mockP0Api(
       return jsonOk(state.connectorRunCreated ? connectorItems() : [])
     }
 
+    if (url.endsWith('/api/dead-letter-entries') && method === 'GET') {
+      return jsonOk([deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus)])
+    }
+
+    if (url.endsWith('/api/dead-letter-entries/dead-letter-p0') && method === 'GET') {
+      return jsonOk(deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus))
+    }
+
+    if (url.endsWith('/api/dead-letter-entries/dead-letter-p0/retry') && method === 'POST') {
+      state.deadLetterStatus = 'RETRIED'
+      state.deadLetterJobStatus = 'WAITING_RETRY'
+      return jsonOk(deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus))
+    }
+
+    if (
+      url.endsWith('/api/dead-letter-entries/dead-letter-p0/acknowledge') &&
+      method === 'POST'
+    ) {
+      state.deadLetterStatus = 'ACKNOWLEDGED'
+      state.deadLetterJobStatus = 'ACKNOWLEDGED'
+      return jsonOk(deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus))
+    }
+
     if (url.endsWith('/api/model-adapters')) {
       return jsonOk(modelAdapters(options.deepSeekConfigured))
     }
@@ -1087,6 +1150,65 @@ function connectorItems() {
       discoveredAt: '2026-07-07T00:00:00Z'
     }
   ]
+}
+
+function deadLetterEntry(status = 'OPEN', jobStatus = 'DEAD_LETTERED') {
+  const attempt = {
+    id: 'attempt-p0',
+    workerJobId: 'worker-job-p0',
+    attemptNumber: 3,
+    status: jobStatus === 'DEAD_LETTERED' ? 'FAILED_TERMINAL' : 'FAILED_RETRYABLE',
+    retryable: false,
+    safeErrorCode: 'SOURCE_UNREADABLE',
+    safeErrorCategory: 'SOURCE_UNREADABLE',
+    safeErrorMessage: 'Fixture source could not be read; raw exception was redacted.',
+    sourceTrace: {
+      spaceId: 'ibm-i-modernization',
+      batchId: 'batch-p0',
+      sourceReferenceId: 'fixture:worker-retry:unreadable',
+      locator: 'fixtures/worker-retry-dead-letter/unreadable.md'
+    },
+    startedAt: '2026-07-07T00:00:02Z',
+    completedAt: '2026-07-07T00:00:03Z'
+  }
+  const job = {
+    id: 'worker-job-p0',
+    jobType: 'CONNECTOR_SYNC',
+    subjectType: 'connector_sync_item',
+    subjectId: 'connector-item-003',
+    status: jobStatus,
+    attemptCount: 3,
+    maxAttempts: 3,
+    retryDelaySeconds: jobStatus === 'WAITING_RETRY' ? 30 : null,
+    nextRetryAt: jobStatus === 'WAITING_RETRY' ? '2026-07-07T00:00:33Z' : null,
+    sourceTrace: attempt.sourceTrace,
+    reviewEligible: false,
+    safeErrorCode: 'SOURCE_UNREADABLE',
+    safeErrorCategory: 'SOURCE_UNREADABLE',
+    safeErrorMessage: 'Fixture source could not be read; raw exception was redacted.',
+    createdAt: '2026-07-07T00:00:00Z',
+    updatedAt: '2026-07-07T00:00:03Z',
+    attempts: [attempt]
+  }
+  return {
+    id: 'dead-letter-p0',
+    workerJobId: 'worker-job-p0',
+    status,
+    jobType: 'CONNECTOR_SYNC',
+    subjectType: 'connector_sync_item',
+    subjectId: 'connector-item-003',
+    attemptSummary: '3/3 attempts terminal',
+    safeErrorCode: 'SOURCE_UNREADABLE',
+    safeErrorCategory: 'SOURCE_UNREADABLE',
+    safeErrorMessage: 'Fixture source could not be read; raw exception was redacted.',
+    sourceTrace: attempt.sourceTrace,
+    reviewEligible: false,
+    operatorActionBy: status === 'OPEN' ? null : 'p0-browser',
+    operatorActionAt: status === 'OPEN' ? null : '2026-07-07T00:00:04Z',
+    createdAt: '2026-07-07T00:00:03Z',
+    job,
+    attempts: [attempt]
+  }
 }
 
 function auditEvents() {

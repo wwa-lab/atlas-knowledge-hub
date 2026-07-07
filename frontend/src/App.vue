@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import {
+  acknowledgeDeadLetterEntry,
   ApiError,
   approveFile as approveFileApi,
   clearDeepSeekConfiguration,
@@ -23,6 +24,7 @@ import {
   listChunks,
   listConnectorDefinitions,
   listConnectorSyncItems,
+  listDeadLetterEntries,
   listFiles,
   listManualUrlSources,
   listModelAdapters,
@@ -32,6 +34,7 @@ import {
   publishFile as publishFileApi,
   getReviewQueues,
   refreshDownstreamEvidenceApi,
+  retryDeadLetterEntry,
   saveDeepSeekConfiguration,
   startConnectorSync,
   uploadDocuments
@@ -45,6 +48,7 @@ import type {
   ApiConnectorDefinition,
   ApiConnectorSyncItem,
   ApiConnectorSyncRun,
+  ApiDeadLetterEntry,
   ApiFileItem,
   ApiGraphEdge,
   ApiGraphEdgeType,
@@ -388,6 +392,8 @@ const connectorDefinitions = ref<ApiConnectorDefinition[]>([])
 const connectorSyncRun = ref<ApiConnectorSyncRun | null>(null)
 const connectorSyncItems = ref<ApiConnectorSyncItem[]>([])
 const selectedConnectorItemId = ref('')
+const deadLetterEntries = ref<ApiDeadLetterEntry[]>([])
+const selectedDeadLetterId = ref('')
 const askRun = ref<ApiAskRun | null>(null)
 const askQualityMetrics = ref<ApiRetrievalRunQualityMetrics | null>(null)
 const askSessions = ref<ApiAskSessionSummary[]>([])
@@ -420,6 +426,10 @@ const isLoadingAuditEvents = ref(false)
 const connectorError = ref('')
 const isLoadingConnectors = ref(false)
 const isStartingConnectorSync = ref(false)
+const deadLetterError = ref('')
+const isLoadingDeadLetters = ref(false)
+const isRetryingDeadLetter = ref(false)
+const isAcknowledgingDeadLetter = ref(false)
 
 const graph = ref<ApiGraphView | null>(null)
 const selectedDetail = ref<ApiGraphNodeDetail | null>(null)
@@ -1058,6 +1068,12 @@ const selectedConnectorItem = computed(
     connectorSyncItems.value[0] ??
     null
 )
+const selectedDeadLetterEntry = computed(
+  () =>
+    deadLetterEntries.value.find(entry => entry.id === selectedDeadLetterId.value) ??
+    deadLetterEntries.value[0] ??
+    null
+)
 
 const activeNode = computed(() => selectedDetail.value?.node ?? graph.value?.nodes[0] ?? null)
 const activeSelectionLabel = computed(() => {
@@ -1641,7 +1657,8 @@ async function initialize() {
     loadSpaces(),
     loadGraph(),
     loadModelCapabilities(),
-    loadConnectorDefinitions()
+    loadConnectorDefinitions(),
+    loadDeadLetters()
   ])
 }
 
@@ -1774,6 +1791,59 @@ async function startMockConnectorSync() {
     connectorError.value = safeError(error, 'Connector sync failed safely.')
   } finally {
     isStartingConnectorSync.value = false
+  }
+}
+
+async function loadDeadLetters() {
+  isLoadingDeadLetters.value = true
+  deadLetterError.value = ''
+  try {
+    deadLetterEntries.value = await listDeadLetterEntries()
+    selectedDeadLetterId.value = deadLetterEntries.value[0]?.id ?? ''
+  } catch (error) {
+    deadLetterError.value = safeError(error, 'Worker recovery entries unavailable.')
+  } finally {
+    isLoadingDeadLetters.value = false
+  }
+}
+
+async function retrySelectedDeadLetter() {
+  const entry = selectedDeadLetterEntry.value
+  if (!entry) {
+    return
+  }
+  isRetryingDeadLetter.value = true
+  deadLetterError.value = ''
+  try {
+    const updated = await retryDeadLetterEntry(entry.id)
+    deadLetterEntries.value = deadLetterEntries.value.map(current =>
+      current.id === updated.id ? updated : current
+    )
+    selectedDeadLetterId.value = updated.id
+  } catch (error) {
+    deadLetterError.value = safeError(error, 'Dead-letter retry transition failed safely.')
+  } finally {
+    isRetryingDeadLetter.value = false
+  }
+}
+
+async function acknowledgeSelectedDeadLetter() {
+  const entry = selectedDeadLetterEntry.value
+  if (!entry) {
+    return
+  }
+  isAcknowledgingDeadLetter.value = true
+  deadLetterError.value = ''
+  try {
+    const updated = await acknowledgeDeadLetterEntry(entry.id)
+    deadLetterEntries.value = deadLetterEntries.value.map(current =>
+      current.id === updated.id ? updated : current
+    )
+    selectedDeadLetterId.value = updated.id
+  } catch (error) {
+    deadLetterError.value = safeError(error, 'Dead-letter acknowledge transition failed safely.')
+  } finally {
+    isAcknowledgingDeadLetter.value = false
   }
 }
 
@@ -3397,6 +3467,116 @@ function isDeepSeekDraft(model: VueModelConfig) {
                 <span>{{ issue.status }}</span>
                 <button type="button">{{ issue.action }}</button>
               </article>
+            </section>
+            <section class="atlas-api-review-queues" data-testid="vue-dead-letter-ops">
+              <header>
+                <h2>Worker recovery</h2>
+                <span>{{
+                  deadLetterEntries.length > 0
+                    ? `${deadLetterEntries.length} dead-letter entries`
+                    : 'No dead letters'
+                }}</span>
+                <button
+                  type="button"
+                  :disabled="isLoadingDeadLetters"
+                  data-testid="vue-refresh-dead-letters"
+                  @click="loadDeadLetters"
+                >
+                  {{ isLoadingDeadLetters ? 'Refreshing...' : 'Refresh' }}
+                </button>
+              </header>
+              <p v-if="deadLetterError" class="atlas-inline-warning">{{ deadLetterError }}</p>
+              <article
+                v-for="entry in deadLetterEntries"
+                :key="entry.id"
+                data-testid="vue-dead-letter-entry"
+              >
+                <div>
+                  <strong>{{ entry.subjectType }} · {{ entry.subjectId }}</strong>
+                  <span>{{ entry.jobType }} · {{ entry.safeErrorCategory }}</span>
+                </div>
+                <span>{{ entry.attemptSummary }}</span>
+                <span>{{ entry.status }}</span>
+                <button type="button" @click="selectedDeadLetterId = entry.id">Inspect</button>
+              </article>
+              <div
+                v-if="selectedDeadLetterEntry"
+                class="atlas-api-detail"
+                data-testid="vue-dead-letter-detail"
+              >
+                <header>
+                  <div>
+                    <h3>{{ selectedDeadLetterEntry.safeErrorCode }}</h3>
+                    <p>
+                      {{ selectedDeadLetterEntry.safeErrorMessage }} ·
+                      {{ selectedDeadLetterEntry.job.status }}
+                    </p>
+                  </div>
+                  <span>{{ selectedDeadLetterEntry.status }}</span>
+                </header>
+                <dl>
+                  <div>
+                    <dt>Attempts</dt>
+                    <dd>
+                      {{ selectedDeadLetterEntry.job.attemptCount }}/{{
+                        selectedDeadLetterEntry.job.maxAttempts
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Retry delay</dt>
+                    <dd>
+                      {{
+                        selectedDeadLetterEntry.job.retryDelaySeconds === null
+                          ? 'terminal'
+                          : `${selectedDeadLetterEntry.job.retryDelaySeconds}s`
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Review</dt>
+                    <dd>{{ selectedDeadLetterEntry.reviewEligible ? 'eligible' : 'blocked' }}</dd>
+                  </div>
+                </dl>
+                <p data-testid="vue-dead-letter-trace">
+                  source_trace:
+                  {{
+                    Object.entries(selectedDeadLetterEntry.sourceTrace)
+                      .map(([key, value]) => `${key}=${value}`)
+                      .join(' · ')
+                  }}
+                </p>
+                <ul>
+                  <li
+                    v-for="attempt in selectedDeadLetterEntry.attempts"
+                    :key="attempt.id"
+                    data-testid="vue-dead-letter-attempt"
+                  >
+                    #{{ attempt.attemptNumber }} · {{ attempt.status }} ·
+                    {{ attempt.safeErrorCategory }} · {{ attempt.safeErrorMessage }}
+                  </li>
+                </ul>
+                <footer>
+                  <button
+                    type="button"
+                    :disabled="isRetryingDeadLetter || selectedDeadLetterEntry.status !== 'OPEN'"
+                    data-testid="vue-retry-dead-letter"
+                    @click="retrySelectedDeadLetter"
+                  >
+                    {{ isRetryingDeadLetter ? 'Retrying...' : 'Retry safely' }}
+                  </button>
+                  <button
+                    type="button"
+                    :disabled="
+                      isAcknowledgingDeadLetter || selectedDeadLetterEntry.status !== 'OPEN'
+                    "
+                    data-testid="vue-ack-dead-letter"
+                    @click="acknowledgeSelectedDeadLetter"
+                  >
+                    {{ isAcknowledgingDeadLetter ? 'Acknowledging...' : 'Acknowledge' }}
+                  </button>
+                </footer>
+              </div>
             </section>
             <section class="atlas-processing-queues">
               <article

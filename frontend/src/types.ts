@@ -608,6 +608,68 @@ export interface ApiConnectorSyncItem {
   discoveredAt: string
 }
 
+export type ApiWorkerJobType = 'BATCH_INGEST' | 'CONNECTOR_SYNC' | 'ASYNC_PROCESSING'
+export type ApiWorkerJobStatus =
+  'QUEUED' | 'RUNNING' | 'WAITING_RETRY' | 'SUCCEEDED' | 'DEAD_LETTERED' | 'ACKNOWLEDGED'
+export type ApiWorkerAttemptStatus =
+  'RUNNING' | 'FAILED_RETRYABLE' | 'FAILED_TERMINAL' | 'SUCCEEDED'
+export type ApiDeadLetterStatus = 'OPEN' | 'RETRIED' | 'ACKNOWLEDGED'
+export type ApiWorkerSafeErrorCategory = ApiConnectorSafeErrorCategory | 'RATE_LIMITED'
+
+export interface ApiWorkerJobAttempt {
+  id: string
+  workerJobId: string
+  attemptNumber: number
+  status: ApiWorkerAttemptStatus
+  retryable: boolean
+  safeErrorCode: string
+  safeErrorCategory: ApiWorkerSafeErrorCategory
+  safeErrorMessage: string
+  sourceTrace: Record<string, string>
+  startedAt: string
+  completedAt: string | null
+}
+
+export interface ApiWorkerJob {
+  id: string
+  jobType: ApiWorkerJobType
+  subjectType: string
+  subjectId: string
+  status: ApiWorkerJobStatus
+  attemptCount: number
+  maxAttempts: number
+  retryDelaySeconds: number | null
+  nextRetryAt: string | null
+  sourceTrace: Record<string, string>
+  reviewEligible: boolean
+  safeErrorCode: string | null
+  safeErrorCategory: ApiWorkerSafeErrorCategory | null
+  safeErrorMessage: string | null
+  createdAt: string
+  updatedAt: string
+  attempts: ApiWorkerJobAttempt[]
+}
+
+export interface ApiDeadLetterEntry {
+  id: string
+  workerJobId: string
+  status: ApiDeadLetterStatus
+  jobType: ApiWorkerJobType
+  subjectType: string
+  subjectId: string
+  attemptSummary: string
+  safeErrorCode: string
+  safeErrorCategory: ApiWorkerSafeErrorCategory
+  safeErrorMessage: string
+  sourceTrace: Record<string, string>
+  reviewEligible: boolean
+  operatorActionBy: string | null
+  operatorActionAt: string | null
+  createdAt: string
+  job: ApiWorkerJob
+  attempts: ApiWorkerJobAttempt[]
+}
+
 export interface ApiIngestionResponse {
   batch: ApiBatch
   files: ApiFileItem[]

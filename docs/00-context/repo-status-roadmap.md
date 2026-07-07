@@ -5,7 +5,7 @@ Purpose: English companion to `docs/00-context/repo-status-roadmap.zh-CN.md`. Th
 
 ## Current Summary
 
-Atlas Knowledge Hub has an acceptance-ready, mock/sample-safe evidence package across the core product surfaces, plus implemented governance, Ask/Graph productization, and Wave 5 operations foundations. Wave 5 now includes delivered `manual-url-knowledge-ingest`, `deployment-monitoring-runbook`, and `connector-sync-v0` foundations.
+Atlas Knowledge Hub has an acceptance-ready, mock/sample-safe evidence package across the core product surfaces, plus implemented governance, Ask/Graph productization, and Wave 5 operations foundations. Wave 5 now includes delivered `manual-url-knowledge-ingest`, `deployment-monitoring-runbook`, `connector-sync-v0`, and `worker-retry-dead-letter` foundations.
 
 Atlas is still not production-ready. This repository does not yet provide production deployment automation, live monitoring dashboards, real alert channels, production SSO/OIDC, production secret manager, production distributed quota, SIEM/export, production incident tooling, or approved real-company document ingestion.
 
@@ -14,11 +14,11 @@ Atlas is still not production-ready. This repository does not yet provide produc
 | Field | Current Value |
 |---|---|
 | Wave | Wave 5 / Connector And Operations |
-| Slice | `connector-sync-v0` |
-| Status | Adapter-first mock/local connector sync foundation implemented and verified locally |
-| Maturity | Prototype connector sync skeleton only; not production connector operations readiness |
-| Delivered | Connector registry, connector definition/status model, sync job/run/item APIs, local fixture adapter, safe error mapping, source trace/provenance preservation, review-required artifact handoff, and Vue connector inspection surface |
-| Deferred | Real providers, OAuth/API keys, scheduled/background sync, webhooks, external crawling/fetching, connector marketplace, connector secret strategy, and direct approved Wiki/Ask/Graph use |
+| Slice | `worker-retry-dead-letter` |
+| Status | Local deterministic worker retry and dead-letter foundation implemented and verified locally |
+| Maturity | Prototype reliability contract only; not production distributed queue or scheduled worker readiness |
+| Delivered | Worker job/attempt/dead-letter models, deterministic retry policy, terminal failure classification, safe error snapshots, source trace preservation, inspection APIs, manual retry/acknowledge v0, and Vue Processing Center recovery surface |
+| Deferred | Production MQ, distributed worker clusters, scheduled production workers, exactly-once guarantees, real connector/API calls, production alerting, and production operator automation |
 
 ## Wave 5 Operations Queue
 
@@ -26,7 +26,7 @@ Atlas is still not production-ready. This repository does not yet provide produc
 |---|---|---|
 | `manual-url-knowledge-ingest` | Delivered | Metadata-only manual URL source registration; not real external fetch, scheduled crawl, or connector sync. |
 | `connector-sync-v0` | Delivered | Adapter-first mock/local connector sync foundation; no real providers, credentials, or external fetch. |
-| `worker-retry-dead-letter` | Future | Runbook includes worker retry/dead-letter signals as conditional operational checks. |
+| `worker-retry-dead-letter` | Delivered | Deterministic local retry/dead-letter foundation; no production MQ, distributed worker, or scheduled background worker. |
 | `deployment-monitoring-runbook` | Delivered | Documentation-only operations contract; no production monitoring side effects. |
 
 ## Reading Order
@@ -35,10 +35,10 @@ Atlas is still not production-ready. This repository does not yet provide produc
 |---|---|
 | Chinese canonical repo status | `docs/00-context/repo-status-roadmap.zh-CN.md` |
 | Deployment monitoring runbook | `docs/05-design/runbooks/deployment-monitoring-runbook.md` |
-| Slice traceability | `docs/00-context/deployment-monitoring-runbook-traceability.md` |
-| SDD tasks | `docs/06-tasks/deployment-monitoring-runbook-tasks.md` |
+| Slice traceability | `docs/00-context/worker-retry-dead-letter-traceability.md` |
+| SDD tasks | `docs/06-tasks/worker-retry-dead-letter-tasks.md` |
 | Goal-loop workflow | `docs/00-context/agent-goal-loop-workflow.md` |
 
 ## Next Gate
 
-Review the pushed `feat: add connector sync v0` commit on `develop-leo`. Future real connectors, credential flows, scheduled/background sync, external crawling, and production connector operations must be delivered by separate accepted slices.
+Review the pushed `feat: add worker retry and dead letter handling` commit on `develop-leo`. Future production MQ, distributed worker clusters, scheduled production workers, exactly-once semantics, alert automation, and real connector retry operations must be delivered by separate accepted slices.

@@ -8,6 +8,7 @@ import type {
   ApiConnectorDefinition,
   ApiConnectorSyncItem,
   ApiConnectorSyncRun,
+  ApiDeadLetterEntry,
   ApiEnvelope,
   ApiFileItem,
   ApiGraphNodeDetail,
@@ -367,6 +368,28 @@ export async function getConnectorSyncRun(runId: string) {
 
 export async function listConnectorSyncItems(runId: string) {
   return atlasFetch<ApiConnectorSyncItem[]>(`/api/connector-sync-runs/${runId}/items`)
+}
+
+export async function listDeadLetterEntries() {
+  return atlasFetch<ApiDeadLetterEntry[]>('/api/dead-letter-entries')
+}
+
+export async function getDeadLetterEntry(entryId: string) {
+  return atlasFetch<ApiDeadLetterEntry>(`/api/dead-letter-entries/${entryId}`)
+}
+
+export async function retryDeadLetterEntry(entryId: string, operator = 'p0-browser') {
+  return atlasFetch<ApiDeadLetterEntry>(`/api/dead-letter-entries/${entryId}/retry`, {
+    method: 'POST',
+    body: { operator }
+  })
+}
+
+export async function acknowledgeDeadLetterEntry(entryId: string, operator = 'p0-browser') {
+  return atlasFetch<ApiDeadLetterEntry>(`/api/dead-letter-entries/${entryId}/acknowledge`, {
+    method: 'POST',
+    body: { operator }
+  })
 }
 
 export async function getDeepSeekConfiguration() {
