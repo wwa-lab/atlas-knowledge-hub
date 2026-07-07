@@ -545,6 +545,69 @@ export interface ApiVectorRun {
   safeMessage: string | null
 }
 
+export type ApiConnectorRunStatus =
+  'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'REVIEW_REQUIRED'
+export type ApiConnectorItemStatus =
+  'DISCOVERED' | 'FETCHED' | 'OUTPUT_CREATED' | 'REVIEW_REQUIRED' | 'FAILED'
+export type ApiConnectorSafeErrorCategory =
+  | 'NONE'
+  | 'VALIDATION'
+  | 'CONNECTOR_UNAVAILABLE'
+  | 'UNSUPPORTED_SOURCE'
+  | 'SOURCE_UNREADABLE'
+  | 'SAFE_SYSTEM'
+
+export interface ApiConnectorDefinition {
+  id: string
+  connectorKey: string
+  name: string
+  connectorType: string
+  status: 'AVAILABLE' | 'UNAVAILABLE'
+  version: string
+  capabilitySummary: string
+  configurationState: 'MOCK_CONFIGURED' | 'NOT_CONFIGURED'
+  reviewPolicy: 'REVIEW_REQUIRED'
+}
+
+export interface ApiConnectorOutputArtifact {
+  id: string
+  artifactType: 'MARKDOWN_CANDIDATE'
+  reviewStatus: ApiReviewStatus
+  title: string
+  targetPath: string
+}
+
+export interface ApiConnectorSyncRun {
+  runId: string
+  jobId: string
+  spaceId: string
+  connectorKey: string
+  status: ApiConnectorRunStatus
+  itemCount: number
+  reviewRequiredCount: number
+  failedCount: number
+  safeMessage: string | null
+  startedAt: string
+  completedAt: string | null
+}
+
+export interface ApiConnectorSyncItem {
+  id: string
+  runId: string
+  externalId: string
+  title: string
+  itemStatus: ApiConnectorItemStatus
+  sourceReference: string
+  sourceTrace: Record<string, string>
+  provenance: Record<string, string>
+  confidence: number | null
+  reviewEligible: boolean
+  safeErrorCategory: ApiConnectorSafeErrorCategory
+  safeErrorMessage: string | null
+  outputArtifacts: ApiConnectorOutputArtifact[]
+  discoveredAt: string
+}
+
 export interface ApiIngestionResponse {
   batch: ApiBatch
   files: ApiFileItem[]

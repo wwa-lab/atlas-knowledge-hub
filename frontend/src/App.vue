@@ -8,6 +8,7 @@ import {
   createManualUrlSource,
   createSampleBatch,
   createSpace as createSpaceApi,
+  getConnectorSyncRun,
   getAskQualityMetrics,
   getAskRun,
   getAskSession,
@@ -20,6 +21,8 @@ import {
   listAskSessions,
   listBatches,
   listChunks,
+  listConnectorDefinitions,
+  listConnectorSyncItems,
   listFiles,
   listManualUrlSources,
   listModelAdapters,
@@ -30,6 +33,7 @@ import {
   getReviewQueues,
   refreshDownstreamEvidenceApi,
   saveDeepSeekConfiguration,
+  startConnectorSync,
   uploadDocuments
 } from '@/api'
 import type {
@@ -38,6 +42,9 @@ import type {
   ApiAskSessionSummary,
   ApiAuditEvent,
   ApiBatch,
+  ApiConnectorDefinition,
+  ApiConnectorSyncItem,
+  ApiConnectorSyncRun,
   ApiFileItem,
   ApiGraphEdge,
   ApiGraphEdgeType,
@@ -66,7 +73,7 @@ type ModelCategory = 'all' | 'chat' | 'embedding' | 'rerank' | 'vision' | 'speec
 type ModelSource = 'Ollama' | 'API'
 type ThinkingFormat = 'none' | 'provider_default' | 'custom'
 type ProductView = 'home' | 'chat' | 'space'
-type SpaceTab = 'docs' | 'review' | 'wiki' | 'graph'
+type SpaceTab = 'docs' | 'connectors' | 'review' | 'wiki' | 'graph'
 type SettingsPanel =
   | 'general'
   | 'profile'
@@ -377,6 +384,10 @@ const reviewQueues = ref<ApiReviewQueues | null>(null)
 const wikiPages = ref<ApiWikiPage[]>([])
 const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
 const auditEvents = ref<ApiAuditEvent[]>([])
+const connectorDefinitions = ref<ApiConnectorDefinition[]>([])
+const connectorSyncRun = ref<ApiConnectorSyncRun | null>(null)
+const connectorSyncItems = ref<ApiConnectorSyncItem[]>([])
+const selectedConnectorItemId = ref('')
 const askRun = ref<ApiAskRun | null>(null)
 const askQualityMetrics = ref<ApiRetrievalRunQualityMetrics | null>(null)
 const askSessions = ref<ApiAskSessionSummary[]>([])
@@ -406,6 +417,9 @@ const askQualityError = ref('')
 const askSessionError = ref('')
 const auditError = ref('')
 const isLoadingAuditEvents = ref(false)
+const connectorError = ref('')
+const isLoadingConnectors = ref(false)
+const isStartingConnectorSync = ref(false)
 
 const graph = ref<ApiGraphView | null>(null)
 const selectedDetail = ref<ApiGraphNodeDetail | null>(null)
@@ -1038,6 +1052,12 @@ const blockedQueueCount = computed(
       .filter(queue => queue.publishBlocked)
       .reduce((total, queue) => total + queue.count, 0) ?? 0
 )
+const selectedConnectorItem = computed(
+  () =>
+    connectorSyncItems.value.find(item => item.id === selectedConnectorItemId.value) ??
+    connectorSyncItems.value[0] ??
+    null
+)
 
 const activeNode = computed(() => selectedDetail.value?.node ?? graph.value?.nodes[0] ?? null)
 const activeSelectionLabel = computed(() => {
@@ -1616,7 +1636,13 @@ onMounted(() => {
 })
 
 async function initialize() {
-  await Promise.all([loadCurrentUser(), loadSpaces(), loadGraph(), loadModelCapabilities()])
+  await Promise.all([
+    loadCurrentUser(),
+    loadSpaces(),
+    loadGraph(),
+    loadModelCapabilities(),
+    loadConnectorDefinitions()
+  ])
 }
 
 async function loadCurrentUser() {
@@ -1717,6 +1743,37 @@ async function loadModelCapabilities() {
     }
   } catch (error) {
     modelApiError.value = safeError(error, 'Model capability API unavailable.')
+  }
+}
+
+async function loadConnectorDefinitions() {
+  isLoadingConnectors.value = true
+  connectorError.value = ''
+  try {
+    connectorDefinitions.value = await listConnectorDefinitions()
+  } catch (error) {
+    connectorError.value = safeError(error, 'Connector definitions unavailable.')
+  } finally {
+    isLoadingConnectors.value = false
+  }
+}
+
+async function startMockConnectorSync() {
+  if (!selectedSpaceId.value || connectorDefinitions.value.length === 0) {
+    return
+  }
+  isStartingConnectorSync.value = true
+  connectorError.value = ''
+  try {
+    const connectorKey = connectorDefinitions.value[0].connectorKey
+    const created = await startConnectorSync(selectedSpaceId.value, connectorKey)
+    connectorSyncRun.value = await getConnectorSyncRun(created.runId)
+    connectorSyncItems.value = await listConnectorSyncItems(created.runId)
+    selectedConnectorItemId.value = connectorSyncItems.value[0]?.id ?? ''
+  } catch (error) {
+    connectorError.value = safeError(error, 'Connector sync failed safely.')
+  } finally {
+    isStartingConnectorSync.value = false
   }
 }
 
@@ -2866,6 +2923,14 @@ function isDeepSeekDraft(model: VueModelConfig) {
             文档
           </button>
           <button
+            :class="{ active: activeSpaceTab === 'connectors' }"
+            type="button"
+            data-testid="vue-connector-sync-tab"
+            @click="activeSpaceTab = 'connectors'"
+          >
+            Connectors
+          </button>
+          <button
             :class="{ active: activeSpaceTab === 'review' }"
             type="button"
             @click="activeSpaceTab = 'review'"
@@ -3163,6 +3228,112 @@ function isDeepSeekDraft(model: VueModelConfig) {
                     </ul>
                   </article>
                 </div>
+              </section>
+            </div>
+          </div>
+          <div
+            v-else-if="activeSpaceTab === 'connectors'"
+            class="atlas-doc-layout"
+            data-testid="vue-connector-sync"
+          >
+            <aside>
+              <h3>Connector Registry</h3>
+              <button v-for="definition in connectorDefinitions" :key="definition.id" type="button">
+                {{ definition.name }} · {{ definition.status }}
+              </button>
+              <button v-if="connectorDefinitions.length === 0" type="button" disabled>
+                {{ isLoadingConnectors ? 'Loading connectors' : 'No connectors available' }}
+              </button>
+              <button
+                data-testid="vue-start-connector-sync"
+                type="button"
+                :disabled="
+                  isStartingConnectorSync || connectorDefinitions.length === 0 || !selectedSpaceId
+                "
+                @click="startMockConnectorSync"
+              >
+                {{ isStartingConnectorSync ? 'Syncing...' : 'Start mock sync' }}
+              </button>
+            </aside>
+            <div class="atlas-upload-workflow">
+              <section class="atlas-api-metadata">
+                <header>
+                  <div>
+                    <h2>Connector Sync v0</h2>
+                    <p>
+                      Local fixture connector only. Output artifacts remain review-required and do
+                      not become trusted Wiki, Ask, or Graph knowledge.
+                    </p>
+                  </div>
+                  <span>{{ connectorSyncRun?.status ?? 'No run yet' }}</span>
+                </header>
+                <p v-if="connectorError" class="atlas-inline-warning">{{ connectorError }}</p>
+                <div class="atlas-metric-strip" data-testid="vue-connector-run-status">
+                  <span>Items {{ connectorSyncRun?.itemCount ?? 0 }}</span>
+                  <span>Review {{ connectorSyncRun?.reviewRequiredCount ?? 0 }}</span>
+                  <span>Failed {{ connectorSyncRun?.failedCount ?? 0 }}</span>
+                  <span>{{ connectorSyncRun?.safeMessage ?? 'Awaiting local fixture sync' }}</span>
+                </div>
+                <table>
+                  <tbody>
+                    <tr
+                      v-for="item in connectorSyncItems"
+                      :key="item.id"
+                      data-testid="vue-connector-item"
+                      @click="selectedConnectorItemId = item.id"
+                    >
+                      <td>{{ item.title }}</td>
+                      <td>{{ item.itemStatus }}</td>
+                      <td>{{ item.sourceReference }}</td>
+                      <td>{{ item.safeErrorCategory }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p v-if="connectorSyncItems.length === 0" class="atlas-inline-warning">
+                  No connector sync items yet.
+                </p>
+              </section>
+              <section
+                v-if="selectedConnectorItem"
+                class="atlas-batch-summary"
+                data-testid="vue-connector-trace"
+              >
+                <header>
+                  <div>
+                    <h2>{{ selectedConnectorItem.title }}</h2>
+                    <p>
+                      {{ selectedConnectorItem.itemStatus }} · confidence
+                      {{ selectedConnectorItem.confidence ?? 'n/a' }} · review eligible
+                      {{ selectedConnectorItem.reviewEligible ? 'yes' : 'no' }}
+                    </p>
+                  </div>
+                  <span>review-required handoff</span>
+                </header>
+                <p>
+                  source_trace:
+                  {{
+                    Object.entries(selectedConnectorItem.sourceTrace)
+                      .map(([key, value]) => `${key}=${value}`)
+                      .join(' · ')
+                  }}
+                </p>
+                <p>
+                  provenance:
+                  {{
+                    Object.entries(selectedConnectorItem.provenance)
+                      .map(([key, value]) => `${key}=${value}`)
+                      .join(' · ')
+                  }}
+                </p>
+                <ul>
+                  <li v-for="artifact in selectedConnectorItem.outputArtifacts" :key="artifact.id">
+                    {{ artifact.artifactType }} · {{ artifact.reviewStatus }} ·
+                    {{ artifact.targetPath }}
+                  </li>
+                </ul>
+                <p v-if="selectedConnectorItem.safeErrorMessage" class="atlas-inline-warning">
+                  {{ selectedConnectorItem.safeErrorMessage }}
+                </p>
               </section>
             </div>
           </div>

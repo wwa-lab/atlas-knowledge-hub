@@ -5,6 +5,9 @@ import type {
   ApiAskSessionSummary,
   ApiAuditEvent,
   ApiBatch,
+  ApiConnectorDefinition,
+  ApiConnectorSyncItem,
+  ApiConnectorSyncRun,
   ApiEnvelope,
   ApiFileItem,
   ApiGraphNodeDetail,
@@ -341,6 +344,29 @@ export async function reviewAskAnswer(
 
 export async function listModelAdapters() {
   return atlasFetch<ApiModelCapability[]>('/api/model-adapters')
+}
+
+export async function listConnectorDefinitions() {
+  return atlasFetch<ApiConnectorDefinition[]>('/api/connector-definitions')
+}
+
+export async function startConnectorSync(spaceId: string, connectorKey: string) {
+  return atlasFetch<ApiConnectorSyncRun>(`/api/spaces/${spaceId}/connector-sync-jobs`, {
+    method: 'POST',
+    body: {
+      connectorKey,
+      requestedBy: 'p0-browser',
+      sourceScope: 'sample-fixture'
+    }
+  })
+}
+
+export async function getConnectorSyncRun(runId: string) {
+  return atlasFetch<ApiConnectorSyncRun>(`/api/connector-sync-runs/${runId}`)
+}
+
+export async function listConnectorSyncItems(runId: string) {
+  return atlasFetch<ApiConnectorSyncItem[]>(`/api/connector-sync-runs/${runId}/items`)
 }
 
 export async function getDeepSeekConfiguration() {

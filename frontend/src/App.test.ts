@@ -82,6 +82,36 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.html()).not.toContain('runtime-secret')
   })
 
+  it('starts connector sync v0 and renders review-required source trace safely', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
+    await wrapper.get('[data-testid="vue-connector-sync-tab"]').trigger('click')
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-connector-sync"]').text()).toContain('Mock Local Fixture')
+    expect(wrapper.get('[data-testid="vue-connector-sync"]').text()).toContain(
+      'Local fixture connector only'
+    )
+
+    await wrapper.get('[data-testid="vue-start-connector-sync"]').trigger('click')
+    await flushAsync()
+
+    expect(wrapper.get('[data-testid="vue-connector-run-status"]').text()).toContain('Review 2')
+    expect(wrapper.get('[data-testid="vue-connector-sync"]').text()).toContain('REVIEW_REQUIRED')
+    expect(wrapper.findAll('[data-testid="vue-connector-item"]')).toHaveLength(3)
+    expect(wrapper.get('[data-testid="vue-connector-trace"]').text()).toContain('source_trace')
+    expect(wrapper.get('[data-testid="vue-connector-trace"]').text()).toContain('provenance')
+    expect(wrapper.get('[data-testid="vue-connector-trace"]').text()).toContain(
+      'MARKDOWN_CANDIDATE'
+    )
+    expect(wrapper.html()).not.toContain(`${'internal'}.invalid`)
+    expect(wrapper.html()).not.toContain(`/${'Users'}/`)
+    expect(wrapper.html()).not.toContain(`${'to'}ken=mock`)
+  })
+
   it('registers a manual URL source as review-required metadata with source trace visible', async () => {
     mockP0Api()
     const wrapper = mount(App)
@@ -649,6 +679,7 @@ function mockP0Api(
     wikiPublished: false,
     graphProjectionCreated: false,
     vectorRunCreated: false,
+    connectorRunCreated: false,
     lastModelConfigurationSave: null as unknown,
     lastCreatedSpace: null as unknown,
     createdSpaces: [] as ReturnType<typeof space>[],
@@ -849,6 +880,23 @@ function mockP0Api(
       return jsonOk(askSessionDetail())
     }
 
+    if (url.endsWith('/api/connector-definitions')) {
+      return jsonOk(connectorDefinitions())
+    }
+
+    if (url.endsWith('/api/spaces/ibm-i-modernization/connector-sync-jobs') && method === 'POST') {
+      state.connectorRunCreated = true
+      return jsonOk(connectorRun(), 201)
+    }
+
+    if (url.endsWith('/api/connector-sync-runs/connector-run-p0')) {
+      return jsonOk(connectorRun())
+    }
+
+    if (url.endsWith('/api/connector-sync-runs/connector-run-p0/items')) {
+      return jsonOk(state.connectorRunCreated ? connectorItems() : [])
+    }
+
     if (url.endsWith('/api/model-adapters')) {
       return jsonOk(modelAdapters(options.deepSeekConfigured))
     }
@@ -911,6 +959,134 @@ function jsonOk(data: unknown, status = 200) {
     status,
     json: async () => ({ success: true, data, error: null, meta: null })
   } as Response)
+}
+
+function connectorDefinitions() {
+  return [
+    {
+      id: 'connector-definition-mock-local',
+      connectorKey: 'mock-local-fixture',
+      name: 'Mock Local Fixture',
+      connectorType: 'LOCAL_FIXTURE',
+      status: 'AVAILABLE',
+      version: 'v0',
+      capabilitySummary: 'Local fixture connector only; no external API or credential access.',
+      configurationState: 'MOCK_CONFIGURED',
+      reviewPolicy: 'REVIEW_REQUIRED'
+    }
+  ]
+}
+
+function connectorRun() {
+  return {
+    runId: 'connector-run-p0',
+    jobId: 'connector-job-p0',
+    spaceId: 'ibm-i-modernization',
+    connectorKey: 'mock-local-fixture',
+    status: 'REVIEW_REQUIRED',
+    itemCount: 3,
+    reviewRequiredCount: 2,
+    failedCount: 1,
+    safeMessage: 'Connector sync completed with review-required output.',
+    startedAt: '2026-07-07T00:00:00Z',
+    completedAt: '2026-07-07T00:00:01Z'
+  }
+}
+
+function connectorItems() {
+  return [
+    {
+      id: 'connector-item-001',
+      runId: 'connector-run-p0',
+      externalId: 'fixture:connector-sync:architecture',
+      title: 'Connector Sync Architecture',
+      itemStatus: 'REVIEW_REQUIRED',
+      sourceReference: 'local-fixture://connector-sync/architecture',
+      sourceTrace: {
+        connectorKey: 'mock-local-fixture',
+        sourceReferenceId: 'fixture:connector-sync:architecture',
+        section: 'Architecture',
+        locator: 'fixtures/connector-sync-v0/architecture.md#adapter-boundary'
+      },
+      provenance: {
+        syncRunId: 'connector-run-p0',
+        adapterKey: 'mock-local-fixture',
+        adapterVersion: 'v0'
+      },
+      confidence: 0.93,
+      reviewEligible: true,
+      safeErrorCategory: 'NONE',
+      safeErrorMessage: null,
+      outputArtifacts: [
+        {
+          id: 'connector-artifact-001',
+          artifactType: 'MARKDOWN_CANDIDATE',
+          reviewStatus: 'REVIEW_REQUIRED',
+          title: 'Connector Sync Architecture',
+          targetPath: 'generated/connector-sync-v0/architecture.md'
+        }
+      ],
+      discoveredAt: '2026-07-07T00:00:00Z'
+    },
+    {
+      id: 'connector-item-002',
+      runId: 'connector-run-p0',
+      externalId: 'fixture:connector-sync:operations',
+      title: 'Connector Sync Operations',
+      itemStatus: 'REVIEW_REQUIRED',
+      sourceReference: 'local-fixture://connector-sync/operations',
+      sourceTrace: {
+        connectorKey: 'mock-local-fixture',
+        sourceReferenceId: 'fixture:connector-sync:operations',
+        section: 'Operations',
+        locator: 'fixtures/connector-sync-v0/operations.md#safe-errors'
+      },
+      provenance: {
+        syncRunId: 'connector-run-p0',
+        adapterKey: 'mock-local-fixture',
+        adapterVersion: 'v0'
+      },
+      confidence: 0.91,
+      reviewEligible: true,
+      safeErrorCategory: 'NONE',
+      safeErrorMessage: null,
+      outputArtifacts: [
+        {
+          id: 'connector-artifact-002',
+          artifactType: 'MARKDOWN_CANDIDATE',
+          reviewStatus: 'REVIEW_REQUIRED',
+          title: 'Connector Sync Operations',
+          targetPath: 'generated/connector-sync-v0/operations.md'
+        }
+      ],
+      discoveredAt: '2026-07-07T00:00:00Z'
+    },
+    {
+      id: 'connector-item-003',
+      runId: 'connector-run-p0',
+      externalId: 'fixture:connector-sync:unreadable',
+      title: 'Unreadable Fixture',
+      itemStatus: 'FAILED',
+      sourceReference: 'local-fixture://connector-sync/unreadable',
+      sourceTrace: {
+        connectorKey: 'mock-local-fixture',
+        sourceReferenceId: 'fixture:connector-sync:unreadable',
+        section: 'Unreadable',
+        locator: 'fixtures/connector-sync-v0/unreadable.md'
+      },
+      provenance: {
+        syncRunId: 'connector-run-p0',
+        adapterKey: 'mock-local-fixture',
+        adapterVersion: 'v0'
+      },
+      confidence: 0.21,
+      reviewEligible: false,
+      safeErrorCategory: 'SOURCE_UNREADABLE',
+      safeErrorMessage: 'Unable to read fixture source with redacted endpoint and path.',
+      outputArtifacts: [],
+      discoveredAt: '2026-07-07T00:00:00Z'
+    }
+  ]
 }
 
 function auditEvents() {

@@ -13,7 +13,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 当前最准确的表述是：
 
-> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation，`deployment-monitoring-runbook` 已完成 documentation-only operations contract。它们仍不是 connector-sync-v0、scheduled/recursive crawl、真实 external fetch、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、真实 alerting/SLO、SSO/OIDC、SIEM/export、生产部署自动化或 production incident tooling 系统。
+> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation，`deployment-monitoring-runbook` 已完成 documentation-only operations contract，`connector-sync-v0` 已完成 adapter-first mock/local connector sync foundation。它们仍不是 real connector providers、OAuth/API key/cookie/service account flow、scheduled/background/webhook sync、真实 external fetch/crawl、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、真实 alerting/SLO、SSO/OIDC、SIEM/export、生产部署自动化或 production incident tooling 系统。
 
 ## 2. 目前应该如何读仓库
 
@@ -80,13 +80,13 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 字段 | 当前值 |
 |---|---|
 | Wave | Wave 5 / Connector And Operations |
-| Slice | `deployment-monitoring-runbook` |
-| 文档状态 | 双语 SDD、runbook、tasks、traceability 与 completion report 已生成并按预授权接受 |
-| 工作区状态 | Documentation-only operations contract 已交付，覆盖 deployment readiness、post-delivery verification、monitoring signals、alert severity、incident triage、rollback/recovery、safe evidence 与 closeout |
-| 成熟度 | L4 readiness preparation / operations contract；不等于 L5 production observability、真实 alerting、生产部署自动化或 production incident tooling |
-| 前置依赖 | `manual-url-knowledge-ingest`、`runtime-smoke-config-and-runbook`、`secret-manager-integration`、`rate-limit-safe-errors`、`ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance`、`retrieval-quality-metrics` 作为 operational signal grounding |
-| 下一门禁 | 推送 `develop-leo` 并进行人工 review；后续 production monitoring、alert routing、deployment automation 与 incident tooling 需独立 slice |
-| 实现规则 | 不接入真实 monitoring platform、alert channel、cloud SDK、外部 network dependency、production secret、真实 logs、真实公司数据、auth/RBAC/audit/secret/provider behavior 或 workflow gate 行为 |
+| Slice | `connector-sync-v0` |
+| 文档状态 | 双语 SDD、tasks、traceability、API guide 与 completion report 已生成并按预授权接受 |
+| 工作区状态 | Adapter-first mock/local connector sync foundation 已交付，覆盖 connector registry、sync job/run/item status、source trace/provenance、safe error mapping、review-required output handoff 与 Vue inspection surface |
+| 成熟度 | Prototype connector sync skeleton；不等于 production connector operations readiness |
+| 前置依赖 | `manual-url-knowledge-ingest`、source trace / review-required rules、safe error envelope、adapter boundary、upload/review/Wiki/Ask/Graph product surfaces |
+| 下一门禁 | 推送 `develop-leo` 并进行人工 review；后续 real connectors、credential flows、scheduled/background sync、external crawling 与 production connector operations 需独立 slice |
+| 实现规则 | 不接入真实 connector provider、OAuth/API key/cookie/service account、真实 external API、真实公司数据、外部 network dependency、production secret、auth/RBAC/audit/secret-manager/provider behavior 或 destructive migration |
 
 ## 7. Slice / Wave 队列
 
@@ -122,6 +122,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 7 | `retrieval-quality-metrics` | ✅ mock/sample-safe retrieval quality metrics foundation 已实现 | Online evaluation、provider/model changes 与 production cost/quota controls 保留为未来工作 |
 | 8 | `manual-url-knowledge-ingest` | ✅ metadata-only manual URL source registration foundation 已实现并通过 verification | Connector sync、scheduled/recursive crawl、真实 external fetch、production compliance scanning、connector secrets 与 approved Wiki/Ask/Graph 使用未审核内容保留为未来工作 |
 | 9 | `deployment-monitoring-runbook` | ✅ documentation-only deployment monitoring operations contract 已交付 | Real monitoring platforms、alert channels、production deployment automation、production health/SLO dashboards、connector/worker automation 与 production incident tooling 保留为未来工作 |
+| 10 | `connector-sync-v0` | ✅ adapter-first mock/local connector sync foundation 已实现并通过本地验证 | Real providers、OAuth/API keys、scheduled/background sync、webhooks、external network fetch、connector marketplace、connector secrets 与 direct approved Wiki/Ask/Graph use 保留为未来工作 |
 
 ### 后续产品化方向
 
