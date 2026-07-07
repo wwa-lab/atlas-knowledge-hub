@@ -543,7 +543,11 @@ describe('Atlas P0 full-stack productization shell', () => {
       json: async () => ({
         success: false,
         data: null,
-        error: { code: 'INTERNAL_ERROR', message: 'API failed safely' },
+        error: {
+          code: 'SAFE_SYSTEM_ERROR',
+          message: 'API failed safely',
+          correlationId: 'req-safe-1'
+        },
         meta: null
       })
     } as Response)
@@ -551,7 +555,32 @@ describe('Atlas P0 full-stack productization shell', () => {
     const wrapper = await mountWorkbench()
 
     expect(wrapper.text()).toContain('API failed safely')
+    expect(wrapper.text()).toContain('Reference req-safe-1.')
     expect(wrapper.findAll('[data-testid="coming-soon"]').length).toBeGreaterThan(0)
+  })
+
+  it('shows the safe API error contract without sensitive implementation details', async () => {
+    mockP0Api()
+    const wrapper = mount(App)
+    await flushAsync()
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('全部设置'))!
+      .trigger('click')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'API 信息')!
+      .trigger('click')
+    const safeStates = wrapper.get('[data-testid="vue-safe-error-states"]')
+
+    expect(safeStates.text()).toContain('AUTHENTICATION_REQUIRED')
+    expect(safeStates.text()).toContain('PERMISSION_DENIED')
+    expect(safeStates.text()).toContain('RATE_LIMITED')
+    expect(safeStates.text()).toContain('SAFE_SYSTEM_ERROR')
+    expect(safeStates.text()).not.toContain('https://')
+    expect(safeStates.text()).not.toContain('/Users/')
+    expect(safeStates.text()).not.toContain('password')
   })
 
   it('maps trusted Ask mock state to review-required answer evidence', () => {

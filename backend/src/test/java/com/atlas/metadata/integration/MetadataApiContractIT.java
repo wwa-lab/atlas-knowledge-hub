@@ -67,7 +67,7 @@ class MetadataApiContractIT extends AbstractPostgresIT {
         .perform(post("/api/spaces").contentType(MediaType.APPLICATION_JSON).content("{}"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.success").value(false))
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.name").exists());
 
     mockMvc
@@ -77,7 +77,7 @@ class MetadataApiContractIT extends AbstractPostgresIT {
         .andExpect(jsonPath("$.data").doesNotExist())
         .andExpect(jsonPath("$.error.code").value("NOT_FOUND"))
         .andExpect(jsonPath("$.error.path").value("/api/spaces/unknown-space"))
-        .andExpect(jsonPath("$.error.message").value("Knowledge Space not found."))
+        .andExpect(jsonPath("$.error.message").value("Resource not found."))
         .andExpect(jsonPath("$").value(not(containsString("Exception"))))
         .andExpect(jsonPath("$").value(not(containsString("org.postgresql"))))
         .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
@@ -197,7 +197,7 @@ class MetadataApiContractIT extends AbstractPostgresIT {
                     }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields['files[0].sourcePath']").exists());
 
     mockMvc

@@ -15,20 +15,40 @@ import type {
   ApiReviewQueues,
   ApiSourceChunk,
   ApiSpace,
+  ApiErrorBody,
   ApiDownstreamRefreshResponse,
   ApiVectorRun,
   ApiWikiPage,
-  ApiWikiPageIssue
+  ApiWikiPageIssue,
+  SafeErrorCode
 } from '@/types'
 
 export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly code = 'API_ERROR'
+    readonly code: SafeErrorCode = 'API_ERROR',
+    readonly retryAfterSeconds: number | null = null,
+    readonly correlationId: string | null = null
   ) {
     super(message)
     this.name = 'ApiError'
+  }
+
+  get safeCategory() {
+    if (this.code === 'RATE_LIMITED') {
+      return 'rate-limit'
+    }
+    if (this.code === 'AUTHENTICATION_REQUIRED' || this.code === 'PERMISSION_DENIED') {
+      return 'access'
+    }
+    if (this.code === 'VALIDATION_FAILED') {
+      return 'validation'
+    }
+    if (this.code === 'NOT_FOUND') {
+      return 'not-found'
+    }
+    return 'system'
   }
 }
 
@@ -309,11 +329,20 @@ async function atlasFetch<T>(path: string, options: AtlasFetchOptions = {}): Pro
   })
   const envelope = (await response.json().catch(() => null)) as ApiEnvelope<T> | null
   if (!response.ok || !envelope?.success || envelope.data == null) {
-    const code = envelope?.error?.code ?? `HTTP_${response.status}`
-    const message = envelope?.error?.message ?? `Atlas API returned ${response.status}`
-    throw new ApiError(message, response.status, code)
+    const error = envelope?.error
+    throw new ApiError(
+      safeApiMessage(error, response.status),
+      response.status,
+      error?.code ?? `HTTP_${response.status}`,
+      error?.retryAfterSeconds ?? null,
+      error?.correlationId ?? null
+    )
   }
   return envelope.data
+}
+
+function safeApiMessage(error: ApiErrorBody | null | undefined, status: number) {
+  return error?.message ?? `Atlas API returned ${status}`
 }
 
 function buildRequestBody(body: unknown): BodyInit | undefined {

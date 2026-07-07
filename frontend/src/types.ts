@@ -253,10 +253,30 @@ export interface ApiGraphNodeDetail {
   evidenceReferences: ApiGraphEvidenceReference[]
 }
 
+export type SafeErrorCode =
+  | 'AUTHENTICATION_REQUIRED'
+  | 'PERMISSION_DENIED'
+  | 'VALIDATION_FAILED'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'RATE_LIMITED'
+  | 'SAFE_SYSTEM_ERROR'
+  | (string & {})
+
+export interface ApiErrorBody {
+  code: SafeErrorCode
+  message: string
+  fields?: Record<string, string> | null
+  timestamp?: number
+  path?: string
+  correlationId?: string | null
+  retryAfterSeconds?: number | null
+}
+
 export interface ApiEnvelope<T> {
   success: boolean
   data: T | null
-  error: { code: string; message: string } | null
+  error: ApiErrorBody | null
   meta: unknown
 }
 

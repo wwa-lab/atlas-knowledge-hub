@@ -13,7 +13,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 当前最准确的表述是：
 
-> Atlas 已达到“可进入用户验收评审”的 evidence package；正在推进 Wave 3 Trust And Governance，当前 active slice `secret-manager-integration` 已完成 prototype secret-reference foundation 实现并通过本地 closeout verification。它为 model configuration 与 adapter capability metadata 提供 status-only secret references；仍不是 production secret manager、rotation 或 policy automation 系统。
+> Atlas 已达到“可进入用户验收评审”的 evidence package；正在推进 Wave 3 Trust And Governance，`secret-manager-integration` 已完成 prototype secret-reference foundation，当前 goal slice `rate-limit-safe-errors` 也已完成 prototype local rate-limit 与 safe-error foundation 实现和验证。它们分别提供 status-only secret references、deterministic local API rate limiting、typed user-safe error envelopes 与 frontend safe-error states；仍不是 production secret manager、rotation、policy automation、production distributed quota、alerting/SLO、SSO/OIDC 或 SIEM/export 系统。
 
 ## 2. 目前应该如何读仓库
 
@@ -80,13 +80,13 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 字段 | 当前值 |
 |---|---|
 | Wave | Wave 3 / Trust And Governance |
-| Slice | `secret-manager-integration` |
-| 文档状态 | 双语 SDD 已按预授权生成并接受，traceability/task/status 已随实现收敛 |
-| 工作区状态 | secret-reference implementation、tests、traceability 与 roadmap/status 已更新；backend/frontend verification 与 closeout gate 已通过，等待提交/推送 |
-| 成熟度 | Implemented prototype secret-reference and masked-status foundation；不等于 production secret manager readiness |
-| 前置依赖 | `auth-space-rbac` 与 `audit-log-foundation` 已完成 prototype closeout；不代表 production SSO/OIDC 或 production audit/compliance readiness |
-| 下一门禁 | 提交并推送后进入下一治理切片选择 |
-| 实现规则 | 不扩大到 production secret manager、encrypted persistence、rotation automation、provider selection、new audit semantics、rate limiting、deployment 或 monitoring |
+| Slice | `rate-limit-safe-errors` |
+| 文档状态 | 双语 SDD 已生成并按预授权接受；traceability 与 tasks 已对齐实现证据 |
+| 工作区状态 | rate-limit、安全错误处理、frontend safe states、tests、traceability 与 roadmap/status 已更新，verification gates 已通过，等待 rebase 后提交/推送 |
+| 成熟度 | Implemented prototype rate-limit and safe-error foundation；不等于 production distributed quota 或 observability readiness |
+| 前置依赖 | `auth-space-rbac`、`audit-log-foundation` 与 `secret-manager-integration` 已完成 prototype closeout；production SSO/OIDC、SIEM/export 与 production secret manager 仍是未来工作 |
+| 下一门禁 | 完成 rebase 后推送 `develop-leo`；后续治理切片继续处理 production secret manager hardening、quota/observability 与 operations 缺口 |
+| 实现规则 | 不扩大到 production distributed quota、external rate-limit service、alerting/SLO dashboard、production SSO/OIDC、SIEM/export 或 production secret manager |
 
 ## 7. Slice / Wave 队列
 
@@ -114,8 +114,8 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 顺序 | Slice | 状态 | 下一步 |
 |---|---|---|---|
 | 1 | `audit-log-foundation` | ✅ prototype audit foundation 已实现 | 保留 deferred emitters 与 production audit/compliance 缺口 |
-| 2 | `secret-manager-integration` | ✅ prototype secret-reference foundation 已实现并通过本地 closeout verification | 提交/推送；production secret manager 保持 future slice |
-| 3 | `rate-limit-safe-errors` | ⬜ 计划中 | 与 auth/audit/secret 策略对齐后再生成 SDD |
+| 2 | `secret-manager-integration` | ✅ prototype secret-reference foundation 已实现并通过本地 closeout verification | Production secret manager storage、rotation 与 policy automation 保持为 future work |
+| 3 | `rate-limit-safe-errors` | ✅ prototype rate-limit/safe-error foundation 已实现 | Production distributed quota、alerting/SLO dashboard、SSO/OIDC、SIEM/export 与 production secret manager 保留为未来工作 |
 
 ### 后续产品化方向
 
@@ -139,8 +139,8 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 ## 9. 当前建议执行顺序
 
-1. 提交并推送 `secret-manager-integration`。
-2. 根据治理优先级选择 `rate-limit-safe-errors` 或后续 production secret-manager hardening。
+1. 推送 `rate-limit-safe-errors` 到 `develop-leo` 并进行人工 review。
+2. 根据治理优先级继续 production secret-manager hardening、production quota/observability 或其他 operations 后续切片。
 3. 再回到 Wiki hardening、Ask/Graph productization 或 operations。
 
 不要同时推进多个 slice。Master roadmap 可以管理队列，但执行必须一次一个 slice。

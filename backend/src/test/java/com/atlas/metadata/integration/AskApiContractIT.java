@@ -117,7 +117,7 @@ class AskApiContractIT extends AbstractPostgresIT {
                     """
                         .formatted(unsafeQuestion)))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.question").exists())
         .andExpect(jsonPath("$").value(not(containsString("provider.example"))));
   }

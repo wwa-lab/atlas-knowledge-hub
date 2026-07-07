@@ -25,7 +25,7 @@ class AuditLogApiContractIT extends AbstractPostgresIT {
             get("/api/spaces/ibm-i-modernization/audit-events")
                 .header("X-Atlas-User", "mock-viewer"))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        .andExpect(jsonPath("$.error.code").value("PERMISSION_DENIED"));
 
     mockMvc
         .perform(
@@ -107,7 +107,7 @@ class AuditLogApiContractIT extends AbstractPostgresIT {
                 .param("createdFrom", "2026-07-06T01:00:00Z")
                 .param("createdTo", "2026-07-06T00:00:00Z"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.createdFrom").exists());
   }
 }

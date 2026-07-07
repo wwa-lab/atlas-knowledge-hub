@@ -11,9 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.atlas.metadata.config.AtlasAuthInterceptor;
 import com.atlas.metadata.config.AtlasAuthWebConfig;
+import com.atlas.metadata.config.LocalRateLimitInterceptor;
 import com.atlas.metadata.controller.WikiLinkifyLintController;
 import com.atlas.metadata.dto.CreateWikiLinkifyLintRunRequest;
 import com.atlas.metadata.dto.WikiLinkifyLintRunResponse;
+import com.atlas.metadata.exception.SafeErrorResponseFactory;
+import com.atlas.metadata.exception.SafeErrorSanitizer;
 import com.atlas.metadata.service.WikiLinkifyLintService;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -23,6 +26,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,7 +36,8 @@ import org.springframework.test.web.servlet.MockMvc;
     excludeFilters =
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class}))
+            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class, LocalRateLimitInterceptor.class}))
+@Import({SafeErrorResponseFactory.class, SafeErrorSanitizer.class})
 class WikiLinkifyLintApiContractIT {
 
   @Autowired private MockMvc mockMvc;

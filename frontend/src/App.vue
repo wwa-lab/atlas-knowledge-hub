@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import {
+  ApiError,
   approveFile as approveFileApi,
   clearDeepSeekConfiguration,
   createAskRun,
@@ -46,7 +47,8 @@ import type {
   ApiSourceChunk,
   ApiSpace,
   ApiWikiPage,
-  ApiWikiPageIssue
+  ApiWikiPageIssue,
+  SafeErrorCode
 } from '@/types'
 
 type ModelCategory = 'all' | 'chat' | 'embedding' | 'rerank' | 'vision' | 'speech'
@@ -203,6 +205,12 @@ interface ApiInfoState {
   status: string
 }
 
+interface SafeErrorPreview {
+  code: SafeErrorCode
+  title: string
+  description: string
+}
+
 interface MessageIndexStat {
   label: string
   value: string
@@ -314,6 +322,28 @@ const apiInfo = ref<ApiInfoState>({
   docsPath: '/docs/api',
   status: ''
 })
+const safeErrorPreviews: SafeErrorPreview[] = [
+  {
+    code: 'AUTHENTICATION_REQUIRED',
+    title: 'Authentication required',
+    description: 'The request needs a valid Atlas user header.'
+  },
+  {
+    code: 'PERMISSION_DENIED',
+    title: 'Permission denied',
+    description: 'The current user is not allowed to perform this action.'
+  },
+  {
+    code: 'RATE_LIMITED',
+    title: 'Rate limited',
+    description: 'Too many requests. Please try again later.'
+  },
+  {
+    code: 'SAFE_SYSTEM_ERROR',
+    title: 'Safe system error',
+    description: 'Unexpected server error with a correlation reference.'
+  }
+]
 const messageIndexEnabled = ref(false)
 const messageEmbeddingModel = ref('text-embedding-v4')
 const spaces = ref<ApiSpace[]>([])
@@ -1850,7 +1880,7 @@ async function loadGraph(query = searchText.value) {
     selectedEdge.value = null
     const message = safeError(error, 'Graph API unavailable.')
     graphError.value = message
-    graphState.value = message.toLowerCase().includes('forbidden') ? 'unauthorized' : 'error'
+    graphState.value = isPermissionDeniedError(error, message) ? 'unauthorized' : 'error'
   } finally {
     isLoadingGraph.value = false
   }
@@ -1984,7 +2014,26 @@ function modelTypeToCategory(type: ApiModelCapability['modelType']): Exclude<Mod
 }
 
 function safeError(error: unknown, fallback: string) {
+  if (error instanceof ApiError) {
+    return safeApiErrorMessage(error)
+  }
   return error instanceof Error ? error.message : fallback
+}
+
+function safeApiErrorMessage(error: ApiError) {
+  const reference = error.correlationId ? ` Reference ${error.correlationId}.` : ''
+  const retryAfter =
+    error.code === 'RATE_LIMITED' && error.retryAfterSeconds != null
+      ? ` Retry after ${error.retryAfterSeconds}s.`
+      : ''
+  return `${error.message}${retryAfter}${reference}`
+}
+
+function isPermissionDeniedError(error: unknown, message: string) {
+  if (error instanceof ApiError) {
+    return error.code === 'PERMISSION_DENIED' || error.status === 403
+  }
+  return message.toLowerCase().includes('permission denied')
 }
 
 function hasCapability(capability: string) {
@@ -3868,6 +3917,24 @@ function isDeepSeekDraft(model: VueModelConfig) {
                 </a>
               </div>
             </article>
+          </section>
+
+          <section class="atlas-api-safe-errors" data-testid="vue-safe-error-states">
+            <header>
+              <strong>Safe Error States</strong>
+              <span>Atlas API contract</span>
+            </header>
+            <div>
+              <article
+                v-for="state in safeErrorPreviews"
+                :key="state.code"
+                :data-testid="`vue-safe-error-state-${state.code}`"
+              >
+                <strong>{{ state.code }}</strong>
+                <span>{{ state.title }}</span>
+                <p>{{ state.description }}</p>
+              </article>
+            </div>
           </section>
 
           <p

@@ -1,7 +1,7 @@
 package com.atlas.metadata.config;
 
 import com.atlas.metadata.dto.ApiEnvelope;
-import com.atlas.metadata.dto.ErrorBody;
+import com.atlas.metadata.exception.SafeErrorResponseFactory;
 import com.atlas.metadata.service.AuthDecision;
 import com.atlas.metadata.service.AuthRequirement;
 import com.atlas.metadata.service.AuditLogService;
@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -27,6 +26,7 @@ public class AtlasAuthInterceptor implements HandlerInterceptor {
   private final AuthorizationPathPolicy pathPolicy;
   private final AuthorizationService authorizationService;
   private final AuditLogService auditLogService;
+  private final SafeErrorResponseFactory safeErrors;
   private final ObjectMapper objectMapper;
 
   public AtlasAuthInterceptor(
@@ -34,11 +34,13 @@ public class AtlasAuthInterceptor implements HandlerInterceptor {
       AuthorizationPathPolicy pathPolicy,
       AuthorizationService authorizationService,
       AuditLogService auditLogService,
+      SafeErrorResponseFactory safeErrors,
       ObjectMapper objectMapper) {
     this.currentUserService = currentUserService;
     this.pathPolicy = pathPolicy;
     this.authorizationService = authorizationService;
     this.auditLogService = auditLogService;
+    this.safeErrors = safeErrors;
     this.objectMapper = objectMapper;
   }
 
@@ -90,9 +92,8 @@ public class AtlasAuthInterceptor implements HandlerInterceptor {
       throws IOException {
     response.setStatus(decision.status().value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    ErrorBody error =
-        new ErrorBody(
-            decision.code(), decision.message(), null, Instant.now().toEpochMilli(), request.getRequestURI());
-    objectMapper.writeValue(response.getOutputStream(), ApiEnvelope.fail(error));
+    ApiEnvelope<Void> envelope =
+        safeErrors.envelope(decision.code(), decision.message(), null, null, null, request);
+    objectMapper.writeValue(response.getOutputStream(), envelope);
   }
 }

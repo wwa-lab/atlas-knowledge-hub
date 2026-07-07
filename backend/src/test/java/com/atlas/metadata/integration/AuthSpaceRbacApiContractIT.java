@@ -26,7 +26,7 @@ class AuthSpaceRbacApiContractIT extends AbstractPostgresIT {
         .perform(get("/api/auth/me").header("X-Atlas-User", "__missing__"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.success", is(false)))
-        .andExpect(jsonPath("$.error.code", is("UNAUTHORIZED")));
+        .andExpect(jsonPath("$.error.code", is("AUTHENTICATION_REQUIRED")));
   }
 
   @Test
@@ -61,7 +61,7 @@ class AuthSpaceRbacApiContractIT extends AbstractPostgresIT {
                     }
                     """))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error.code", is("FORBIDDEN")));
+        .andExpect(jsonPath("$.error.code", is("PERMISSION_DENIED")));
   }
 
   @Test

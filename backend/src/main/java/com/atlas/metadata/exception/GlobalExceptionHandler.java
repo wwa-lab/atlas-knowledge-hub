@@ -1,10 +1,8 @@
 package com.atlas.metadata.exception;
 
 import com.atlas.metadata.dto.ApiEnvelope;
-import com.atlas.metadata.dto.ErrorBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +22,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+  private final SafeErrorResponseFactory safeErrors;
+
+  public GlobalExceptionHandler(SafeErrorResponseFactory safeErrors) {
+    this.safeErrors = safeErrors;
+  }
 
   /** Handles Bean Validation errors on request bodies. */
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,14 +64,14 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<ApiEnvelope<Void>> onNotFound(
       NotFoundException ex, HttpServletRequest request) {
-    return error(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage(), null, request);
+    return error(HttpStatus.NOT_FOUND, SafeErrorCodes.NOT_FOUND, ex.getMessage(), null, null, request);
   }
 
   /** Handles duplicate or conflicting creates. */
   @ExceptionHandler(ConflictException.class)
   public ResponseEntity<ApiEnvelope<Void>> onConflict(
       ConflictException ex, HttpServletRequest request) {
-    return error(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), null, request);
+    return error(HttpStatus.CONFLICT, SafeErrorCodes.CONFLICT, ex.getMessage(), null, null, request);
   }
 
   /** Handles unexpected server faults with a generic user-safe message. */
@@ -82,15 +85,22 @@ public class GlobalExceptionHandler {
         ex);
     return error(
         HttpStatus.INTERNAL_SERVER_ERROR,
-        "INTERNAL_ERROR",
+        SafeErrorCodes.SAFE_SYSTEM_ERROR,
         "Unexpected server error.",
         null,
+        correlationId,
         request);
   }
 
   private ResponseEntity<ApiEnvelope<Void>> validation(
       Map<String, String> fields, HttpServletRequest request) {
-    return error(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Invalid request.", fields, request);
+    return error(
+        HttpStatus.BAD_REQUEST,
+        SafeErrorCodes.VALIDATION_FAILED,
+        "Invalid request.",
+        fields,
+        null,
+        request);
   }
 
   private ResponseEntity<ApiEnvelope<Void>> error(
@@ -98,9 +108,8 @@ public class GlobalExceptionHandler {
       String code,
       String message,
       Map<String, String> fields,
+      String correlationId,
       HttpServletRequest request) {
-    ErrorBody body =
-        new ErrorBody(code, message, fields, Instant.now().toEpochMilli(), request.getRequestURI());
-    return ResponseEntity.status(status).body(ApiEnvelope.fail(body));
+    return safeErrors.response(status, code, message, fields, correlationId, null, request);
   }
 }

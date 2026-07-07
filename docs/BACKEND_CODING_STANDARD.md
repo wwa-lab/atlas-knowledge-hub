@@ -133,16 +133,18 @@ public record ApiEnvelope<T>(boolean success, T data, ErrorBody error, PageMeta 
 }
 
 public record ErrorBody(
-    String code,                 // machine-readable, e.g. VALIDATION_ERROR
+    String code,                 // machine-readable, e.g. VALIDATION_FAILED
     String message,              // user-safe text
     Map<String, String> fields,  // field-level detail on validation errors, else null
     long timestamp,              // epoch millis — aligns with Spring's default error body
-    String path                  // request path, e.g. /api/spaces/xyz
+    String path,                 // request path, e.g. /api/spaces/xyz
+    String correlationId,        // present when a server-side log reference is useful
+    Integer retryAfterSeconds    // present for RATE_LIMITED, else null
 ) {}
 public record PageMeta(int page, int size, long total) {}
 ```
 
-- `error.code` ∈ `VALIDATION_ERROR` (400) · `NOT_FOUND` (404) · `CONFLICT` (409) · `INTERNAL_ERROR` (500).
+- `error.code` ∈ `AUTHENTICATION_REQUIRED` (401) · `PERMISSION_DENIED` (403) · `VALIDATION_FAILED` (400) · `NOT_FOUND` (404) · `CONFLICT` (409) · `RATE_LIMITED` (429) · `SAFE_SYSTEM_ERROR` (500).
 - **`timestamp` and `path` appear on error responses only** (mirrors Spring Boot's `DefaultErrorAttributes`), giving clients and observability tooling audit context. Success responses stay lean — no timestamp/status/path. The HTTP status line already carries the status code, so it is not duplicated in the success envelope.
 - List endpoints always include `meta`; `total` is the full filtered count.
 - Pagination via `?page=&size=` (0-based; default 20; max 200). Filtering via documented query params.
@@ -165,10 +167,10 @@ class GlobalExceptionHandler {
     Map<String,String> fields = ex.getBindingResult().getFieldErrors().stream()
         .collect(toMap(FieldError::getField, FieldError::getDefaultMessage, (a,b) -> a));
     return ResponseEntity.badRequest()
-        .body(ApiEnvelope.fail(new ErrorBody("VALIDATION_ERROR", "Invalid request.", fields)));
+        .body(ApiEnvelope.fail(new ErrorBody("VALIDATION_FAILED", "Invalid request.", fields)));
   }
   // NotFoundException -> 404; ConflictException -> 409;
-  // Exception -> 500 INTERNAL_ERROR with a generic message + correlation id
+  // Exception -> 500 SAFE_SYSTEM_ERROR with a generic message + correlation id
 }
 ```
 
@@ -179,7 +181,7 @@ class GlobalExceptionHandler {
 - Prefer `Optional<T>` over returning `null`; a method that can return null documents it in Javadoc.
 - Never `return` from a `finally` block; use try-with-resources for closeables.
 
-- **User-safe errors only.** Responses never contain stack traces, SQL, secrets, internal hostnames, or private absolute paths. `INTERNAL_ERROR` returns a generic message; the real cause is logged server-side with a correlation id (REQ-PROD-077).
+- **User-safe errors only.** Responses never contain stack traces, SQL, secrets, internal hostnames, source snippets, or private absolute paths. `SAFE_SYSTEM_ERROR` returns a generic message; the real cause is logged server-side with a correlation id (REQ-PROD-077). `RATE_LIMITED` includes retry metadata without exposing bucket internals.
 - **No secrets in source.** Datasource URL/username/password come from externalized config (`${ATLAS_DB_URL}` etc.). No literal credentials in `application.yml`, code, logs, or seed data. Any future key field is status-only (`configured` / `not_configured`), never raw.
 - **No auth in Phase 2** — the service is internal-only; RBAC is Phase 4. State this in a `SECURITY.md`/class note; do not deploy publicly as-is.
 - **When auth arrives (Phase 4):** authentication/authorization failures are handled by a custom `AuthenticationEntryPoint` / `AccessDeniedHandler` (returning the same envelope with `401`/`403`), **separate** from the business `GlobalExceptionHandler` — this is the Spring Security convention for CSRF, Bearer-token, and OAuth2 flows. Do not fold auth failures into the validation/business exception path.

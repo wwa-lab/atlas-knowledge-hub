@@ -1,6 +1,7 @@
 package com.atlas.metadata.service;
 
 import com.atlas.metadata.enums.AuthDecisionResult;
+import com.atlas.metadata.exception.SafeErrorCodes;
 import org.springframework.http.HttpStatus;
 
 /** User-safe authorization decision emitted by the auth boundary. */
@@ -14,7 +15,7 @@ public record AuthDecision(AuthDecisionResult result, HttpStatus status, String 
     return new AuthDecision(
         AuthDecisionResult.UNAUTHENTICATED,
         HttpStatus.UNAUTHORIZED,
-        "UNAUTHORIZED",
+        SafeErrorCodes.AUTHENTICATION_REQUIRED,
         "Authentication is required.");
   }
 
@@ -22,7 +23,7 @@ public record AuthDecision(AuthDecisionResult result, HttpStatus status, String 
     return new AuthDecision(
         AuthDecisionResult.FORBIDDEN,
         HttpStatus.FORBIDDEN,
-        "FORBIDDEN",
+        SafeErrorCodes.PERMISSION_DENIED,
         "The current user is not allowed to perform this action.");
   }
 
@@ -30,7 +31,7 @@ public record AuthDecision(AuthDecisionResult result, HttpStatus status, String 
     return new AuthDecision(
         AuthDecisionResult.SAFE_NOT_FOUND,
         HttpStatus.NOT_FOUND,
-        "NOT_FOUND",
+        SafeErrorCodes.NOT_FOUND,
         "Resource not found.");
   }
 }

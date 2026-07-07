@@ -222,7 +222,7 @@ class StorageApiContractIT extends AbstractPostgresIT {
                     }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.adapterKey").exists());
 
     mockMvc

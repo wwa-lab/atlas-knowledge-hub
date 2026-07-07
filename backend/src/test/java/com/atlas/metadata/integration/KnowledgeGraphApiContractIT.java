@@ -37,7 +37,7 @@ class KnowledgeGraphApiContractIT extends AbstractPostgresIT {
         .perform(get("/api/spaces/ibm-i-modernization/graph").header("X-Atlas-User", "__missing__"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.success").value(false))
-        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
 
     mockMvc
         .perform(get("/api/spaces/ibm-i-modernization/graph").header("X-Atlas-User", "viewer"))
@@ -144,7 +144,7 @@ class KnowledgeGraphApiContractIT extends AbstractPostgresIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.action").exists());
   }
 

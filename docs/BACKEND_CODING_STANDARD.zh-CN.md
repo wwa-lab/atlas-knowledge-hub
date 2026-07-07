@@ -133,16 +133,18 @@ public record ApiEnvelope<T>(boolean success, T data, ErrorBody error, PageMeta 
 }
 
 public record ErrorBody(
-    String code,                 // 机器可读，如 VALIDATION_ERROR
+    String code,                 // 机器可读，如 VALIDATION_FAILED
     String message,              // 用户安全文本
     Map<String, String> fields,  // 校验错误的字段级详情，否则 null
     long timestamp,              // epoch 毫秒 —— 对齐 Spring 默认错误体
-    String path                  // 请求路径，如 /api/spaces/xyz
+    String path,                 // 请求路径，如 /api/spaces/xyz
+    String correlationId,        // 需要服务端日志引用时出现
+    Integer retryAfterSeconds    // RATE_LIMITED 时出现，否则 null
 ) {}
 public record PageMeta(int page, int size, long total) {}
 ```
 
-- `error.code` ∈ `VALIDATION_ERROR`（400）· `NOT_FOUND`（404）· `CONFLICT`（409）· `INTERNAL_ERROR`（500）。
+- `error.code` ∈ `AUTHENTICATION_REQUIRED`（401）· `PERMISSION_DENIED`（403）· `VALIDATION_FAILED`（400）· `NOT_FOUND`（404）· `CONFLICT`（409）· `RATE_LIMITED`（429）· `SAFE_SYSTEM_ERROR`（500）。
 - **`timestamp` 与 `path` 仅在错误响应出现**（镜像 Spring Boot 的 `DefaultErrorAttributes`），给客户端与可观测工具审计上下文。成功响应保持精简——无 timestamp/status/path。HTTP 状态行已带状态码，故成功信封不重复。
 - 列表端点始终含 `meta`；`total` 为完整过滤后计数。
 - 分页经 `?page=&size=`（0 起；默认 20；上限 200）。过滤经文档化的查询参数。
@@ -165,10 +167,10 @@ class GlobalExceptionHandler {
     Map<String,String> fields = ex.getBindingResult().getFieldErrors().stream()
         .collect(toMap(FieldError::getField, FieldError::getDefaultMessage, (a,b) -> a));
     return ResponseEntity.badRequest()
-        .body(ApiEnvelope.fail(new ErrorBody("VALIDATION_ERROR", "Invalid request.", fields)));
+        .body(ApiEnvelope.fail(new ErrorBody("VALIDATION_FAILED", "Invalid request.", fields)));
   }
   // NotFoundException -> 404; ConflictException -> 409;
-  // Exception -> 500 INTERNAL_ERROR，通用消息 + correlation id
+  // Exception -> 500 SAFE_SYSTEM_ERROR，通用消息 + correlation id
 }
 ```
 
@@ -179,7 +181,7 @@ class GlobalExceptionHandler {
 - 优先 `Optional<T>` 而非返回 `null`；可能返回 null 的方法在 Javadoc 注明。
 - 绝不从 `finally` 块 `return`；可关闭资源用 try-with-resources。
 
-- **仅用户安全错误。** 响应绝不含堆栈、SQL、secret、内部主机名或私有绝对路径。`INTERNAL_ERROR` 返回通用消息；真实原因带 correlation id 记录于服务端（REQ-PROD-077）。
+- **仅用户安全错误。** 响应绝不含堆栈、SQL、secret、内部主机名、源码片段或私有绝对路径。`SAFE_SYSTEM_ERROR` 返回通用消息；真实原因带 correlation id 记录于服务端（REQ-PROD-077）。`RATE_LIMITED` 只包含 retry metadata，不暴露 bucket 内部细节。
 - **源码无 secret。** datasource URL/用户名/密码来自外部化配置（`${ATLAS_DB_URL}` 等）。`application.yml`、代码、日志、种子数据中无字面量凭证。任何未来 key 字段为 status-only（`configured` / `not_configured`），绝不原始。
 - **Phase 2 无 auth**——服务仅内部；RBAC 属 Phase 4。在 `SECURITY.md`/类注释声明；不得按现状公开部署。
 - **auth 到来时（Phase 4）：** 认证/授权失败由自定义 `AuthenticationEntryPoint` / `AccessDeniedHandler` 处理（返回同一信封，`401`/`403`），**与**业务 `GlobalExceptionHandler` **分离**——这是 Spring Security 对 CSRF、Bearer token、OAuth2 流程的约定。不要把 auth 失败并入校验/业务异常路径。

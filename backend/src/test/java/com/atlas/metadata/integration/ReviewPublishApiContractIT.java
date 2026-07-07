@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.atlas.metadata.controller.ReviewPublishController;
 import com.atlas.metadata.config.AtlasAuthInterceptor;
 import com.atlas.metadata.config.AtlasAuthWebConfig;
+import com.atlas.metadata.config.LocalRateLimitInterceptor;
 import com.atlas.metadata.dto.CreateWikiPublishRequest;
 import com.atlas.metadata.dto.ReviewQueueItemResponse;
 import com.atlas.metadata.dto.ReviewQueueItemResponse.ReviewQueueType;
@@ -30,6 +31,8 @@ import com.atlas.metadata.dto.WikiReferenceResponse;
 import com.atlas.metadata.enums.FileStatus;
 import com.atlas.metadata.enums.ReviewStatus;
 import com.atlas.metadata.exception.ConflictException;
+import com.atlas.metadata.exception.SafeErrorResponseFactory;
+import com.atlas.metadata.exception.SafeErrorSanitizer;
 import com.atlas.metadata.service.ReviewPublishService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -41,6 +44,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -50,7 +54,8 @@ import org.springframework.test.web.servlet.MockMvc;
     excludeFilters =
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class}))
+            classes = {AtlasAuthInterceptor.class, AtlasAuthWebConfig.class, LocalRateLimitInterceptor.class}))
+@Import({SafeErrorResponseFactory.class, SafeErrorSanitizer.class})
 class ReviewPublishApiContractIT {
 
   @Autowired private MockMvc mockMvc;
@@ -322,7 +327,7 @@ class ReviewPublishApiContractIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.title").exists())
         .andExpect(jsonPath("$.error.fields.owner").exists());
 

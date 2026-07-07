@@ -171,7 +171,7 @@ class VectorApiContractIT extends AbstractPostgresIT {
                     """
                         .formatted(batchId)))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
         .andExpect(jsonPath("$.error.fields.dimension").exists());
 
     mockMvc
