@@ -129,9 +129,7 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain(
       'SOURCE_UNREADABLE'
     )
-    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain(
-      'DEAD_LETTERED'
-    )
+    expect(wrapper.get('[data-testid="vue-dead-letter-detail"]').text()).toContain('DEAD_LETTERED')
     expect(wrapper.get('[data-testid="vue-dead-letter-trace"]').text()).toContain('source_trace')
     expect(wrapper.get('[data-testid="vue-dead-letter-attempt"]').text()).toContain(
       'FAILED_TERMINAL'
@@ -157,13 +155,16 @@ describe('Atlas P0 full-stack productization shell', () => {
 
     await wrapper.get('[data-testid="vue-space-card-ibm-i-modernization"]').trigger('click')
     await flushAsync()
-    await wrapper.findAll('button').find(button => button.text().includes('文档'))!.trigger('click')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text().includes('文档'))!
+      .trigger('click')
     await flushAsync()
 
-    expect(wrapper.get('[data-testid="vue-manual-url-status"]').text()).toContain(
-      'REVIEW_REQUIRED'
-    )
-    await wrapper.get('[data-testid="vue-manual-url-input"]').setValue('https://example.com/docs/url')
+    expect(wrapper.get('[data-testid="vue-manual-url-status"]').text()).toContain('REVIEW_REQUIRED')
+    await wrapper
+      .get('[data-testid="vue-manual-url-input"]')
+      .setValue('https://example.com/docs/url')
     await wrapper.get('[data-testid="vue-manual-url-title"]').setValue('Manual URL Fixture')
     await wrapper.get('[data-testid="vue-manual-url-ingest"]').trigger('submit')
     await flushAsync()
@@ -572,9 +573,7 @@ describe('Atlas P0 full-stack productization shell', () => {
     expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
       'REVIEW_REQUIRED'
     )
-    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain(
-      'Needs revision'
-    )
+    expect(wrapper.get('[data-testid="vue-trusted-ask-answer"]').text()).toContain('Needs revision')
   })
 
   it('renders API-backed space detail and disables unconnected prototype actions', async () => {
@@ -951,10 +950,7 @@ function mockP0Api(
       return jsonOk(deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus))
     }
 
-    if (
-      url.endsWith('/api/dead-letter-entries/dead-letter-p0/acknowledge') &&
-      method === 'POST'
-    ) {
+    if (url.endsWith('/api/dead-letter-entries/dead-letter-p0/acknowledge') && method === 'POST') {
       state.deadLetterStatus = 'ACKNOWLEDGED'
       state.deadLetterJobStatus = 'ACKNOWLEDGED'
       return jsonOk(deadLetterEntry(state.deadLetterStatus, state.deadLetterJobStatus))

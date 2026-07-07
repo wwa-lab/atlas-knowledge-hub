@@ -211,8 +211,7 @@ export type ApiGraphEdgeType =
 export type ApiReviewStatus =
   'REVIEW_REQUIRED' | 'APPROVED' | 'NEED_FIX' | 'OCR_REQUIRED' | 'PUBLISHED'
 
-export type ApiAnswerReviewStatus =
-  'REVIEW_REQUIRED' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION'
+export type ApiAnswerReviewStatus = 'REVIEW_REQUIRED' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION'
 
 export interface ApiGraphNode {
   id: string
@@ -700,10 +699,7 @@ export type AskRunStatus =
   | 'FAILED'
 export type AskReviewPolicy = 'APPROVED_ONLY' | 'INCLUDE_REVIEW_REQUIRED'
 export type AskCitationStatus =
-  | 'ELIGIBLE'
-  | 'REVIEW_REQUIRED'
-  | 'LOW_CONFIDENCE'
-  | 'MISSING_SOURCE_TRACE'
+  'ELIGIBLE' | 'REVIEW_REQUIRED' | 'LOW_CONFIDENCE' | 'MISSING_SOURCE_TRACE'
 
 export interface ApiAskEvidence {
   evidenceId: string

@@ -3118,7 +3118,10 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   </label>
                   <label>
                     <span>Fetch intent</span>
-                    <select v-model="manualUrlDraft.fetchIntent" data-testid="vue-manual-url-intent">
+                    <select
+                      v-model="manualUrlDraft.fetchIntent"
+                      data-testid="vue-manual-url-intent"
+                    >
                       <option value="METADATA_ONLY">Metadata only</option>
                       <option value="FETCH_LATER">Fetch later</option>
                     </select>
@@ -3138,7 +3141,11 @@ function isDeepSeekDraft(model: VueModelConfig) {
                   <article data-testid="vue-manual-url-status">
                     <strong>Manual URL sources</strong>
                     <p v-if="manualUrlSources.length === 0">No manual URL sources yet.</p>
-                    <div v-for="source in manualUrlSources" :key="source.id" class="manual-url-card">
+                    <div
+                      v-for="source in manualUrlSources"
+                      :key="source.id"
+                      class="manual-url-card"
+                    >
                       <span>{{ source.displayUrl }}</span>
                       <small>
                         {{ source.ingestStatus }} · {{ source.reviewStatus }} ·
@@ -5116,11 +5123,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
               </ul>
             </article>
             <p v-if="askSessionError" class="state-message error">{{ askSessionError }}</p>
-            <article
-              v-if="selectedAskSession"
-              class="ask-answer"
-              data-testid="ask-session-history"
-            >
+            <article v-if="selectedAskSession" class="ask-answer" data-testid="ask-session-history">
               <strong>{{ selectedAskSession.title }}</strong>
               <span>{{ askSessions.length }} recent sessions</span>
               <ul>
