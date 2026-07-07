@@ -45,6 +45,8 @@ class AskApiContractIT extends AbstractPostgresIT {
                         """))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.sessionId").value(containsString("ask-session-")))
+            .andExpect(jsonPath("$.data.sessionTitle").value("Which BRD scope is approved?"))
             .andExpect(jsonPath("$.data.spaceId").value("ibm-i-modernization"))
             .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
             .andExpect(jsonPath("$.data.answer").value(containsString("Mock chat summary")))
@@ -52,19 +54,40 @@ class AskApiContractIT extends AbstractPostgresIT {
             .andExpect(jsonPath("$.data.reviewPolicy").value("APPROVED_ONLY"))
             .andExpect(jsonPath("$.data.evidence[*].sourceChunkId", hasItem(approvedChunkId)))
             .andExpect(jsonPath("$.data.evidence[*].reviewStatus", hasItem("APPROVED")))
+            .andExpect(jsonPath("$.data.evidence[0].citationId").value(containsString("ask-cite-")))
+            .andExpect(jsonPath("$.data.evidence[0].evidenceLabel").value("Ask/BRD.md page 1"))
+            .andExpect(jsonPath("$.data.evidence[0].sourceLocator").value(containsString(approvedChunkId)))
+            .andExpect(jsonPath("$.data.evidence[0].citationStatus").value("ELIGIBLE"))
+            .andExpect(jsonPath("$.data.evidence[0].reviewEligible").value(true))
             .andExpect(jsonPath("$.data.modelRunId").exists())
             .andExpect(jsonPath("$").value(not(containsString("https://"))))
             .andExpect(jsonPath("$").value(not(containsString(System.getProperty("user.home")))))
             .andReturn();
 
     String runId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.runId");
+    String sessionId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.sessionId");
 
     mockMvc
         .perform(get("/api/ask-runs/" + runId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.runId").value(runId))
+        .andExpect(jsonPath("$.data.sessionId").value(sessionId))
         .andExpect(jsonPath("$.data.answerReviewStatus").value("REVIEW_REQUIRED"))
         .andExpect(jsonPath("$.data.evidence[0].sourceFile").value("Ask/BRD.md"));
+
+    mockMvc
+        .perform(get("/api/spaces/ibm-i-modernization/ask-sessions"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].sessionId").value(sessionId))
+        .andExpect(jsonPath("$.data[0].runCount").value(1))
+        .andExpect(jsonPath("$.data[0].latestStatus").value("SUCCEEDED"));
+
+    mockMvc
+        .perform(get("/api/ask-sessions/" + sessionId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.sessionId").value(sessionId))
+        .andExpect(jsonPath("$.data.runs[0].runId").value(runId))
+        .andExpect(jsonPath("$.data.runs[0].evidence[0].citationStatus").value("ELIGIBLE"));
   }
 
   @Test

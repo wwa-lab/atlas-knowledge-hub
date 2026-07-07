@@ -8,12 +8,14 @@ import {
   createSampleBatch,
   createSpace as createSpaceApi,
   getAskRun,
+  getAskSession,
   getCurrentUser,
   getDeepSeekConfiguration,
   getGraph,
   getGraphNode,
   getSpace,
   listAuditEvents,
+  listAskSessions,
   listBatches,
   listChunks,
   listFiles,
@@ -29,6 +31,8 @@ import {
 } from '@/api'
 import type {
   ApiAskRun,
+  ApiAskSessionDetail,
+  ApiAskSessionSummary,
   ApiAuditEvent,
   ApiBatch,
   ApiFileItem,
@@ -360,6 +364,8 @@ const wikiPages = ref<ApiWikiPage[]>([])
 const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
 const auditEvents = ref<ApiAuditEvent[]>([])
 const askRun = ref<ApiAskRun | null>(null)
+const askSessions = ref<ApiAskSessionSummary[]>([])
+const selectedAskSession = ref<ApiAskSessionDetail | null>(null)
 const askQuestion = ref('What evidence was published for the P0 browser flow?')
 const workflowMessage = ref('')
 const downstreamReady = ref(false)
@@ -379,6 +385,7 @@ const createSpaceError = ref('')
 const createSpaceStatus = ref('')
 const workflowError = ref('')
 const askError = ref('')
+const askSessionError = ref('')
 const auditError = ref('')
 const isLoadingAuditEvents = ref(false)
 
@@ -1317,7 +1324,7 @@ const productAskAnswer = computed(() => {
       body: askRun.value.answer ?? askRun.value.safeMessage ?? 'Trusted Ask completed safely.',
       evidence: askRun.value.evidence.map(
         evidence =>
-          `${evidence.sourceChunkId} · ${evidence.sourceFile} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · score ${evidence.score ?? 'n/a'}`
+          `${evidence.citationId} · ${evidence.sourceChunkId} · ${evidence.evidenceLabel} · ${evidence.citationStatus} · score ${evidence.score ?? 'n/a'}`
       ),
       warning: `Answer review status ${askRun.value.answerReviewStatus}; model run ${askRun.value.modelRunId ?? 'n/a'}`
     }
@@ -1820,13 +1827,26 @@ async function submitAsk() {
     const created = await createAskRun(
       selectedSpaceId.value,
       askQuestion.value.trim(),
-      selectedFileId.value
+      selectedFileId.value,
+      selectedAskSession.value?.sessionId
     )
     askRun.value = await getAskRun(created.runId)
+    await refreshAskSessions(askRun.value.sessionId)
   } catch (error) {
     askError.value = safeError(error, 'Trusted Ask failed safely.')
   } finally {
     isAsking.value = false
+  }
+}
+
+async function refreshAskSessions(preferredSessionId?: string) {
+  askSessionError.value = ''
+  try {
+    askSessions.value = await listAskSessions(selectedSpaceId.value)
+    const sessionId = preferredSessionId ?? askSessions.value[0]?.sessionId
+    selectedAskSession.value = sessionId ? await getAskSession(sessionId) : null
+  } catch (error) {
+    askSessionError.value = safeError(error, 'Ask session history failed safely.')
   }
 }
 
@@ -4553,14 +4573,32 @@ function isDeepSeekDraft(model: VueModelConfig) {
             </button>
             <p v-if="askError" class="state-message error">{{ askError }}</p>
             <article v-if="askRun" class="ask-answer" data-testid="ask-answer">
-              <strong>{{ askRun.status }} · {{ askRun.answerReviewStatus }}</strong>
+              <strong
+                >{{ askRun.status }} · {{ askRun.answerReviewStatus }} ·
+                {{ askRun.sessionTitle ?? askRun.sessionId }}</strong
+              >
               <p>{{ askRun.answer ?? askRun.safeMessage }}</p>
               <span>confidence {{ askRun.answerConfidence ?? 'n/a' }}</span>
               <ul>
                 <li v-for="evidence in askRun.evidence" :key="evidence.evidenceId">
-                  {{ evidence.sourceChunkId }} · {{ evidence.sourceFile }} ·
-                  {{ evidence.section ?? 'section n/a' }} · score {{ evidence.score ?? 'n/a' }} ·
-                  {{ evidence.reviewStatus }}
+                  {{ evidence.citationId }} · {{ evidence.evidenceLabel }} ·
+                  {{ evidence.sourceLocator }} · {{ evidence.citationStatus }} · score
+                  {{ evidence.score ?? 'n/a' }}
+                  <span v-if="!evidence.reviewEligible"> · {{ evidence.excludedReason }}</span>
+                </li>
+              </ul>
+            </article>
+            <p v-if="askSessionError" class="state-message error">{{ askSessionError }}</p>
+            <article
+              v-if="selectedAskSession"
+              class="ask-answer"
+              data-testid="ask-session-history"
+            >
+              <strong>{{ selectedAskSession.title }}</strong>
+              <span>{{ askSessions.length }} recent sessions</span>
+              <ul>
+                <li v-for="run in selectedAskSession.runs" :key="run.runId">
+                  {{ run.question }} · {{ run.status }} · {{ run.evidence.length }} citations
                 </li>
               </ul>
             </article>

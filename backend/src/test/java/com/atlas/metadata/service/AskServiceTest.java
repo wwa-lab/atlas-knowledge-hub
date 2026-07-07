@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.atlas.metadata.domain.AskEvidence;
 import com.atlas.metadata.domain.AskRun;
+import com.atlas.metadata.domain.AskSession;
 import com.atlas.metadata.domain.Batch;
 import com.atlas.metadata.domain.FileItem;
 import com.atlas.metadata.dto.CreateAskRequest;
@@ -15,6 +16,7 @@ import com.atlas.metadata.dto.ModelOutputResponse;
 import com.atlas.metadata.dto.ModelRunResponse;
 import com.atlas.metadata.dto.VectorQueryMatchResponse;
 import com.atlas.metadata.dto.VectorQueryResponse;
+import com.atlas.metadata.enums.AskCitationStatus;
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
 import com.atlas.metadata.enums.FileStatus;
@@ -28,6 +30,7 @@ import com.atlas.metadata.enums.SourceType;
 import com.atlas.metadata.enums.VectorReviewPolicy;
 import com.atlas.metadata.repository.AskEvidenceRepository;
 import com.atlas.metadata.repository.AskRunRepository;
+import com.atlas.metadata.repository.AskSessionRepository;
 import com.atlas.metadata.repository.BatchRepository;
 import com.atlas.metadata.repository.FileItemRepository;
 import com.atlas.metadata.repository.SpaceRepository;
@@ -37,7 +40,9 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,8 +68,11 @@ class AskServiceTest {
   @Mock private ModelService modelService;
   @Mock private AskRunRepository askRunRepository;
   @Mock private AskEvidenceRepository askEvidenceRepository;
+  @Mock private AskSessionRepository askSessionRepository;
 
+  private final List<AskRun> savedRuns = new ArrayList<>();
   private final List<AskEvidence> savedEvidence = new ArrayList<>();
+  private final Map<String, AskSession> savedSessions = new LinkedHashMap<>();
 
   @BeforeEach
   void setUp() {
@@ -81,7 +89,35 @@ class AskServiceTest {
                     OffsetDateTime.now(CLOCK))));
     when(fileItemRepository.findByBatchIdIn(any()))
         .thenReturn(List.of(file("file-approved", SourceType.pdf), file("file-review", SourceType.docx)));
-    when(askRunRepository.save(any(AskRun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(askRunRepository.save(any(AskRun.class)))
+        .thenAnswer(
+            invocation -> {
+              AskRun run = invocation.getArgument(0);
+              savedRuns.removeIf(item -> item.getId().equals(run.getId()));
+              savedRuns.add(run);
+              return run;
+            });
+    when(askSessionRepository.save(any(AskSession.class)))
+        .thenAnswer(
+            invocation -> {
+              AskSession session = invocation.getArgument(0);
+              savedSessions.put(session.getId(), session);
+              return session;
+            });
+    when(askSessionRepository.findById(any()))
+        .thenAnswer(invocation -> Optional.ofNullable(savedSessions.get(invocation.getArgument(0))));
+    when(askSessionRepository.findTop20BySpaceIdOrderByUpdatedAtDesc(any()))
+        .thenAnswer(
+            invocation ->
+                savedSessions.values().stream()
+                    .filter(session -> session.getSpaceId().equals(invocation.getArgument(0)))
+                    .toList());
+    when(askRunRepository.findBySessionIdOrderByCreatedAtAsc(any()))
+        .thenAnswer(
+            invocation ->
+                savedRuns.stream()
+                    .filter(run -> invocation.getArgument(0).equals(run.getSessionId()))
+                    .toList());
     when(askEvidenceRepository.saveAll(any()))
         .thenAnswer(
             invocation -> {
@@ -116,9 +152,16 @@ class AskServiceTest {
                 "Which scope is approved?", "delivery-lead", AskReviewPolicy.APPROVED_ONLY, 5, "mock", null));
 
     assertThat(response.status()).isEqualTo(AskRunStatus.SUCCEEDED);
+    assertThat(response.sessionId()).startsWith("ask-session-");
+    assertThat(response.sessionTitle()).isEqualTo("Which scope is approved?");
     assertThat(response.answer()).contains("Mock trusted ask answer");
     assertThat(response.answerReviewStatus()).isEqualTo(ReviewStatus.REVIEW_REQUIRED);
     assertThat(response.evidence()).extracting(item -> item.sourceChunkId()).containsExactly("chunk-approved");
+    assertThat(response.evidence().get(0).citationId()).startsWith("ask-cite-");
+    assertThat(response.evidence().get(0).evidenceLabel()).isEqualTo("Trusted/BRD.pdf page 12");
+    assertThat(response.evidence().get(0).sourceLocator()).contains("page 12 / Scope / chunk chunk-approved");
+    assertThat(response.evidence().get(0).citationStatus()).isEqualTo(AskCitationStatus.ELIGIBLE);
+    assertThat(response.evidence().get(0).reviewEligible()).isTrue();
     assertThat(response.modelRunId()).isEqualTo("model-run-001");
     ArgumentCaptor<com.atlas.metadata.dto.CreateModelRunRequest> modelRequest =
         ArgumentCaptor.forClass(com.atlas.metadata.dto.CreateModelRunRequest.class);
@@ -163,6 +206,29 @@ class AskServiceTest {
     assertThat(queryRequest.getValue().reviewPolicy()).isEqualTo(VectorReviewPolicy.INCLUDE_REVIEW_REQUIRED);
     assertThat(queryRequest.getValue().limit()).isEqualTo(3);
     assertThat(response.evidence()).extracting(item -> item.sourceChunkId()).containsExactly("chunk-approved", "chunk-review");
+    assertThat(response.evidence().get(1).citationStatus()).isEqualTo(AskCitationStatus.REVIEW_REQUIRED);
+    assertThat(response.evidence().get(1).reviewEligible()).isFalse();
+    assertThat(response.evidence().get(1).excludedReason()).contains("requires review");
+  }
+
+  @Test
+  void sessionDetailReturnsOrderedRunHistory() {
+    AskService service = service();
+
+    var response =
+        service.createRun(
+            "space",
+            new CreateAskRequest(
+                "Track this session", "delivery-lead", AskReviewPolicy.APPROVED_ONLY, 5, "mock", null));
+
+    var sessions = service.listSessions("space");
+    var detail = service.getSession(response.sessionId());
+
+    assertThat(sessions).hasSize(1);
+    assertThat(sessions.get(0).sessionId()).isEqualTo(response.sessionId());
+    assertThat(sessions.get(0).runCount()).isEqualTo(1);
+    assertThat(detail.sessionId()).isEqualTo(response.sessionId());
+    assertThat(detail.runs()).extracting(item -> item.runId()).containsExactly(response.runId());
   }
 
   @Test
@@ -216,7 +282,9 @@ class AskServiceTest {
         modelService,
         askRunRepository,
         askEvidenceRepository,
+        askSessionRepository,
         new AskSummaryCalculator(),
+        null,
         CLOCK);
   }
 

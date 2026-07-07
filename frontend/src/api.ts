@@ -1,5 +1,7 @@
 import type {
   ApiAskRun,
+  ApiAskSessionDetail,
+  ApiAskSessionSummary,
   ApiAuditEvent,
   ApiBatch,
   ApiEnvelope,
@@ -256,7 +258,12 @@ export async function getGraphNode(spaceId: string, nodeId: string) {
   return atlasFetch<ApiGraphNodeDetail>(`/api/spaces/${spaceId}/graph/nodes/${nodeId}`)
 }
 
-export async function createAskRun(spaceId: string, question: string, fileId?: string) {
+export async function createAskRun(
+  spaceId: string,
+  question: string,
+  fileId?: string,
+  sessionId?: string
+) {
   return atlasFetch<ApiAskRun>(`/api/spaces/${spaceId}/ask`, {
     method: 'POST',
     body: {
@@ -265,6 +272,7 @@ export async function createAskRun(spaceId: string, question: string, fileId?: s
       reviewPolicy: 'APPROVED_ONLY',
       limit: 3,
       mode: 'mock',
+      sessionId,
       filters: fileId
         ? {
             fileItemIds: [fileId],
@@ -277,6 +285,14 @@ export async function createAskRun(spaceId: string, question: string, fileId?: s
 
 export async function getAskRun(runId: string) {
   return atlasFetch<ApiAskRun>(`/api/ask-runs/${runId}`)
+}
+
+export async function listAskSessions(spaceId: string) {
+  return atlasFetch<ApiAskSessionSummary[]>(`/api/spaces/${spaceId}/ask-sessions`)
+}
+
+export async function getAskSession(sessionId: string) {
+  return atlasFetch<ApiAskSessionDetail>(`/api/ask-sessions/${sessionId}`)
 }
 
 export async function listModelAdapters() {

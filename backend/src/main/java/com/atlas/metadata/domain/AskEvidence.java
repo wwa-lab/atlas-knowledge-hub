@@ -1,5 +1,6 @@
 package com.atlas.metadata.domain;
 
+import com.atlas.metadata.enums.AskCitationStatus;
 import com.atlas.metadata.enums.ReviewStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,6 +51,25 @@ public class AskEvidence {
   @Column(precision = 4, scale = 3)
   private BigDecimal score;
 
+  @Column(name = "citation_id", nullable = false, columnDefinition = "text")
+  private String citationId;
+
+  @Column(name = "evidence_label", nullable = false, columnDefinition = "text")
+  private String evidenceLabel;
+
+  @Column(name = "source_locator", nullable = false, columnDefinition = "text")
+  private String sourceLocator;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "citation_status", nullable = false, columnDefinition = "text")
+  private AskCitationStatus citationStatus;
+
+  @Column(name = "review_eligible", nullable = false)
+  private boolean reviewEligible;
+
+  @Column(name = "excluded_reason", columnDefinition = "text")
+  private String excludedReason;
+
   @Column(name = "created_at", nullable = false)
   private OffsetDateTime createdAt;
 
@@ -69,6 +89,47 @@ public class AskEvidence {
       String vectorItemKey,
       BigDecimal score,
       OffsetDateTime createdAt) {
+    return create(
+        id,
+        askRunId,
+        sourceChunkId,
+        fileItemId,
+        sourceFile,
+        page,
+        section,
+        reviewStatus,
+        confidence,
+        vectorItemKey,
+        score,
+        id,
+        defaultEvidenceLabel(sourceFile, page),
+        defaultSourceLocator(page, section, sourceChunkId),
+        AskCitationStatus.ELIGIBLE,
+        true,
+        null,
+        createdAt);
+  }
+
+  /** Creates an immutable evidence snapshot with safe citation eligibility metadata. */
+  public static AskEvidence create(
+      String id,
+      String askRunId,
+      String sourceChunkId,
+      String fileItemId,
+      String sourceFile,
+      Integer page,
+      String section,
+      ReviewStatus reviewStatus,
+      BigDecimal confidence,
+      String vectorItemKey,
+      BigDecimal score,
+      String citationId,
+      String evidenceLabel,
+      String sourceLocator,
+      AskCitationStatus citationStatus,
+      boolean reviewEligible,
+      String excludedReason,
+      OffsetDateTime createdAt) {
     AskEvidence evidence = new AskEvidence();
     evidence.id = id;
     evidence.askRunId = askRunId;
@@ -81,8 +142,25 @@ public class AskEvidence {
     evidence.confidence = confidence;
     evidence.vectorItemKey = vectorItemKey;
     evidence.score = score;
+    evidence.citationId = citationId == null ? id : citationId;
+    evidence.evidenceLabel = evidenceLabel;
+    evidence.sourceLocator = sourceLocator;
+    evidence.citationStatus = citationStatus;
+    evidence.reviewEligible = reviewEligible;
+    evidence.excludedReason = excludedReason;
     evidence.createdAt = createdAt;
     return evidence;
+  }
+
+  private static String defaultEvidenceLabel(String sourceFile, Integer page) {
+    String pageLabel = page == null ? "" : " page " + page;
+    return sourceFile + pageLabel;
+  }
+
+  private static String defaultSourceLocator(Integer page, String section, String sourceChunkId) {
+    String pageLabel = page == null ? "page n/a" : "page " + page;
+    String sectionLabel = section == null || section.isBlank() ? "section n/a" : section;
+    return pageLabel + " / " + sectionLabel + " / chunk " + sourceChunkId;
   }
 
   public String getId() {
@@ -127,6 +205,30 @@ public class AskEvidence {
 
   public BigDecimal getScore() {
     return score;
+  }
+
+  public String getCitationId() {
+    return citationId;
+  }
+
+  public String getEvidenceLabel() {
+    return evidenceLabel;
+  }
+
+  public String getSourceLocator() {
+    return sourceLocator;
+  }
+
+  public AskCitationStatus getCitationStatus() {
+    return citationStatus;
+  }
+
+  public boolean isReviewEligible() {
+    return reviewEligible;
+  }
+
+  public String getExcludedReason() {
+    return excludedReason;
   }
 
   public OffsetDateTime getCreatedAt() {

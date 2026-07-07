@@ -10,6 +10,8 @@ import java.util.List;
 /** Safe trusted ask run response with answer review state and source evidence. */
 public record AskRunResponse(
     String runId,
+    String sessionId,
+    String sessionTitle,
     String spaceId,
     String question,
     AskRunStatus status,

@@ -68,6 +68,7 @@ slug 是稳定的 kebab-case 标识。ID 遵循 profile：`REQ-{SLICE}-###`、`U
 | Wave 3 / Trust And Governance | `audit-log-foundation` | 面向核心治理操作的 safe append-only audit event capture、RBAC-protected audit read APIs 与只读 audit UI | ✅ 已按接受版 SDD 完成 prototype implementation | Production retention/SIEM/export 与 historical graph-audit backfill 仍不在本切片范围内 |
 | Wave 3 / Trust And Governance | `secret-manager-integration` | 覆盖 model configuration 与 adapter capability metadata 的 secret-reference 和 masked-status contract foundation | ✅ 已完成实现并通过本地 closeout verification | Production secret manager storage、rotation 与 policy automation 保持为 future work |
 | Wave 3 / Trust And Governance | `rate-limit-safe-errors` | Deterministic local API rate limiting、typed user-safe error envelopes 与 frontend safe-error states | ✅ 已按接受版 SDD 完成 prototype implementation 与 verification | Production distributed quota、alerting/SLO dashboards、SSO/OIDC、SIEM/export 与 production secret manager 仍不在本切片范围内 |
+| Wave 4 / Ask And Graph Productization | `ask-session-citations` | Session-scoped Trusted Ask answer citation snapshots，包含 safe source trace 与 review-aware evidence | ✅ 已按接受版 SDD 完成 implementation 与 verification | Answer governance、retrieval quality metrics、graph extraction、provider/model changes 与 production cost/quota controls 保持为 future work |
 
 切片边界是指引而非铁律：若任务清单会超出「一次可评审的实现量」，就拆分并在溯源中记录。Phase 3 每个适配器切片可作为独立的 generate-all 单元，保持契约小而清晰。
 

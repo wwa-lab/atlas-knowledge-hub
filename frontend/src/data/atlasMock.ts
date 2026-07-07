@@ -250,6 +250,8 @@ export const askSources: AskSource[] = [
 
 export const trustedAskRun: ApiAskRun = {
   runId: 'ask-run-mock-001',
+  sessionId: 'ask-session-mock-001',
+  sessionTitle: 'Source Trace workflow',
   spaceId: 'ibm-i-modernization',
   question: 'Explain what Source Trace means in the modernization workflow.',
   status: 'SUCCEEDED',
@@ -265,6 +267,7 @@ export const trustedAskRun: ApiAskRun = {
   evidence: [
     {
       evidenceId: 'ask-ev-mock-001',
+      citationId: 'ask-cite-mock-001',
       sourceChunkId: 'chunk-file-001-p12-b02',
       fileItemId: 'file-001',
       sourceFile: 'BRD_Methodology.pdf',
@@ -273,7 +276,12 @@ export const trustedAskRun: ApiAskRun = {
       reviewStatus: 'APPROVED',
       confidence: 0.93,
       vectorItemKey: 'ibm-i-modernization/chunk-file-001-p12-b02',
-      score: 0.88
+      score: 0.88,
+      evidenceLabel: 'BRD_Methodology.pdf page 12',
+      sourceLocator: 'page 12 / Source Trace / chunk chunk-file-001-p12-b02',
+      citationStatus: 'ELIGIBLE',
+      reviewEligible: true,
+      excludedReason: null
     }
   ]
 }

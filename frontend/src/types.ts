@@ -534,9 +534,15 @@ export type AskRunStatus =
   | 'PARTIAL_FAILED'
   | 'FAILED'
 export type AskReviewPolicy = 'APPROVED_ONLY' | 'INCLUDE_REVIEW_REQUIRED'
+export type AskCitationStatus =
+  | 'ELIGIBLE'
+  | 'REVIEW_REQUIRED'
+  | 'LOW_CONFIDENCE'
+  | 'MISSING_SOURCE_TRACE'
 
 export interface ApiAskEvidence {
   evidenceId: string
+  citationId: string
   sourceChunkId: string
   fileItemId: string
   sourceFile: string
@@ -546,11 +552,18 @@ export interface ApiAskEvidence {
   confidence: number | null
   vectorItemKey: string | null
   score: number | null
+  evidenceLabel: string
+  sourceLocator: string
+  citationStatus: AskCitationStatus
+  reviewEligible: boolean
+  excludedReason: string | null
   createdAt?: string
 }
 
 export interface ApiAskRun {
   runId: string
+  sessionId: string
+  sessionTitle: string | null
   spaceId: string
   question: string
   status: AskRunStatus
@@ -565,6 +578,28 @@ export interface ApiAskRun {
   evidence: ApiAskEvidence[]
   createdAt?: string
   completedAt?: string | null
+}
+
+export interface ApiAskSessionSummary {
+  sessionId: string
+  spaceId: string
+  title: string
+  createdBy: string
+  runCount: number
+  latestStatus: AskRunStatus | null
+  latestAnswerReviewStatus: ApiReviewStatus | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiAskSessionDetail {
+  sessionId: string
+  spaceId: string
+  title: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+  runs: ApiAskRun[]
 }
 
 export type ApiModelType = 'CHAT' | 'EMBEDDING' | 'RERANK' | 'VISION' | 'SPEECH'

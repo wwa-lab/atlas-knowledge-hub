@@ -24,6 +24,9 @@ public class AskRun {
   @Column(name = "space_id", nullable = false, columnDefinition = "text")
   private String spaceId;
 
+  @Column(name = "session_id", nullable = false, columnDefinition = "text")
+  private String sessionId;
+
   @Column(nullable = false, columnDefinition = "text")
   private String question;
 
@@ -74,9 +77,23 @@ public class AskRun {
       String mode,
       String requestedBy,
       OffsetDateTime createdAt) {
+    return create(id, spaceId, null, question, reviewPolicy, mode, requestedBy, createdAt);
+  }
+
+  /** Creates a requested ask run inside a Trusted Ask session. */
+  public static AskRun create(
+      String id,
+      String spaceId,
+      String sessionId,
+      String question,
+      AskReviewPolicy reviewPolicy,
+      String mode,
+      String requestedBy,
+      OffsetDateTime createdAt) {
     AskRun run = new AskRun();
     run.id = id;
     run.spaceId = spaceId;
+    run.sessionId = sessionId;
     run.question = question;
     run.status = AskRunStatus.REQUESTED;
     run.reviewPolicy = reviewPolicy == null ? AskReviewPolicy.APPROVED_ONLY : reviewPolicy;
@@ -137,6 +154,10 @@ public class AskRun {
 
   public String getSpaceId() {
     return spaceId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 
   public String getQuestion() {

@@ -2,9 +2,12 @@ package com.atlas.metadata.service;
 
 import com.atlas.metadata.domain.AskEvidence;
 import com.atlas.metadata.domain.AskRun;
+import com.atlas.metadata.domain.AskSession;
 import com.atlas.metadata.domain.Batch;
 import com.atlas.metadata.domain.FileItem;
 import com.atlas.metadata.dto.AskRunResponse;
+import com.atlas.metadata.dto.AskSessionDetailResponse;
+import com.atlas.metadata.dto.AskSessionSummaryResponse;
 import com.atlas.metadata.dto.CreateAskRequest;
 import com.atlas.metadata.dto.CreateModelRunRequest;
 import com.atlas.metadata.dto.ModelOutputResponse;
@@ -14,6 +17,7 @@ import com.atlas.metadata.dto.VectorQueryMatchResponse;
 import com.atlas.metadata.dto.VectorQueryRequestDto;
 import com.atlas.metadata.dto.VectorQueryResponse;
 import com.atlas.metadata.dto.mapping.AskMapper;
+import com.atlas.metadata.enums.AskCitationStatus;
 import com.atlas.metadata.enums.AskReviewPolicy;
 import com.atlas.metadata.enums.AskRunStatus;
 import com.atlas.metadata.enums.AuditCategory;
@@ -29,6 +33,7 @@ import com.atlas.metadata.exception.NotFoundException;
 import com.atlas.metadata.exception.RequestValidationException;
 import com.atlas.metadata.repository.AskEvidenceRepository;
 import com.atlas.metadata.repository.AskRunRepository;
+import com.atlas.metadata.repository.AskSessionRepository;
 import com.atlas.metadata.repository.BatchRepository;
 import com.atlas.metadata.repository.FileItemRepository;
 import com.atlas.metadata.repository.SpaceRepository;
@@ -54,6 +59,8 @@ public class AskService {
   private static final int DEFAULT_LIMIT = 5;
   private static final int MAX_LIMIT = 10;
   private static final int MAX_QUESTION_LENGTH = 500;
+  private static final int MAX_SESSION_TITLE_LENGTH = 120;
+  private static final BigDecimal LOW_CONFIDENCE_THRESHOLD = new BigDecimal("0.800");
   private static final String NO_EVIDENCE_ANSWER =
       "No approved evidence was found for this question. Review or publish relevant evidence before using Trusted Ask.";
   private static final Pattern SECRET_PATTERN =
@@ -69,6 +76,7 @@ public class AskService {
   private final ModelService modelService;
   private final AskRunRepository askRunRepository;
   private final AskEvidenceRepository askEvidenceRepository;
+  private final AskSessionRepository askSessionRepository;
   private final AskSummaryCalculator summaryCalculator;
   private final AuditLogService auditLogService;
   private final Clock clock;
@@ -83,6 +91,7 @@ public class AskService {
       ModelService modelService,
       AskRunRepository askRunRepository,
       AskEvidenceRepository askEvidenceRepository,
+      AskSessionRepository askSessionRepository,
       AskSummaryCalculator summaryCalculator,
       AuditLogService auditLogService) {
     this(
@@ -93,6 +102,7 @@ public class AskService {
         modelService,
         askRunRepository,
         askEvidenceRepository,
+        askSessionRepository,
         summaryCalculator,
         auditLogService,
         Clock.systemUTC());
@@ -116,6 +126,7 @@ public class AskService {
         modelService,
         askRunRepository,
         askEvidenceRepository,
+        null,
         summaryCalculator,
         null,
         clock);
@@ -129,6 +140,7 @@ public class AskService {
       ModelService modelService,
       AskRunRepository askRunRepository,
       AskEvidenceRepository askEvidenceRepository,
+      AskSessionRepository askSessionRepository,
       AskSummaryCalculator summaryCalculator,
       AuditLogService auditLogService,
       Clock clock) {
@@ -139,6 +151,7 @@ public class AskService {
     this.modelService = modelService;
     this.askRunRepository = askRunRepository;
     this.askEvidenceRepository = askEvidenceRepository;
+    this.askSessionRepository = askSessionRepository;
     this.summaryCalculator = summaryCalculator;
     this.auditLogService = auditLogService;
     this.clock = clock;
@@ -152,11 +165,13 @@ public class AskService {
     }
     ValidatedAsk validated = validate(spaceId, request);
     OffsetDateTime now = OffsetDateTime.now(clock);
+    AskSession session = resolveSession(spaceId, validated, now);
     AskRun run =
         askRunRepository.save(
             AskRun.create(
                 "ask-" + UUID.randomUUID(),
                 spaceId,
+                session.getId(),
                 validated.question(),
                 validated.reviewPolicy(),
                 validated.mode(),
@@ -184,7 +199,8 @@ public class AskService {
             "No eligible evidence was found for the trusted ask request.",
             OffsetDateTime.now(clock));
         auditAsk(run, validated, AuditResult.SAFE_NOT_FOUND, AuditSeverity.NOTICE, 0);
-        return response(run);
+        touchSession(session);
+        return response(run, session);
       }
 
       List<AskEvidence> evidence = persistEvidence(run.getId(), matches);
@@ -204,7 +220,8 @@ public class AskService {
           safeModelMessage(modelRun),
           OffsetDateTime.now(clock));
       auditAsk(run, validated, AuditResult.SUCCEEDED, AuditSeverity.INFO, evidence.size());
-      return response(run);
+      touchSession(session);
+      return response(run, session);
     } catch (RuntimeException ex) {
       run.complete(
           AskRunStatus.FAILED,
@@ -214,7 +231,8 @@ public class AskService {
           sanitizeFailure(ex.getMessage()),
           OffsetDateTime.now(clock));
       auditAsk(run, validated, AuditResult.FAILED, AuditSeverity.WARNING, 0);
-      return response(run);
+      touchSession(session);
+      return response(run, session);
     }
   }
 
@@ -258,7 +276,45 @@ public class AskService {
   }
 
   private AskRunResponse response(AskRun run) {
-    return AskMapper.toResponse(run, askEvidenceRepository.findByAskRunIdOrderByCreatedAtAsc(run.getId()));
+    AskSession session = findSession(run.getSessionId()).orElse(null);
+    return response(run, session);
+  }
+
+  private AskRunResponse response(AskRun run, AskSession session) {
+    return AskMapper.toResponse(
+        run, session, askEvidenceRepository.findByAskRunIdOrderByCreatedAtAsc(run.getId()));
+  }
+
+  /** Lists recent Trusted Ask sessions for a Knowledge Space. */
+  @Transactional(readOnly = true)
+  public List<AskSessionSummaryResponse> listSessions(String spaceId) {
+    if (!spaceRepository.existsById(spaceId)) {
+      throw new NotFoundException("Knowledge Space was not found.");
+    }
+    return requireSessionRepository().findTop20BySpaceIdOrderByUpdatedAtDesc(spaceId).stream()
+        .map(this::sessionSummary)
+        .toList();
+  }
+
+  /** Gets one Trusted Ask session with ordered answer history. */
+  @Transactional(readOnly = true)
+  public AskSessionDetailResponse getSession(String sessionId) {
+    AskSession session =
+        requireSessionRepository()
+            .findById(sessionId)
+            .orElseThrow(() -> new NotFoundException("Ask session was not found."));
+    List<AskRunResponse> runs =
+        askRunRepository.findBySessionIdOrderByCreatedAtAsc(session.getId()).stream()
+            .map(run -> response(run, session))
+            .toList();
+    return new AskSessionDetailResponse(
+        session.getId(),
+        session.getSpaceId(),
+        session.getTitle(),
+        session.getCreatedBy(),
+        session.getCreatedAt(),
+        session.getUpdatedAt(),
+        runs);
   }
 
   private List<AskEvidence> persistEvidence(String runId, List<VectorQueryMatchResponse> matches) {
@@ -266,9 +322,11 @@ public class AskService {
     List<AskEvidence> evidence =
         matches.stream()
             .map(
-                match ->
-                    AskEvidence.create(
-                        "ask-ev-" + UUID.randomUUID(),
+                match -> {
+                  String evidenceId = "ask-ev-" + UUID.randomUUID();
+                  CitationFields citation = citationFields(evidenceId, match);
+                  return AskEvidence.create(
+                        evidenceId,
                         runId,
                         match.sourceChunkId(),
                         match.fileItemId(),
@@ -279,7 +337,14 @@ public class AskService {
                         match.confidence(),
                         match.vectorItemKey(),
                         match.score(),
-                        createdAt))
+                        citation.citationId(),
+                        citation.evidenceLabel(),
+                        citation.sourceLocator(),
+                        citation.citationStatus(),
+                        citation.reviewEligible(),
+                        citation.excludedReason(),
+                        createdAt);
+                })
             .toList();
     return askEvidenceRepository.saveAll(evidence);
   }
@@ -317,8 +382,11 @@ public class AskService {
   }
 
   private String safeLabel(AskEvidence evidence) {
-    String page = evidence.getPage() == null ? "" : " page " + evidence.getPage();
-    return truncate(evidence.getSourceFile() + page, 160);
+    String label =
+        evidence.getEvidenceLabel() == null
+            ? safeLabel(evidence.getSourceFile(), evidence.getPage())
+            : evidence.getEvidenceLabel();
+    return truncate(label, 160);
   }
 
   private List<VectorQueryMatchResponse> applyFilters(
@@ -371,6 +439,16 @@ public class AskService {
     if (!mode.equals("mock") && !mode.equals("configured")) {
       fields.put("mode", "must be mock or configured");
     }
+    String sessionId = normalize(request.sessionId());
+    if (sessionId != null && !isSafeText(sessionId)) {
+      fields.put("sessionId", "must not include secrets, endpoints, or private paths");
+    }
+    String sessionTitle = normalize(request.sessionTitle());
+    if (sessionTitle != null && sessionTitle.length() > MAX_SESSION_TITLE_LENGTH) {
+      fields.put("sessionTitle", "must be 120 characters or fewer");
+    } else if (sessionTitle != null && !isSafeText(sessionTitle)) {
+      fields.put("sessionTitle", "must not include secrets, endpoints, or private paths");
+    }
 
     AskReviewPolicy reviewPolicy =
         request.reviewPolicy() == null ? AskReviewPolicy.APPROVED_ONLY : request.reviewPolicy();
@@ -395,9 +473,110 @@ public class AskService {
         reviewPolicy,
         limit,
         mode,
+        sessionId,
+        sessionTitle,
         Set.copyOf(fileItemIds),
         Set.copyOf(sourceTypes),
         fileTypes);
+  }
+
+  private AskSession resolveSession(String spaceId, ValidatedAsk validated, OffsetDateTime now) {
+    if (validated.sessionId() != null) {
+      AskSession session =
+          requireSessionRepository()
+              .findById(validated.sessionId())
+              .orElseThrow(() -> new NotFoundException("Ask session was not found."));
+      if (!spaceId.equals(session.getSpaceId())) {
+        throw new RequestValidationException(Map.of("sessionId", "must belong to the requested Knowledge Space"));
+      }
+      return session;
+    }
+    AskSession session =
+        AskSession.create(
+            "ask-session-" + UUID.randomUUID(),
+            spaceId,
+            defaultSessionTitle(validated),
+            validated.requestedBy(),
+            now);
+    return askSessionRepository == null ? session : askSessionRepository.save(session);
+  }
+
+  private String defaultSessionTitle(ValidatedAsk validated) {
+    String title = validated.sessionTitle() == null ? validated.question() : validated.sessionTitle();
+    return truncate(title, MAX_SESSION_TITLE_LENGTH);
+  }
+
+  private void touchSession(AskSession session) {
+    session.touch(OffsetDateTime.now(clock));
+    if (askSessionRepository != null) {
+      askSessionRepository.save(session);
+    }
+  }
+
+  private Optional<AskSession> findSession(String sessionId) {
+    if (askSessionRepository == null || sessionId == null) {
+      return Optional.empty();
+    }
+    return askSessionRepository.findById(sessionId);
+  }
+
+  private AskSessionRepository requireSessionRepository() {
+    if (askSessionRepository == null) {
+      throw new IllegalStateException("Ask session repository is required.");
+    }
+    return askSessionRepository;
+  }
+
+  private AskSessionSummaryResponse sessionSummary(AskSession session) {
+    List<AskRun> runs = askRunRepository.findBySessionIdOrderByCreatedAtAsc(session.getId());
+    AskRun latest = runs.isEmpty() ? null : runs.get(runs.size() - 1);
+    return new AskSessionSummaryResponse(
+        session.getId(),
+        session.getSpaceId(),
+        session.getTitle(),
+        session.getCreatedBy(),
+        runs.size(),
+        latest == null ? null : latest.getStatus(),
+        latest == null ? null : latest.getAnswerReviewStatus(),
+        session.getCreatedAt(),
+        session.getUpdatedAt());
+  }
+
+  private CitationFields citationFields(String evidenceId, VectorQueryMatchResponse match) {
+    boolean hasTrace = normalize(match.sourceChunkId()) != null && normalize(match.fileItemId()) != null;
+    AskCitationStatus status;
+    String excludedReason = null;
+    if (!hasTrace) {
+      status = AskCitationStatus.MISSING_SOURCE_TRACE;
+      excludedReason = "Source trace is missing.";
+    } else if (match.confidence() != null && match.confidence().compareTo(LOW_CONFIDENCE_THRESHOLD) < 0) {
+      status = AskCitationStatus.LOW_CONFIDENCE;
+      excludedReason = "Evidence confidence is low.";
+    } else if (match.reviewStatus() == ReviewStatus.REVIEW_REQUIRED) {
+      status = AskCitationStatus.REVIEW_REQUIRED;
+      excludedReason = "Evidence requires review.";
+    } else {
+      status = AskCitationStatus.ELIGIBLE;
+    }
+    return new CitationFields(
+        "ask-cite-" + evidenceId.substring("ask-ev-".length()),
+        safeLabel(match.sourceFile(), match.page()),
+        sourceLocator(match),
+        status,
+        status == AskCitationStatus.ELIGIBLE,
+        excludedReason);
+  }
+
+  private String safeLabel(String sourceFile, Integer page) {
+    String safeSource = sanitizeFailure(sourceFile == null ? "source unavailable" : sourceFile);
+    String pageLabel = page == null ? "" : " page " + page;
+    return truncate(safeSource + pageLabel, 160);
+  }
+
+  private String sourceLocator(VectorQueryMatchResponse match) {
+    String page = match.page() == null ? "page n/a" : "page " + match.page();
+    String section = normalize(match.section()) == null ? "section n/a" : sanitizeFailure(match.section());
+    return truncate(page + " / " + section + " / chunk " + match.sourceChunkId(), 200);
   }
 
   private Map<String, SourceType> loadFileTypes(String spaceId) {
@@ -469,7 +648,17 @@ public class AskService {
       AskReviewPolicy reviewPolicy,
       int limit,
       String mode,
+      String sessionId,
+      String sessionTitle,
       Set<String> fileItemIds,
       Set<SourceType> sourceTypes,
       Map<String, SourceType> fileTypes) {}
+
+  private record CitationFields(
+      String citationId,
+      String evidenceLabel,
+      String sourceLocator,
+      AskCitationStatus citationStatus,
+      boolean reviewEligible,
+      String excludedReason) {}
 }

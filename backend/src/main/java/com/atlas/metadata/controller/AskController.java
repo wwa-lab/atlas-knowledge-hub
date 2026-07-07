@@ -2,8 +2,11 @@ package com.atlas.metadata.controller;
 
 import com.atlas.metadata.dto.ApiEnvelope;
 import com.atlas.metadata.dto.AskRunResponse;
+import com.atlas.metadata.dto.AskSessionDetailResponse;
+import com.atlas.metadata.dto.AskSessionSummaryResponse;
 import com.atlas.metadata.dto.CreateAskRequest;
 import com.atlas.metadata.service.AskService;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,5 +39,17 @@ public class AskController {
   @GetMapping("/ask-runs/{runId}")
   public ApiEnvelope<AskRunResponse> getAskRun(@PathVariable String runId) {
     return ApiEnvelope.ok(askService.getRun(runId));
+  }
+
+  /** Lists recent trusted ask sessions for a Knowledge Space. */
+  @GetMapping("/spaces/{spaceId}/ask-sessions")
+  public ApiEnvelope<List<AskSessionSummaryResponse>> listAskSessions(@PathVariable String spaceId) {
+    return ApiEnvelope.ok(askService.listSessions(spaceId));
+  }
+
+  /** Gets a trusted ask session with answer history. */
+  @GetMapping("/ask-sessions/{sessionId}")
+  public ApiEnvelope<AskSessionDetailResponse> getAskSession(@PathVariable String sessionId) {
+    return ApiEnvelope.ok(askService.getSession(sessionId));
   }
 }

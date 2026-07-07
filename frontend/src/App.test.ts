@@ -776,6 +776,14 @@ function mockP0Api(
       return jsonOk(askRun())
     }
 
+    if (url.endsWith('/api/spaces/ibm-i-modernization/ask-sessions')) {
+      return jsonOk(askSessions())
+    }
+
+    if (url.endsWith('/api/ask-sessions/ask-session-p0')) {
+      return jsonOk(askSessionDetail())
+    }
+
     if (url.endsWith('/api/model-adapters')) {
       return jsonOk(modelAdapters(options.deepSeekConfigured))
     }
@@ -1058,6 +1066,8 @@ function graphDetail() {
 function askRun() {
   return {
     runId: 'ask-p0',
+    sessionId: 'ask-session-p0',
+    sessionTitle: 'P0 browser evidence',
     spaceId: 'ibm-i-modernization',
     question: 'What evidence was published?',
     status: 'SUCCEEDED',
@@ -1072,6 +1082,7 @@ function askRun() {
     evidence: [
       {
         evidenceId: 'ask-ev-p0',
+        citationId: 'ask-cite-p0',
         sourceChunkId: 'chunk-p0',
         fileItemId: 'file-p0',
         sourceFile: 'productization.md',
@@ -1081,11 +1092,39 @@ function askRun() {
         confidence: 0.93,
         vectorItemKey: 'ibm-i-modernization/chunk-p0',
         score: 0.91,
+        evidenceLabel: 'productization.md page 1',
+        sourceLocator: 'page 1 / P0 Browser Evidence / chunk chunk-p0',
+        citationStatus: 'ELIGIBLE',
+        reviewEligible: true,
+        excludedReason: null,
         createdAt: '2026-07-03T00:00:00Z'
       }
     ],
     createdAt: '2026-07-03T00:00:00Z',
     completedAt: '2026-07-03T00:00:01Z'
+  }
+}
+
+function askSessions() {
+  return [
+    {
+      sessionId: 'ask-session-p0',
+      spaceId: 'ibm-i-modernization',
+      title: 'P0 browser evidence',
+      createdBy: 'p0-browser',
+      runCount: 1,
+      latestStatus: 'SUCCEEDED',
+      latestAnswerReviewStatus: 'REVIEW_REQUIRED',
+      createdAt: '2026-07-03T00:00:00Z',
+      updatedAt: '2026-07-03T00:00:01Z'
+    }
+  ]
+}
+
+function askSessionDetail() {
+  return {
+    ...askSessions()[0],
+    runs: [askRun()]
   }
 }
 
