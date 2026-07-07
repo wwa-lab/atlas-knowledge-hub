@@ -591,6 +591,58 @@ export interface ApiAskRun {
   completedAt?: string | null
 }
 
+export interface ApiRetrievalEvidenceCoverage {
+  evidenceCount: number
+  citedEvidenceCount: number
+  coverageRatio: number
+  missingEvidence: boolean
+}
+
+export interface ApiRetrievalCitationHealth {
+  evidenceCount: number
+  healthyCitationCount: number
+  uncitedEvidenceCount: number
+  healthRatio: number
+  unhealthy: boolean
+}
+
+export interface ApiRetrievalConfidence {
+  averageEvidenceConfidence: number | null
+  answerConfidence: number | null
+  band: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN'
+}
+
+export interface ApiRetrievalReviewEligibility {
+  reviewEligible: boolean
+  status: 'ELIGIBLE' | 'NEEDS_REVIEW' | 'NOT_ELIGIBLE'
+  reasons: string[]
+}
+
+export interface ApiRetrievalRunQualityMetrics {
+  runId: string
+  spaceId: string
+  status: AskRunStatus
+  evidenceCoverage: ApiRetrievalEvidenceCoverage
+  citationHealth: ApiRetrievalCitationHealth
+  confidence: ApiRetrievalConfidence
+  reviewEligibility: ApiRetrievalReviewEligibility
+  noEvidenceRefusal: boolean
+  safeDiagnostics: string[]
+}
+
+export interface ApiRetrievalQualityMetricsSummary {
+  spaceId: string
+  totalRuns: number
+  succeededRuns: number
+  noEvidenceRefusals: number
+  failedRuns: number
+  reviewEligibleRuns: number
+  lowConfidenceRuns: number
+  averageEvidenceCoverage: number | null
+  averageCitationHealth: number | null
+  generatedAt: string
+}
+
 export interface ApiAskSessionSummary {
   sessionId: string
   spaceId: string

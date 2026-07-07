@@ -42,6 +42,8 @@ test('Phase I4-I7 real Vue product surfaces use API-backed Wiki, graph, Ask, and
   await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText(
     'API-backed trusted answer'
   )
+  await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText('evidence 100%')
+  await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText('citations 100%')
   await expect(page.getByTestId('vue-trusted-ask-answer')).toContainText('chunk-p0')
 
   await page.getByRole('button', { name: /模型管理/ }).click()
@@ -54,6 +56,7 @@ test('Phase I4-I7 real Vue product surfaces use API-backed Wiki, graph, Ask, and
   expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/spaces/ibm-i-modernization/graph']))
   expect(apiRequests).toEqual(expect.arrayContaining(['POST /api/spaces/ibm-i-modernization/ask']))
   expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/ask-runs/ask-p0']))
+  expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/ask-runs/ask-p0/quality-metrics']))
   expect(apiRequests).toEqual(expect.arrayContaining(['GET /api/model-adapters']))
 
   await page.screenshot({

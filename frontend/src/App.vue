@@ -7,6 +7,7 @@ import {
   createAskRun,
   createSampleBatch,
   createSpace as createSpaceApi,
+  getAskQualityMetrics,
   getAskRun,
   getAskSession,
   getCurrentUser,
@@ -49,6 +50,7 @@ import type {
   ApiSecretStatus,
   ApiReviewQueues,
   ApiReviewStatus,
+  ApiRetrievalRunQualityMetrics,
   ApiSourceChunk,
   ApiSpace,
   ApiWikiPage,
@@ -365,6 +367,7 @@ const wikiPages = ref<ApiWikiPage[]>([])
 const wikiPageIssues = ref<ApiWikiPageIssue[]>([])
 const auditEvents = ref<ApiAuditEvent[]>([])
 const askRun = ref<ApiAskRun | null>(null)
+const askQualityMetrics = ref<ApiRetrievalRunQualityMetrics | null>(null)
 const askSessions = ref<ApiAskSessionSummary[]>([])
 const selectedAskSession = ref<ApiAskSessionDetail | null>(null)
 const askQuestion = ref('What evidence was published for the P0 browser flow?')
@@ -386,6 +389,7 @@ const createSpaceError = ref('')
 const createSpaceStatus = ref('')
 const workflowError = ref('')
 const askError = ref('')
+const askQualityError = ref('')
 const askSessionError = ref('')
 const auditError = ref('')
 const isLoadingAuditEvents = ref(false)
@@ -1381,6 +1385,28 @@ function answerReviewReasonLine(run: ApiAskRun) {
 function answerReuseHint(run: ApiAskRun) {
   return run.answerReusable ? 'Approved reusable knowledge.' : 'Not approved reusable knowledge.'
 }
+
+const askQualityChips = computed(() => {
+  const metrics = askQualityMetrics.value
+  if (!metrics) {
+    return []
+  }
+  return [
+    `evidence ${formatMetricRatio(metrics.evidenceCoverage.coverageRatio)}`,
+    `citations ${formatMetricRatio(metrics.citationHealth.healthRatio)}`,
+    `confidence ${metrics.confidence.band}`,
+    `review ${metrics.reviewEligibility.status}`,
+    metrics.noEvidenceRefusal ? 'refusal tracked' : 'evidence-backed'
+  ]
+})
+
+function formatMetricRatio(value: number | null | undefined) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return 'n/a'
+  }
+  return `${Math.round(value * 100)}%`
+}
+
 function isPlaceholderSettingsPanel(panel: SettingsPanel): panel is PlaceholderSettingsPanel {
   return (
     panel !== 'general' &&
@@ -1843,7 +1869,9 @@ async function submitAsk() {
   }
   isAsking.value = true
   askError.value = ''
+  askQualityError.value = ''
   askRun.value = null
+  askQualityMetrics.value = null
   try {
     const created = await createAskRun(
       selectedSpaceId.value,
@@ -1852,6 +1880,11 @@ async function submitAsk() {
       selectedAskSession.value?.sessionId
     )
     askRun.value = await getAskRun(created.runId)
+    try {
+      askQualityMetrics.value = await getAskQualityMetrics(created.runId)
+    } catch (qualityError) {
+      askQualityError.value = safeError(qualityError, 'Retrieval quality metrics unavailable.')
+    }
     await refreshAskSessions(askRun.value.sessionId)
   } catch (error) {
     askError.value = safeError(error, 'Trusted Ask failed safely.')
@@ -2737,6 +2770,10 @@ function isDeepSeekDraft(model: VueModelConfig) {
               {{ productAskAnswer.governanceLabel }} · {{ productAskAnswer.reuseHint }}
             </p>
             <p class="source-line">{{ productAskAnswer.governanceReason }}</p>
+            <div v-if="askQualityChips.length > 0" class="atlas-quality-signals">
+              <span v-for="chip in askQualityChips" :key="chip">{{ chip }}</span>
+            </div>
+            <small v-if="askQualityError" class="atlas-inline-warning">{{ askQualityError }}</small>
             <strong>Evidence citations</strong>
             <ul v-if="productAskAnswer.evidence.length > 0">
               <li v-for="evidence in productAskAnswer.evidence" :key="evidence">{{ evidence }}</li>
@@ -4615,6 +4652,10 @@ function isDeepSeekDraft(model: VueModelConfig) {
               <p class="source-line">{{ answerReuseHint(askRun) }}</p>
               <p class="source-line">{{ answerReviewReasonLine(askRun) }}</p>
               <span>confidence {{ askRun.answerConfidence ?? 'n/a' }}</span>
+              <div v-if="askQualityChips.length > 0" class="ask-quality-signals">
+                <span v-for="chip in askQualityChips" :key="chip">{{ chip }}</span>
+              </div>
+              <p v-if="askQualityError" class="state-message warning">{{ askQualityError }}</p>
               <ul>
                 <li v-for="evidence in askRun.evidence" :key="evidence.evidenceId">
                   {{ evidence.citationId }} · {{ evidence.evidenceLabel }} ·

@@ -842,6 +842,26 @@ button:disabled {
   font-weight: 800;
 }
 
+.atlas-quality-signals,
+.ask-quality-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.atlas-quality-signals span,
+.ask-quality-signals span {
+  padding: 4px 7px;
+  color: #14532d;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
 .atlas-ask-answer ul {
   margin: 8px 0;
   padding-left: 18px;

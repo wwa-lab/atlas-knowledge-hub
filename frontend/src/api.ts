@@ -16,6 +16,8 @@ import type {
   ApiModelConfiguration,
   ApiReview,
   ApiReviewQueues,
+  ApiRetrievalQualityMetricsSummary,
+  ApiRetrievalRunQualityMetrics,
   ApiSourceChunk,
   ApiSpace,
   ApiErrorBody,
@@ -286,6 +288,16 @@ export async function createAskRun(
 
 export async function getAskRun(runId: string) {
   return atlasFetch<ApiAskRun>(`/api/ask-runs/${runId}`)
+}
+
+export async function getAskQualityMetrics(runId: string) {
+  return atlasFetch<ApiRetrievalRunQualityMetrics>(`/api/ask-runs/${runId}/quality-metrics`)
+}
+
+export async function getSpaceRetrievalQualityMetrics(spaceId: string) {
+  return atlasFetch<ApiRetrievalQualityMetricsSummary>(
+    `/api/spaces/${spaceId}/retrieval-quality-metrics`
+  )
 }
 
 export async function listAskSessions(spaceId: string) {

@@ -522,6 +522,8 @@ describe('Atlas P0 full-stack productization shell', () => {
     const answer = wrapper.get('[data-testid="ask-answer"]').text()
     expect(answer).toContain('SUCCEEDED')
     expect(answer).toContain('REVIEW_REQUIRED')
+    expect(answer).toContain('evidence 100%')
+    expect(answer).toContain('citations 100%')
     expect(answer).toContain('chunk-p0')
   })
 
@@ -787,6 +789,10 @@ function mockP0Api(
 
     if (url.endsWith('/api/ask-runs/ask-p0')) {
       return jsonOk(askRun())
+    }
+
+    if (url.endsWith('/api/ask-runs/ask-p0/quality-metrics')) {
+      return jsonOk(askQualityMetrics())
     }
 
     if (url.endsWith('/api/spaces/ibm-i-modernization/ask-sessions')) {
@@ -1129,6 +1135,39 @@ function askRun() {
     ],
     createdAt: '2026-07-03T00:00:00Z',
     completedAt: '2026-07-03T00:00:01Z'
+  }
+}
+
+function askQualityMetrics() {
+  return {
+    runId: 'ask-p0',
+    spaceId: 'ibm-i-modernization',
+    status: 'SUCCEEDED',
+    evidenceCoverage: {
+      evidenceCount: 1,
+      citedEvidenceCount: 1,
+      coverageRatio: 1,
+      missingEvidence: false
+    },
+    citationHealth: {
+      evidenceCount: 1,
+      healthyCitationCount: 1,
+      uncitedEvidenceCount: 0,
+      healthRatio: 1,
+      unhealthy: false
+    },
+    confidence: {
+      averageEvidenceConfidence: 0.93,
+      answerConfidence: 0.82,
+      band: 'MEDIUM'
+    },
+    reviewEligibility: {
+      reviewEligible: true,
+      status: 'ELIGIBLE',
+      reasons: []
+    },
+    noEvidenceRefusal: false,
+    safeDiagnostics: []
   }
 }
 

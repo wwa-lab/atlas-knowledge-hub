@@ -131,6 +131,10 @@ export async function mockP0Api(page: Page, options: P0MockOptions = {}) {
       return fulfill(route, askRun())
     }
 
+    if (path === '/api/ask-runs/ask-p0/quality-metrics') {
+      return fulfill(route, askQualityMetrics())
+    }
+
     if (path === '/api/spaces/ibm-i-modernization/ask-sessions') {
       return fulfill(route, askSessions())
     }
@@ -408,6 +412,39 @@ function askRun() {
     ],
     createdAt: '2026-07-03T00:00:00Z',
     completedAt: '2026-07-03T00:00:01Z'
+  }
+}
+
+function askQualityMetrics() {
+  return {
+    runId: 'ask-p0',
+    spaceId: 'ibm-i-modernization',
+    status: 'SUCCEEDED',
+    evidenceCoverage: {
+      evidenceCount: 1,
+      citedEvidenceCount: 1,
+      coverageRatio: 1,
+      missingEvidence: false
+    },
+    citationHealth: {
+      evidenceCount: 1,
+      healthyCitationCount: 1,
+      uncitedEvidenceCount: 0,
+      healthRatio: 1,
+      unhealthy: false
+    },
+    confidence: {
+      averageEvidenceConfidence: 0.93,
+      answerConfidence: 0.82,
+      band: 'MEDIUM'
+    },
+    reviewEligibility: {
+      reviewEligible: true,
+      status: 'ELIGIBLE',
+      reasons: []
+    },
+    noEvidenceRefusal: false,
+    safeDiagnostics: []
   }
 }
 
