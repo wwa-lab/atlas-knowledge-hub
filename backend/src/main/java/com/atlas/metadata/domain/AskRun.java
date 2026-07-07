@@ -147,12 +147,21 @@ public class AskRun {
     this.answerReviewedAt = null;
   }
 
-  /** Updates answer-level governance metadata without changing source evidence. */
+  /** Records the SME review outcome for a generated answer. */
   public void reviewAnswer(
-      AnswerReviewStatus status, String reviewer, String reason, OffsetDateTime reviewedAt) {
-    this.answerReviewStatus = status;
-    this.answerReviewedBy = reviewer;
-    this.answerReviewReason = reason;
+      AnswerReviewStatus reviewStatus,
+      String reviewedBy,
+      String reviewReason,
+      OffsetDateTime reviewedAt) {
+    if (reviewStatus == null) {
+      throw new IllegalArgumentException("Answer review status is required.");
+    }
+    if (!isTerminal(status)) {
+      throw new IllegalStateException("Only terminal ask runs can be reviewed.");
+    }
+    this.answerReviewStatus = reviewStatus;
+    this.answerReviewedBy = reviewedBy;
+    this.answerReviewReason = reviewReason;
     this.answerReviewedAt = reviewedAt;
   }
 

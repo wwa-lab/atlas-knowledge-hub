@@ -70,6 +70,60 @@ class AskDomainInvariantTest {
   }
 
   @Test
+  void askRunCannotRecordReviewBeforeTerminalState() {
+    AskRun run =
+        AskRun.create(
+            "ask-001",
+            "space-001",
+            "What changed?",
+            AskReviewPolicy.APPROVED_ONLY,
+            "mock",
+            "delivery-lead",
+            OffsetDateTime.parse("2026-07-03T00:00:00Z"));
+
+    assertThatThrownBy(
+            () ->
+                run.reviewAnswer(
+                    AnswerReviewStatus.APPROVED,
+                    "sme.alex",
+                    "Approved for reuse.",
+                    OffsetDateTime.parse("2026-07-03T00:02:00Z")))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("terminal ask runs");
+  }
+
+  @Test
+  void askRunRequiresReviewStatusWhenRecordingReview() {
+    AskRun run =
+        AskRun.create(
+            "ask-001",
+            "space-001",
+            "What changed?",
+            AskReviewPolicy.APPROVED_ONLY,
+            "mock",
+            "delivery-lead",
+            OffsetDateTime.parse("2026-07-03T00:00:00Z"));
+
+    run.complete(
+        AskRunStatus.SUCCEEDED,
+        "Mock answer.",
+        null,
+        "model-run-001",
+        "Completed.",
+        OffsetDateTime.parse("2026-07-03T00:01:00Z"));
+
+    assertThatThrownBy(
+            () ->
+                run.reviewAnswer(
+                    null,
+                    "sme.alex",
+                    "Approved for reuse.",
+                    OffsetDateTime.parse("2026-07-03T00:02:00Z")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("review status");
+  }
+
+  @Test
   void terminalAskRunCannotBeChangedOrCompletedWithActiveStatus() {
     AskRun run =
         AskRun.create(
