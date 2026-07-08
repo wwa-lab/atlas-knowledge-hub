@@ -1,5 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import GlobalChatView from '@/components/chat/GlobalChatView.vue'
+import ProductHomeView from '@/components/home/ProductHomeView.vue'
+import ProductShell from '@/components/layout/ProductShell.vue'
+import ApiInfoSettingsPanel from '@/components/settings/ApiInfoSettingsPanel.vue'
+import AuditLogSettingsPanel from '@/components/settings/AuditLogSettingsPanel.vue'
+import GeneralSettingsPanel from '@/components/settings/GeneralSettingsPanel.vue'
+import MembersSettingsPanel from '@/components/settings/MembersSettingsPanel.vue'
+import MessageSettingsPanel from '@/components/settings/MessageSettingsPanel.vue'
+import ModelEditor from '@/components/settings/ModelEditor.vue'
+import ModelsSettingsPanel from '@/components/settings/ModelsSettingsPanel.vue'
+import PlaceholderSettingsPanelView from '@/components/settings/PlaceholderSettingsPanel.vue'
+import ProfileSettingsPanel from '@/components/settings/ProfileSettingsPanel.vue'
+import SettingsModal from '@/components/settings/SettingsModal.vue'
+import SpaceInfoSettingsPanel from '@/components/settings/SpaceInfoSettingsPanel.vue'
+import SpaceConnectorsTab from '@/components/space/SpaceConnectorsTab.vue'
+import SpaceDetailView from '@/components/space/SpaceDetailView.vue'
+import SpaceDocumentsTab from '@/components/space/SpaceDocumentsTab.vue'
+import SpaceGraphTab from '@/components/space/SpaceGraphTab.vue'
+import SpaceReviewTab from '@/components/space/SpaceReviewTab.vue'
+import SpaceWikiTab from '@/components/space/SpaceWikiTab.vue'
+import { useProductUploadWorkflow } from '@/composables/useProductUploadWorkflow'
 import {
   acknowledgeDeadLetterEntry,
   ApiError,
@@ -52,7 +73,6 @@ import type {
   ApiFileItem,
   ApiGraphEdge,
   ApiGraphEdgeType,
-  ApiGraphEvidenceReference,
   ApiGraphNode,
   ApiGraphNodeDetail,
   ApiGraphNodeType,
@@ -61,7 +81,6 @@ import type {
   ApiManualUrlSource,
   ApiModelCapability,
   ApiModelConfiguration,
-  ApiSecretStatus,
   ApiReviewQueues,
   ApiReviewStatus,
   ApiRetrievalRunQualityMetrics,
@@ -69,229 +88,59 @@ import type {
   ApiSpace,
   ApiWikiPage,
   ApiWikiPageIssue,
-  ManualUrlFetchIntent,
-  SafeErrorCode
+  ManualUrlFetchIntent
 } from '@/types'
-
-type ModelCategory = 'all' | 'chat' | 'embedding' | 'rerank' | 'vision' | 'speech'
-type ModelSource = 'Ollama' | 'API'
-type ThinkingFormat = 'none' | 'provider_default' | 'custom'
-type ProductView = 'home' | 'chat' | 'space'
-type SpaceTab = 'docs' | 'connectors' | 'review' | 'wiki' | 'graph'
-type SettingsPanel =
-  | 'general'
-  | 'profile'
-  | 'spaceInfo'
-  | 'members'
-  | 'audit'
-  | 'messages'
-  | 'registration'
-  | 'api'
-  | 'models'
-  | 'vector'
-  | 'parser'
-  | 'storage'
-type PlaceholderSettingsPanel = Exclude<
+import {
+  answerReuseHint,
+  answerReviewReasonLine,
+  formatGraphEvidenceReference,
+  formatMetricRatio,
+  formatWikiReference,
+  isPlaceholderSettingsPanel,
+  isSecretConfigured,
+  modelTypeToCategory,
+  productGraphNodeType,
+  productReviewStatus,
+  secretStatusByKey,
+  uniqueValues,
+  wikiSourceTrace
+} from '@/domain/viewModels'
+import type {
+  ApiInfoState,
+  CreateSpaceDraft,
+  GeneralCodeFont,
+  GeneralFontSize,
+  GeneralInterfaceFont,
+  GeneralLanguage,
+  GeneralOption,
+  GeneralSettingsState,
+  GeneralThemeMode,
+  MemberRole,
+  MessageIndexStat,
+  ModelCategory,
+  ModelSource,
+  PendingInvitation,
+  PlaceholderSettingsPanel,
+  ProductAskMode,
+  ProductAskAnswer,
+  ProductGraphEdge,
+  ProductGraphNode,
+  ProductSpaceCard,
+  ProductView,
+  ProductWikiPage,
+  SafeErrorPreview,
   SettingsPanel,
-  'general' | 'profile' | 'spaceInfo' | 'members' | 'audit' | 'messages' | 'api' | 'models'
->
-type GeneralLanguage = 'zh-CN' | 'en-US'
-type GeneralThemeMode = 'light' | 'dark' | 'system'
-type GeneralInterfaceFont = 'system' | 'pingfang' | 'microsoft'
-type GeneralCodeFont = 'system-mono' | 'sf-mono' | 'jetbrains'
-type GeneralFontSize = 'small' | 'normal' | 'large'
-type MockUploadKind = 'folder' | 'zip'
-type ProductAskMode = 'answered' | 'refusal' | 'review-warning'
-type MockFileStatus =
-  | 'PDF_CONVERT_FAILED'
-  | 'OCR_REQUIRED'
-  | 'LOW_CONFIDENCE'
-  | 'REVIEW_REQUIRED'
-  | 'APPROVED'
-  | 'PUBLISHED'
-  | 'UNSUPPORTED'
-
-interface MockInventoryFile {
-  id: string
-  path: string
-  type: string
-  size: string
-  supported: boolean
-  status: MockFileStatus
-  confidence: number
-  reviewStatus: 'REVIEW_REQUIRED' | 'APPROVED' | 'PUBLISHED'
-  sourceTrace: string
-  reason?: string
-}
-
-interface MockUploadSession {
-  kind: MockUploadKind
-  packageName: string
-  files: MockInventoryFile[]
-}
-
-interface ProductWikiPage {
-  id: string
-  title: string
-  slug: string
-  pageType: string
-  aliases: string[]
-  sourceRefs: string[]
-  chunkRefs: string[]
-  inLinks: string[]
-  outLinks: string[]
-  version: number
-  sourceMode: string
-  refreshPolicy: string
-  confidence: number
-  reviewStatus: 'PUBLISHED' | 'APPROVED' | 'REVIEW_REQUIRED'
-  owner: string
-  updatedAt: string
-  sourceTrace: string
-  entities: string[]
-  sections: Array<{
-    title: string
-    body: string
-    sourceTrace: string
-    confidence: number
-    reviewStatus: 'PUBLISHED' | 'APPROVED' | 'REVIEW_REQUIRED'
-  }>
-}
-
-interface ProductGraphNode {
-  id: string
-  label: string
-  type: 'Wiki Page' | 'Entity' | 'Concept' | 'Document' | 'Review Required'
-  reviewStatus: 'PUBLISHED' | 'APPROVED' | 'REVIEW_REQUIRED'
-  confidence: number
-  sourceTrace: string
-  detail: string
-  x: number
-  y: number
-}
-
-interface ProductGraphEdge {
-  id: string
-  source: string
-  target: string
-  label: string
-  confidence: number
-  sourceTrace: string
-  reviewStatus: 'PUBLISHED' | 'APPROVED' | 'REVIEW_REQUIRED'
-}
-
-interface SettingsSurface {
-  title: string
-  status: string
-  summary: string
-  rows: Array<{ label: string; value: string; note: string }>
-}
-
-interface GeneralSettingsState {
-  language: GeneralLanguage
-  themeMode: GeneralThemeMode
-  interfaceFont: GeneralInterfaceFont
-  codeFont: GeneralCodeFont
-  fontSize: GeneralFontSize
-  memoryEnabled: boolean
-}
-
-interface GeneralOption<T extends string> {
-  value: T
-  label: string
-}
-
-type MemberRole = 'owner' | 'admin' | 'reviewer' | 'viewer'
-
-interface SpaceMember {
-  id: string
-  name: string
-  email: string
-  role: MemberRole
-  joinedAt: string
-  removable: boolean
-}
-
-interface PendingInvitation {
-  id: string
-  email: string
-  role: MemberRole
-  invitedAt: string
-  inviter: string
-}
-
-interface ApiInfoState {
-  keyVersion: number
-  baseUrl: string
-  docsPath: string
-  status: string
-}
-
-interface SafeErrorPreview {
-  code: SafeErrorCode
-  title: string
-  description: string
-}
-
-interface MessageIndexStat {
-  label: string
-  value: string
-  note: string
-}
-
-interface SpaceInfoDraft {
-  name: string
-  description: string
-}
-
-type SpaceInfoEditableField = keyof SpaceInfoDraft | null
-
-interface SpaceInfoRow {
-  key: string
-  label: string
-  note: string
-  value: string
-  field?: keyof SpaceInfoDraft
-}
-
-interface SpaceOperationalMetadata {
-  createdAt: string
-  storageQuota: string
-  storageUsed: string
-  storageUsageRate: string
-}
-
-interface ProductSpaceCard {
-  id: string
-  name: string
-  description: string
-  documents: number
-  reviews: number
-  owner: string
-  status: string
-  wikiPages: number
-  source: 'api' | 'sample'
-}
-
-interface VueModelConfig {
-  id: string
-  category: Exclude<ModelCategory, 'all'>
-  displayName: string
-  provider: string
-  source: ModelSource
-  name: string
-  baseUrl: string
-  apiKeyStatus: 'configured' | 'not_configured'
-  secretStatuses: ApiSecretStatus[]
-  supportsMultimodal: boolean
-  thinkingFormat: ThinkingFormat
-  createdInSettings?: boolean
-  sourceLabel?: string
-}
-
-interface VueModelDraft extends VueModelConfig {
-  apiKeyEditing: boolean
-}
+  SettingsSurface,
+  SpaceInfoDraft,
+  SpaceInfoEditableField,
+  SpaceInfoRow,
+  SpaceOperationalMetadata,
+  SpaceTab,
+  SpaceMember,
+  ThinkingFormat,
+  VueModelConfig,
+  VueModelDraft
+} from '@/domain/viewModels'
 
 const defaultSpaceId = 'ibm-i-modernization'
 const prototypeSrc = '/atlas-prototype.html'
@@ -501,7 +350,7 @@ const modelCapabilities = ref<ApiModelCapability[]>([])
 const deepSeekConfiguration = ref<ApiModelConfiguration | null>(null)
 const modelApiError = ref('')
 const modelSaveStatus = ref('')
-const createSpaceDraft = ref({
+const createSpaceDraft = ref<CreateSpaceDraft>({
   name: '',
   description: '',
   type: 'document' as 'document' | 'faq',
@@ -514,7 +363,6 @@ const selectedModelId = ref('deepseek-flash')
 const modelDraft = ref<VueModelDraft | null>(null)
 const apiKeyInput = ref('')
 const modelTestStatus = ref('')
-const documentUploadInput = ref<{ click: () => void } | null>(null)
 const productSpaceFallbacks: ProductSpaceCard[] = [
   {
     id: 'ibm-i-modernization',
@@ -552,9 +400,24 @@ const productSpaceFallbacks: ProductSpaceCard[] = [
 ]
 const selectedProductSpaceId = ref('ibm-i-modernization')
 const selectedChatSpaces = ref(['IBM i Modernization', 'AI Engineering Playbook'])
-const uploadSession = ref<MockUploadSession | null>(null)
-const activeProductBatchFiles = ref<MockInventoryFile[]>([])
-const isProductReportOpen = ref(false)
+const {
+  uploadSession,
+  activeProductBatchFiles,
+  isProductReportOpen,
+  visibleProductBatchFiles,
+  productBatchMetrics,
+  productProcessingIssues,
+  reportSections,
+  openMockUpload,
+  cancelMockUpload,
+  createProductBatch,
+  openProductReport,
+  closeProductReport
+} = useProductUploadWorkflow({
+  showDocumentsTab: () => {
+    activeSpaceTab.value = 'docs'
+  }
+})
 const selectedProductWikiPageId = ref('wiki-modernization-index')
 const selectedProductGraphNodeId = ref('node-wiki')
 const productGraphSearch = ref('')
@@ -585,89 +448,6 @@ const spaceMembers = ref<SpaceMember[]>([
     removable: true
   }
 ])
-
-const mockFolderInventory: MockInventoryFile[] = [
-  {
-    id: 'mock-brd',
-    path: 'discovery/BRD_Methodology.pdf',
-    type: 'PDF',
-    size: '4.8 MB',
-    supported: true,
-    status: 'REVIEW_REQUIRED',
-    confidence: 0.82,
-    reviewStatus: 'REVIEW_REQUIRED',
-    sourceTrace: 'BRD_Methodology.pdf / page 12 / chunk brd-012'
-  },
-  {
-    id: 'mock-rpg',
-    path: 'analysis/RPG_Scan_Result.xlsx',
-    type: 'XLSX',
-    size: '2.1 MB',
-    supported: true,
-    status: 'LOW_CONFIDENCE',
-    confidence: 0.67,
-    reviewStatus: 'REVIEW_REQUIRED',
-    sourceTrace: 'RPG_Scan_Result.xlsx / sheet Programs / row 42'
-  },
-  {
-    id: 'mock-nightly',
-    path: 'jobs/Nightly_Batch.docx',
-    type: 'DOCX',
-    size: '920 KB',
-    supported: true,
-    status: 'PDF_CONVERT_FAILED',
-    confidence: 0.58,
-    reviewStatus: 'REVIEW_REQUIRED',
-    sourceTrace: 'Nightly_Batch.docx / section 3',
-    reason: 'Office conversion failed safely in mock status.'
-  },
-  {
-    id: 'mock-ocr',
-    path: 'screenshots/green-screen-flow.png',
-    type: 'PNG',
-    size: '1.4 MB',
-    supported: true,
-    status: 'OCR_REQUIRED',
-    confidence: 0.61,
-    reviewStatus: 'REVIEW_REQUIRED',
-    sourceTrace: 'green-screen-flow.png / image region 2',
-    reason: 'Image-heavy source needs OCR before publication.'
-  },
-  {
-    id: 'mock-approved',
-    path: 'approved/current-state-summary.md',
-    type: 'MD',
-    size: '48 KB',
-    supported: true,
-    status: 'APPROVED',
-    confidence: 0.93,
-    reviewStatus: 'APPROVED',
-    sourceTrace: 'current-state-summary.md / section architecture'
-  },
-  {
-    id: 'mock-published',
-    path: 'published/modernization-index.md',
-    type: 'MD',
-    size: '64 KB',
-    supported: true,
-    status: 'PUBLISHED',
-    confidence: 0.96,
-    reviewStatus: 'PUBLISHED',
-    sourceTrace: 'modernization-index.md / section index'
-  },
-  {
-    id: 'mock-unsupported',
-    path: 'raw/archive/old-export.exe',
-    type: 'EXE',
-    size: '12 MB',
-    supported: false,
-    status: 'UNSUPPORTED',
-    confidence: 0,
-    reviewStatus: 'REVIEW_REQUIRED',
-    sourceTrace: 'not generated',
-    reason: 'Executable files are excluded from the mock parser pipeline.'
-  }
-]
 
 const productWikiPages: ProductWikiPage[] = [
   {
@@ -1370,7 +1150,7 @@ const selectedProductGraphEvidence = computed(() => {
       .map(edge => edge.sourceTrace)
   ]
 })
-const productAskAnswer = computed(() => {
+const productAskAnswer = computed<ProductAskAnswer>(() => {
   if (productAskMode.value === 'answered' && askRun.value) {
     return {
       status: askRun.value.status,
@@ -1427,17 +1207,6 @@ const productAskAnswer = computed(() => {
   }
 })
 
-function answerReviewReasonLine(run: ApiAskRun) {
-  if (run.answerReviewReason) {
-    return `${run.answerReviewReason} · ${run.answerReviewedBy ?? 'reviewer n/a'}`
-  }
-  return 'No reviewer reason recorded.'
-}
-
-function answerReuseHint(run: ApiAskRun) {
-  return run.answerReusable ? 'Approved reusable knowledge.' : 'Not approved reusable knowledge.'
-}
-
 const askQualityChips = computed(() => {
   const metrics = askQualityMetrics.value
   if (!metrics) {
@@ -1451,25 +1220,6 @@ const askQualityChips = computed(() => {
     metrics.noEvidenceRefusal ? 'refusal tracked' : 'evidence-backed'
   ]
 })
-
-function formatMetricRatio(value: number | null | undefined) {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return 'n/a'
-  }
-  return `${Math.round(value * 100)}%`
-}
-
-function isPlaceholderSettingsPanel(panel: SettingsPanel): panel is PlaceholderSettingsPanel {
-  return (
-    panel !== 'general' &&
-    panel !== 'profile' &&
-    panel !== 'spaceInfo' &&
-    panel !== 'members' &&
-    panel !== 'messages' &&
-    panel !== 'api' &&
-    panel !== 'models'
-  )
-}
 
 const currentSettingsSurface = computed(() =>
   isPlaceholderSettingsPanel(settingsPanel.value) ? settingsSurfaces[settingsPanel.value] : null
@@ -1550,103 +1300,6 @@ const filteredSpaceMembers = computed(() => {
       memberRoleLabel(member.role).toLocaleLowerCase().includes(query)
   )
 })
-const visibleProductBatchFiles = computed(() =>
-  activeProductBatchFiles.value.length > 0 ? activeProductBatchFiles.value : mockFolderInventory
-)
-const productBatchMetrics = computed(() => {
-  const files = visibleProductBatchFiles.value
-  return {
-    total: files.length,
-    supported: files.filter(file => file.supported).length,
-    unsupported: files.filter(file => file.status === 'UNSUPPORTED').length,
-    failed: files.filter(file => file.status === 'PDF_CONVERT_FAILED').length,
-    ocr: files.filter(file => file.status === 'OCR_REQUIRED').length,
-    lowConfidence: files.filter(file => file.status === 'LOW_CONFIDENCE').length,
-    reviewRequired: files.filter(file => file.reviewStatus === 'REVIEW_REQUIRED' && file.supported)
-      .length,
-    approved: files.filter(file => file.status === 'APPROVED').length,
-    published: files.filter(file => file.status === 'PUBLISHED').length
-  }
-})
-const productProcessingIssues = computed(() => [
-  {
-    id: 'parse-failures',
-    label: '解析失败',
-    type: 'PDF_CONVERT_FAILED',
-    count: productBatchMetrics.value.failed,
-    status: 'blocks Wiki / Graph / Ask',
-    action: '重试转换',
-    source: 'converter stage'
-  },
-  {
-    id: 'ocr-required',
-    label: '需要 OCR',
-    type: 'OCR_REQUIRED',
-    count: productBatchMetrics.value.ocr,
-    status: 'excluded until OCR',
-    action: '加入 OCR 队列',
-    source: 'image-heavy sources'
-  },
-  {
-    id: 'low-confidence',
-    label: '低置信度',
-    type: 'LOW_CONFIDENCE',
-    count: productBatchMetrics.value.lowConfidence,
-    status: 'SME review required',
-    action: '打开审核',
-    source: 'parser confidence'
-  },
-  {
-    id: 'missing-trace',
-    label: '缺少 source_trace',
-    type: 'MISSING_SOURCE_TRACE',
-    count: 2,
-    status: 'blocks trusted Ask',
-    action: '修复溯源',
-    source: 'trace validator'
-  },
-  {
-    id: 'llm-review',
-    label: 'LLM 生成需审核',
-    type: 'LLM_GENERATED',
-    count: productBatchMetrics.value.reviewRequired,
-    status: 'review required',
-    action: '优先处理',
-    source: 'normalization'
-  },
-  {
-    id: 'ready-to-publish',
-    label: '待发布',
-    type: 'READY_TO_PUBLISH',
-    count: productBatchMetrics.value.approved,
-    status: 'eligible',
-    action: '发布 Wiki',
-    source: 'SME approved'
-  }
-])
-const reportSections = computed(() => [
-  { label: 'Inventory', files: visibleProductBatchFiles.value },
-  { label: 'Unsupported', files: visibleProductBatchFiles.value.filter(file => !file.supported) },
-  {
-    label: 'Conversion failures',
-    files: visibleProductBatchFiles.value.filter(file => file.status === 'PDF_CONVERT_FAILED')
-  },
-  {
-    label: 'OCR required',
-    files: visibleProductBatchFiles.value.filter(file => file.status === 'OCR_REQUIRED')
-  },
-  {
-    label: 'Low confidence',
-    files: visibleProductBatchFiles.value.filter(file => file.status === 'LOW_CONFIDENCE')
-  },
-  {
-    label: 'Review required',
-    files: visibleProductBatchFiles.value.filter(
-      file => file.reviewStatus === 'REVIEW_REQUIRED' && file.supported
-    )
-  }
-])
-
 onMounted(() => {
   void initialize()
 })
@@ -1923,10 +1576,6 @@ async function createBatchFromBrowser() {
   }
 }
 
-function openDocumentUpload() {
-  documentUploadInput.value?.click()
-}
-
 async function handleDocumentUpload(event: { target: unknown }) {
   if (!selectedSpaceId.value || !canWriteContent.value) {
     return
@@ -2187,48 +1836,6 @@ function edgeNodeLabel(nodeId: string) {
   return graphNodes.value.find(node => node.id === nodeId)?.label ?? nodeId
 }
 
-function uniqueValues<T extends string>(values: T[]) {
-  return Array.from(new Set(values)).sort()
-}
-
-function productReviewStatus(status: ApiReviewStatus): ProductGraphNode['reviewStatus'] {
-  return status === 'PUBLISHED' || status === 'APPROVED' ? status : 'REVIEW_REQUIRED'
-}
-
-function formatWikiReference(ref: ApiWikiPage['sourceRefs'][number]) {
-  const label = ref.label ? ` · ${ref.label}` : ''
-  const locator = ref.locator ? ` / ${ref.locator}` : ''
-  return `${ref.type}: ${ref.id}${label}${locator}`
-}
-
-function wikiSourceTrace(page: ApiWikiPage) {
-  const sourceRefs = (page.sourceRefs ?? []).map(formatWikiReference)
-  if (sourceRefs.length > 0) {
-    return sourceRefs.join('; ')
-  }
-  return `sources ${page.sourceDocumentIds.join(', ') || 'none'} / ${page.markdownPath}`
-}
-
-function formatGraphEvidenceReference(evidence: ApiGraphEvidenceReference) {
-  const referenceType = evidence.referenceType ?? 'SOURCE_CHUNK'
-  if (referenceType === 'WIKI_PAGE') {
-    return `Wiki page ${evidence.label ?? evidence.wikiPageId ?? 'unknown'} · ${evidence.wikiPageId ?? 'wiki n/a'} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · confidence ${evidence.confidence ?? 'n/a'}`
-  }
-  return `Source chunk ${evidence.sourceChunkId ?? 'chunk n/a'} · ${evidence.sourceFile ?? 'source n/a'} · ${evidence.section ?? 'section n/a'} · ${evidence.reviewStatus} · confidence ${evidence.confidence ?? 'n/a'}`
-}
-
-function productGraphNodeType(type: ApiGraphNodeType): ProductGraphNode['type'] {
-  const labels: Record<ApiGraphNodeType, ProductGraphNode['type']> = {
-    KNOWLEDGE_SPACE: 'Concept',
-    DOCUMENT: 'Document',
-    WIKI_PAGE: 'Wiki Page',
-    CONCEPT: 'Concept',
-    ENTITY: 'Entity',
-    SOURCE_CHUNK: 'Document'
-  }
-  return labels[type]
-}
-
 function modelCapabilityToVueModel(capability: ApiModelCapability): VueModelConfig {
   const configurationCredential =
     capability.adapterKey === 'deepseek'
@@ -2253,17 +1860,6 @@ function modelCapabilityToVueModel(capability: ApiModelCapability): VueModelConf
     thinkingFormat: 'none',
     sourceLabel: `${capability.adapterKey} · ${capability.status}`
   }
-}
-
-function modelTypeToCategory(type: ApiModelCapability['modelType']): Exclude<ModelCategory, 'all'> {
-  const categories: Record<ApiModelCapability['modelType'], Exclude<ModelCategory, 'all'>> = {
-    CHAT: 'chat',
-    EMBEDDING: 'embedding',
-    RERANK: 'rerank',
-    VISION: 'vision',
-    SPEECH: 'speech'
-  }
-  return categories[type]
 }
 
 function safeError(error: unknown, fallback: string) {
@@ -2313,43 +1909,6 @@ function openProductSpace(spaceId: string) {
   }
 }
 
-function openMockUpload(kind: MockUploadKind) {
-  uploadSession.value = {
-    kind,
-    packageName: kind === 'folder' ? 'IBM i discovery package' : 'ibm-i-modernization-evidence.zip',
-    files: mockFolderInventory.map(file => ({ ...file }))
-  }
-  isProductReportOpen.value = false
-  activeSpaceTab.value = 'docs'
-}
-
-function cancelMockUpload() {
-  uploadSession.value = null
-}
-
-function createProductBatch() {
-  const session = uploadSession.value
-  if (!session || session.files.every(file => !file.supported)) {
-    return
-  }
-  activeProductBatchFiles.value = session.files.map(file => ({ ...file }))
-  uploadSession.value = null
-  isProductReportOpen.value = false
-}
-
-function statusLabel(status: MockFileStatus) {
-  const labels: Record<MockFileStatus, string> = {
-    PDF_CONVERT_FAILED: 'PDF_CONVERT_FAILED',
-    OCR_REQUIRED: 'OCR_REQUIRED',
-    LOW_CONFIDENCE: 'LOW_CONFIDENCE',
-    REVIEW_REQUIRED: 'REVIEW_REQUIRED',
-    APPROVED: 'APPROVED',
-    PUBLISHED: 'PUBLISHED',
-    UNSUPPORTED: 'UNSUPPORTED'
-  }
-  return labels[status]
-}
-
 function openSettings(panel: SettingsPanel = 'general') {
   if (panel === 'audit' && !canReadGovernance.value) {
     settingsPanel.value = 'general'
@@ -2384,14 +1943,6 @@ async function loadAuditEvents(spaceId = selectedSpaceId.value) {
   } finally {
     isLoadingAuditEvents.value = false
   }
-}
-
-function auditMetadataLabel(metadata: ApiAuditEvent['metadata']) {
-  const entries = Object.entries(metadata ?? {})
-  if (entries.length === 0) {
-    return 'metadata none'
-  }
-  return entries.map(([key, value]) => `${key}: ${value}`).join(' · ')
 }
 
 function beginSpaceInfoEdit(field: keyof SpaceInfoDraft) {
@@ -2442,25 +1993,7 @@ function memberRoleLabel(role: MemberRole) {
   return memberRoleOptions.find(option => option.value === role)?.label ?? role
 }
 
-function memberRoleClass(role: MemberRole) {
-  return `role-${role}`
-}
-
-function readSelectValue(event: unknown) {
-  const target =
-    event && typeof event === 'object' && 'target' in event
-      ? (event as { target?: unknown }).target
-      : null
-  if (!target || typeof target !== 'object' || !('value' in target)) {
-    return ''
-  }
-  const value = (target as { value?: unknown }).value
-  return typeof value === 'string' ? value : ''
-}
-
-function handleMemberRoleChange(memberId: string, event: unknown) {
-  const value = typeof event === 'string' ? event : readSelectValue(event)
-  const role = memberRoleOptions.find(option => option.value === value)?.value ?? 'viewer'
+function handleMemberRoleChange(memberId: string, role: MemberRole) {
   const target = spaceMembers.value.find(member => member.id === memberId)
   spaceMembers.value = spaceMembers.value.map(member =>
     member.id === memberId ? { ...member, role } : member
@@ -2535,63 +2068,6 @@ function selectProductGraphNode(nodeId: string) {
   if (apiNode) {
     void selectNode(apiNode)
   }
-}
-
-function productNodeStyle(node: ProductGraphNode) {
-  return {
-    left: `${node.x}%`,
-    top: `${node.y}%`
-  }
-}
-
-function modelCount(category: ModelCategory) {
-  return category === 'all'
-    ? models.value.length
-    : models.value.filter(model => model.category === category).length
-}
-
-function modelIcon(category: VueModelConfig['category']) {
-  const icons: Record<VueModelConfig['category'], string> = {
-    chat: '□',
-    embedding: '⌘',
-    rerank: '⇅',
-    vision: '◉',
-    speech: '◇'
-  }
-  return icons[category]
-}
-
-function modelDetail(model: VueModelConfig) {
-  if (model.category === 'embedding') return ' · 向量维度 1024'
-  if (model.category === 'rerank') return ' · Top-K rerank'
-  if (model.category === 'vision') return ' · 多模态'
-  if (model.category === 'speech') return ' · 语音转写'
-  return ''
-}
-
-function secretStatusByKey(statuses: ApiSecretStatus[] | undefined, key: string) {
-  return statuses?.find(status => status.reference.key === key)
-}
-
-function isSecretConfigured(status: ApiSecretStatus | undefined) {
-  return (
-    status?.status === 'CONFIGURED' ||
-    status?.status === 'ENV_CONFIGURED' ||
-    status?.status === 'NOT_REQUIRED'
-  )
-}
-
-function modelSecretLabel(model: VueModelConfig) {
-  const credential = secretStatusByKey(model.secretStatuses, 'credential')
-  if (!credential) return model.apiKeyStatus === 'configured' ? '已配置' : '未配置'
-  const labels: Record<ApiSecretStatus['status'], string> = {
-    CONFIGURED: '已配置',
-    ENV_CONFIGURED: '环境已配置',
-    MISSING: '未配置',
-    DISABLED: '已禁用',
-    NOT_REQUIRED: '无需密钥'
-  }
-  return labels[credential.status]
 }
 
 function openModelEditor(model: VueModelConfig) {
@@ -2739,2087 +2215,278 @@ function isDeepSeekDraft(model: VueModelConfig) {
 </script>
 
 <template>
-  <main
+  <ProductShell
     v-if="activeExperience === 'atlas'"
-    class="atlas-product-shell"
-    data-testid="vue-product-page"
-    aria-label="Atlas Knowledge Hub product page"
+    :product-view="productView"
+    :can-manage-members="canManageMembers"
+    @show-home="showProductHome"
+    @show-chat="showProductChat"
+    @open-settings="openSettings"
   >
-    <aside class="atlas-sidebar" aria-label="Product navigation">
-      <div class="atlas-brand"><span>A</span><strong>Atlas Knowledge Hub</strong></div>
-      <button :class="{ active: productView === 'home' }" type="button" @click="showProductHome">
-        □ 知识库
-      </button>
-      <button type="button">✦ 智能体</button>
-      <button type="button">∞ 共享空间</button>
-      <button :class="{ active: productView === 'chat' }" type="button" @click="showProductChat">
-        ◱ 对话
-      </button>
-      <p>近7天</p>
-      <span>外企职场常用语</span>
-      <span>选择知识库内容</span>
-      <span>用户问候或打招呼</span>
-      <p>工作区设置</p>
-      <button type="button" @click="openSettings('spaceInfo')">◎ 空间信息</button>
-      <button type="button" :disabled="!canManageMembers" @click="openSettings('members')">
-        ♙ 成员管理
-      </button>
-      <button type="button" @click="openSettings('models')">⬡ 模型管理</button>
-      <button type="button" @click="openSettings('vector')">◎ 向量数据库引擎</button>
-      <button type="button" @click="openSettings('parser')">▧ 解析引擎</button>
-      <button type="button" @click="openSettings('storage')">▱ 存储引擎</button>
-      <button type="button" @click="openSettings('general')">⚙ 全部设置</button>
-    </aside>
+    <template v-if="productView === 'home'">
+      <ProductHomeView
+        :product-space-cards="productSpaceCards"
+        :api-space-count="spaces.length"
+        :can-manage-spaces="canManageSpaces"
+        :is-create-space-open="isCreateSpaceOpen"
+        :is-creating-space="isCreatingSpace"
+        :create-space-draft="createSpaceDraft"
+        :create-space-status="createSpaceStatus"
+        :create-space-error="createSpaceError"
+        @open-create-space="openCreateSpacePanel"
+        @close-create-space="closeCreateSpacePanel"
+        @create-space="createProductSpace"
+        @open-space="openProductSpace"
+        @update-create-space-draft="draft => (createSpaceDraft = draft)"
+      />
+    </template>
 
-    <section class="atlas-product-main">
-      <template v-if="productView === 'home'">
-        <header class="atlas-page-head">
-          <div>
-            <h1>知识库</h1>
-            <p>管理企业知识空间、文档包、Wiki、图谱和可信问答上下文。</p>
-          </div>
-          <button
-            class="atlas-icon-action"
-            data-testid="vue-create-space-open"
-            type="button"
-            aria-label="新建知识库"
-            :disabled="!canManageSpaces"
-            @click="openCreateSpacePanel"
-          >
-            □＋
-          </button>
-        </header>
-        <p
-          v-if="createSpaceStatus"
-          class="atlas-inline-success"
-          data-testid="vue-space-create-status"
-          role="status"
-        >
-          {{ createSpaceStatus }}
-        </p>
-        <div class="atlas-library-toolbar">
-          <button type="button">♙ 我创建的</button>
-          <span>{{ productSpaceCards.length }}</span>
-          <span data-testid="vue-api-space-status">
-            {{ spaces.length > 0 ? 'API-backed metadata' : 'Sample fallback' }}
-          </span>
-          <span>⌄</span>
-        </div>
-        <section class="atlas-library-grid">
-          <button
-            v-for="space in productSpaceCards"
-            :key="space.id"
-            class="atlas-library-card"
-            :data-testid="`vue-space-card-${space.id}`"
-            type="button"
-            @click="openProductSpace(space.id)"
-          >
-            <h2>{{ space.name }}</h2>
-            <p>{{ space.description }}</p>
-            <div>
-              <span>□ {{ space.documents }}</span>
-              <span>Wiki {{ space.wikiPages }}</span>
-              <span>{{ space.status }}</span>
-              <span>⚗</span>
-              <span>{{ space.source === 'api' ? 'API' : 'Mock' }}</span>
-              <strong>♙ {{ space.owner }}</strong>
-            </div>
-          </button>
-        </section>
-        <form
-          v-if="isCreateSpaceOpen"
-          class="atlas-create-space-panel"
-          data-testid="vue-create-space-panel"
-          aria-label="新建知识库"
-          @submit.prevent="createProductSpace"
-        >
-          <header>
-            <div>
-              <h2>新建知识库</h2>
-              <p>创建一个用于上传文档、生成 Wiki、图谱和可信问答的知识空间。</p>
-            </div>
-            <button type="button" aria-label="关闭新建知识库" @click="closeCreateSpacePanel">
-              ×
-            </button>
-          </header>
-          <label>
-            名称
-            <input
-              v-model="createSpaceDraft.name"
-              data-testid="vue-create-space-name"
-              autocomplete="off"
-              placeholder="例如 Claims Ops Hub"
-            />
-          </label>
-          <label>
-            描述
-            <textarea
-              v-model="createSpaceDraft.description"
-              data-testid="vue-create-space-description"
-              rows="3"
-              placeholder="说明这个知识库覆盖的项目、团队或文档范围"
-            ></textarea>
-          </label>
-          <div class="atlas-create-space-options">
-            <label>
-              类型
-              <select v-model="createSpaceDraft.type" data-testid="vue-create-space-type">
-                <option value="document">Document</option>
-                <option value="faq">FAQ</option>
-              </select>
-            </label>
-            <label>
-              索引策略
-              <select v-model="createSpaceDraft.indexStrategy" data-testid="vue-create-space-index">
-                <option value="rag">RAG</option>
-                <option value="wiki">Wiki</option>
-              </select>
-            </label>
-          </div>
-          <p v-if="createSpaceError" class="atlas-inline-warning">{{ createSpaceError }}</p>
-          <footer>
-            <button class="secondary" type="button" @click="closeCreateSpacePanel">取消</button>
-            <button
-              data-testid="vue-create-space-submit"
-              type="button"
-              :disabled="isCreatingSpace || !canManageSpaces"
-              @click="createProductSpace"
-            >
-              {{ isCreatingSpace ? '创建中...' : '创建' }}
-            </button>
-          </footer>
-        </form>
-      </template>
+    <template v-else-if="productView === 'chat'">
+      <GlobalChatView
+        :product-space-cards="productSpaceCards"
+        :selected-chat-spaces="selectedChatSpaces"
+        :product-ask-question="productAskQuestion"
+        :product-ask-mode="productAskMode"
+        :visible-models="visibleModels"
+        :product-ask-answer="productAskAnswer"
+        :ask-quality-chips="askQualityChips"
+        :ask-quality-error="askQualityError"
+        @toggle-chat-space="toggleChatSpace"
+        @update-product-ask-question="question => (productAskQuestion = question)"
+        @update-product-ask-mode="mode => (productAskMode = mode)"
+        @submit-product-ask="submitProductAsk"
+      />
+    </template>
 
-      <template v-else-if="productView === 'chat'">
-        <section class="atlas-chat-view" data-testid="vue-global-chat">
-          <h1>Atlas，让你的知识触手可及</h1>
-          <p>选择一个或多个知识库作为上下文，再开始基于来源的可信问答。</p>
-          <div class="atlas-chat-spaces">
-            <button
-              v-for="space in productSpaceCards"
-              :key="space.id"
-              :class="{ active: selectedChatSpaces.includes(space.name) }"
-              type="button"
-              @click="toggleChatSpace(space.name)"
-            >
-              {{ selectedChatSpaces.includes(space.name) ? '✓' : '□' }} {{ space.name }}
-            </button>
-          </div>
-          <div class="atlas-chat-box">
-            <textarea v-model="productAskQuestion" data-testid="vue-ask-question"></textarea>
-            <div>
-              <span>知识库({{ selectedChatSpaces.length }})</span>
-              <label>
-                <span>模型</span>
-                <select aria-label="Ask model selector">
-                  <option v-for="model in visibleModels" :key="model.id">
-                    {{ model.displayName }} · {{ model.sourceLabel ?? 'sample adapter' }}
-                  </option>
-                </select>
-              </label>
-              <label>
-                <span>场景</span>
-                <select v-model="productAskMode" data-testid="vue-ask-mode">
-                  <option value="answered">可信回答</option>
-                  <option value="refusal">证据不足拒答</option>
-                  <option value="review-warning">Review-required warning</option>
-                </select>
-              </label>
-              <button data-testid="vue-api-ask-submit" type="button" @click="submitProductAsk">
-                API Ask
-              </button>
-            </div>
-          </div>
-          <section class="atlas-ask-answer" data-testid="vue-trusted-ask-answer">
-            <header>
-              <span>{{ productAskAnswer.status }}</span>
-              <h2>{{ productAskAnswer.title }}</h2>
-            </header>
-            <p>{{ productAskAnswer.body }}</p>
-            <p class="source-line">
-              {{ productAskAnswer.governanceLabel }} · {{ productAskAnswer.reuseHint }}
-            </p>
-            <p class="source-line">{{ productAskAnswer.governanceReason }}</p>
-            <div v-if="askQualityChips.length > 0" class="atlas-quality-signals">
-              <span v-for="chip in askQualityChips" :key="chip">{{ chip }}</span>
-            </div>
-            <small v-if="askQualityError" class="atlas-inline-warning">{{ askQualityError }}</small>
-            <strong>Evidence citations</strong>
-            <ul v-if="productAskAnswer.evidence.length > 0">
-              <li v-for="evidence in productAskAnswer.evidence" :key="evidence">{{ evidence }}</li>
-            </ul>
-            <p v-else class="atlas-inline-warning">No approved evidence citations available.</p>
-            <small>{{ productAskAnswer.warning }}</small>
-          </section>
-          <small
-            >未通过处理中心门禁的解析失败、低置信或缺少 source_trace 内容不会进入对话索引。</small
-          >
-        </section>
-      </template>
+    <template v-else>
+      <SpaceDetailView
+        :selected-product-space="selectedProductSpace"
+        :active-space-tab="activeSpaceTab"
+        :workflow-error="workflowError"
+        @show-home="showProductHome"
+        @open-mock-upload="openMockUpload"
+        @update-active-tab="tab => (activeSpaceTab = tab)"
+      >
+        <SpaceDocumentsTab
+          v-if="activeSpaceTab === 'docs'"
+          :api-batch-metrics="apiBatchMetrics"
+          :product-batch-metrics="productBatchMetrics"
+          :api-backed-product-space="apiBackedProductSpace"
+          :selected-product-space="selectedProductSpace"
+          :is-creating-batch="isCreatingBatch"
+          :can-write-content="canWriteContent"
+          :manual-url-sources="manualUrlSources"
+          :manual-url-draft="manualUrlDraft"
+          :is-creating-manual-url="isCreatingManualUrl"
+          :manual-url-error="manualUrlError"
+          :workflow-message="workflowMessage"
+          :workflow-error="workflowError"
+          :batches="batches"
+          :files="files"
+          :chunks="chunks"
+          :upload-session="uploadSession"
+          :active-product-batch-files="activeProductBatchFiles"
+          :visible-product-batch-files="visibleProductBatchFiles"
+          :is-product-report-open="isProductReportOpen"
+          :report-sections="reportSections"
+          @document-upload="handleDocumentUpload"
+          @create-api-batch="createBatchFromBrowser"
+          @update-manual-url-draft="draft => (manualUrlDraft = draft)"
+          @submit-manual-url-source="submitManualUrlSource"
+          @select-batch="selectBatch"
+          @select-file="selectFile"
+          @cancel-mock-upload="cancelMockUpload"
+          @create-product-batch="createProductBatch"
+          @open-report="openProductReport"
+          @close-report="closeProductReport"
+        />
+        <SpaceConnectorsTab
+          v-else-if="activeSpaceTab === 'connectors'"
+          :connector-definitions="connectorDefinitions"
+          :is-loading-connectors="isLoadingConnectors"
+          :is-starting-connector-sync="isStartingConnectorSync"
+          :selected-space-id="selectedSpaceId"
+          :connector-sync-run="connectorSyncRun"
+          :connector-error="connectorError"
+          :connector-sync-items="connectorSyncItems"
+          :selected-connector-item="selectedConnectorItem"
+          @start-connector-sync="startMockConnectorSync"
+          @select-connector-item="itemId => (selectedConnectorItemId = itemId)"
+        />
+        <SpaceReviewTab
+          v-else-if="activeSpaceTab === 'review'"
+          :api-blocked-review-count="apiBlockedReviewCount"
+          :api-ready-to-publish-count="apiReadyToPublishCount"
+          :manual-url-review-required-count="manualUrlReviewRequiredCount"
+          :product-batch-metrics="productBatchMetrics"
+          :review-queue-cards="reviewQueueCards"
+          :api-processing-issues="apiProcessingIssues"
+          :can-approve="canApprove"
+          :is-reviewing="isReviewing"
+          :dead-letter-entries="deadLetterEntries"
+          :is-loading-dead-letters="isLoadingDeadLetters"
+          :dead-letter-error="deadLetterError"
+          :selected-dead-letter-entry="selectedDeadLetterEntry"
+          :is-retrying-dead-letter="isRetryingDeadLetter"
+          :is-acknowledging-dead-letter="isAcknowledgingDeadLetter"
+          :product-processing-issues="productProcessingIssues"
+          @approve-selected-file="approveSelectedFile"
+          @load-dead-letters="loadDeadLetters"
+          @select-dead-letter-entry="entryId => (selectedDeadLetterId = entryId)"
+          @retry-selected-dead-letter="retrySelectedDeadLetter"
+          @acknowledge-selected-dead-letter="acknowledgeSelectedDeadLetter"
+        />
+        <SpaceWikiTab
+          v-else-if="activeSpaceTab === 'wiki'"
+          :visible-product-wiki-pages="visibleProductWikiPages"
+          :selected-product-wiki-page="selectedProductWikiPage"
+          :selected-product-wiki-page-issues="selectedProductWikiPageIssues"
+          :can-publish="canPublish"
+          :is-publishing="isPublishing"
+          @select-wiki-page="selectProductWikiPage"
+          @publish-selected-file="publishSelectedFile"
+        />
+        <SpaceGraphTab
+          v-else
+          :product-graph-search="productGraphSearch"
+          :visible-product-graph-nodes="visibleProductGraphNodes"
+          :visible-product-graph-edges="visibleProductGraphEdges"
+          :selected-product-graph-node="selectedProductGraphNode"
+          :selected-product-graph-evidence="selectedProductGraphEvidence"
+          @update-product-graph-search="query => (productGraphSearch = query)"
+          @select-graph-node="selectProductGraphNode"
+        />
+      </SpaceDetailView>
+    </template>
 
-      <template v-else>
-        <div class="atlas-crumbs">
-          知识库 / <strong>{{ selectedProductSpace.name }}</strong>
-        </div>
-        <header class="atlas-space-head" data-testid="vue-space-head">
-          <div>
-            <h1>{{ selectedProductSpace.name }}</h1>
-            <p>{{ selectedProductSpace.description }}</p>
-            <span>{{
-              selectedProductSpace.source === 'api' ? 'API-backed Space' : 'Mock Space'
-            }}</span>
-            <span>{{ selectedProductSpace.reviews }} Review Required</span>
-            <span>{{ selectedProductSpace.documents }} Documents</span>
-            <span>{{ selectedProductSpace.wikiPages }} Wiki Pages</span>
-            <span v-if="workflowError" class="atlas-inline-warning">{{ workflowError }}</span>
-          </div>
-          <div>
-            <button type="button" @click="showProductHome">返回知识库</button>
-            <button data-testid="vue-upload-folder" type="button" @click="openMockUpload('folder')">
-              上传文件夹
-            </button>
-            <button data-testid="vue-upload-zip" type="button" @click="openMockUpload('zip')">
-              上传 ZIP
-            </button>
-          </div>
-        </header>
-        <nav class="atlas-space-tabs" aria-label="Knowledge Space tabs">
-          <button
-            :class="{ active: activeSpaceTab === 'docs' }"
-            type="button"
-            @click="activeSpaceTab = 'docs'"
-          >
-            文档
-          </button>
-          <button
-            :class="{ active: activeSpaceTab === 'connectors' }"
-            type="button"
-            data-testid="vue-connector-sync-tab"
-            @click="activeSpaceTab = 'connectors'"
-          >
-            Connectors
-          </button>
-          <button
-            :class="{ active: activeSpaceTab === 'review' }"
-            type="button"
-            @click="activeSpaceTab = 'review'"
-          >
-            处理中心
-          </button>
-          <button
-            :class="{ active: activeSpaceTab === 'wiki' }"
-            type="button"
-            @click="activeSpaceTab = 'wiki'"
-          >
-            Wiki
-          </button>
-          <button
-            :class="{ active: activeSpaceTab === 'graph' }"
-            type="button"
-            @click="activeSpaceTab = 'graph'"
-          >
-            图谱
-          </button>
-        </nav>
-        <section class="atlas-space-panel" data-testid="vue-space-detail">
-          <div v-if="activeSpaceTab === 'docs'" class="atlas-doc-layout">
-            <aside>
-              <h3>批次状态</h3>
-              <button>API Batches {{ apiBatchMetrics.batchCount }}</button>
-              <button>API Files {{ apiBatchMetrics.fileCount }}</button>
-              <button>API Chunks {{ apiBatchMetrics.chunkCount }}</button>
-              <button>Inventory {{ productBatchMetrics.total }}</button>
-              <button>Supported {{ productBatchMetrics.supported }}</button>
-              <button>Unsupported {{ productBatchMetrics.unsupported }}</button>
-              <button>Review Required {{ productBatchMetrics.reviewRequired }}</button>
-              <button
-                data-testid="vue-view-report"
-                type="button"
-                @click="isProductReportOpen = true"
-              >
-                查看报告
-              </button>
-            </aside>
-            <div class="atlas-upload-workflow" data-testid="vue-upload-workflow">
-              <section class="atlas-api-metadata" data-testid="vue-api-metadata">
-                <header>
-                  <div>
-                    <h2>API-backed metadata</h2>
-                    <p>
-                      {{ apiBackedProductSpace?.name ?? selectedProductSpace.name }} · upload,
-                      parse, review and downstream refresh use Atlas API data.
-                    </p>
-                  </div>
-                  <input
-                    ref="documentUploadInput"
-                    data-testid="vue-api-upload-input"
-                    type="file"
-                    accept=".pdf,.zip,application/pdf,application/zip"
-                    multiple
-                    hidden
-                    @change="handleDocumentUpload"
-                  />
-                  <button
-                    data-testid="vue-api-upload-documents"
-                    type="button"
-                    :disabled="isCreatingBatch || !apiBackedProductSpace || !canWriteContent"
-                    @click="openDocumentUpload"
-                  >
-                    {{ isCreatingBatch ? 'Uploading...' : 'Upload PDF / ZIP' }}
-                  </button>
-                  <button
-                    class="secondary"
-                    data-testid="vue-api-create-batch"
-                    type="button"
-                    :disabled="isCreatingBatch || !apiBackedProductSpace || !canWriteContent"
-                    @click="createBatchFromBrowser"
-                  >
-                    Create sample batch
-                  </button>
-                  <button
-                    class="coming-soon-button"
-                    data-testid="coming-soon"
-                    type="button"
-                    disabled
-                  >
-                    Office / OCR coming soon
-                  </button>
-                </header>
-                <div class="atlas-metric-strip">
-                  <span>Batches {{ apiBatchMetrics.batchCount }}</span>
-                  <span>Files {{ apiBatchMetrics.fileCount }}</span>
-                  <span>Chunks {{ apiBatchMetrics.chunkCount }}</span>
-                  <span>Markdown {{ apiBatchMetrics.markdownGenerated }}</span>
-                  <span>Review required {{ apiBatchMetrics.reviewRequired }}</span>
-                  <span>Manual URLs {{ manualUrlSources.length }}</span>
-                </div>
-                <form
-                  class="manual-url-ingest"
-                  data-testid="vue-manual-url-ingest"
-                  @submit.prevent="submitManualUrlSource"
-                >
-                  <label>
-                    <span>Manual URL source</span>
-                    <input
-                      v-model="manualUrlDraft.url"
-                      data-testid="vue-manual-url-input"
-                      type="url"
-                      autocomplete="off"
-                    />
-                  </label>
-                  <label>
-                    <span>Title</span>
-                    <input
-                      v-model="manualUrlDraft.title"
-                      data-testid="vue-manual-url-title"
-                      type="text"
-                    />
-                  </label>
-                  <label>
-                    <span>Fetch intent</span>
-                    <select
-                      v-model="manualUrlDraft.fetchIntent"
-                      data-testid="vue-manual-url-intent"
-                    >
-                      <option value="METADATA_ONLY">Metadata only</option>
-                      <option value="FETCH_LATER">Fetch later</option>
-                    </select>
-                  </label>
-                  <button
-                    data-testid="vue-manual-url-submit"
-                    type="submit"
-                    :disabled="isCreatingManualUrl || !canWriteContent"
-                  >
-                    {{ isCreatingManualUrl ? 'Registering...' : 'Register URL' }}
-                  </button>
-                  <p v-if="manualUrlError" class="atlas-inline-warning">{{ manualUrlError }}</p>
-                </form>
-                <p v-if="workflowMessage">{{ workflowMessage }}</p>
-                <p v-if="workflowError" class="atlas-inline-warning">{{ workflowError }}</p>
-                <div class="atlas-api-grid">
-                  <article data-testid="vue-manual-url-status">
-                    <strong>Manual URL sources</strong>
-                    <p v-if="manualUrlSources.length === 0">No manual URL sources yet.</p>
-                    <div
-                      v-for="source in manualUrlSources"
-                      :key="source.id"
-                      class="manual-url-card"
-                    >
-                      <span>{{ source.displayUrl }}</span>
-                      <small>
-                        {{ source.ingestStatus }} · {{ source.reviewStatus }} ·
-                        {{ source.fetchPolicy }} · confidence {{ source.confidence.toFixed(2) }}
-                      </small>
-                      <small>{{ source.eligibilityStatus }} · {{ source.sourceTrace }}</small>
-                    </div>
-                  </article>
-                  <article>
-                    <strong>Batches</strong>
-                    <p v-if="batches.length === 0">No API batches yet.</p>
-                    <button
-                      v-for="batch in batches"
-                      :key="batch.id"
-                      type="button"
-                      @click="selectBatch(batch.id)"
-                    >
-                      {{ batch.name }} · {{ batch.sourceKind }} ·
-                      {{ batch.metrics.totalFiles }} files
-                    </button>
-                  </article>
-                  <article>
-                    <strong>Files</strong>
-                    <p v-if="files.length === 0">No API files yet.</p>
-                    <button
-                      v-for="file in files"
-                      :key="file.id"
-                      type="button"
-                      @click="selectFile(file.id)"
-                    >
-                      {{ file.sourcePath }} · {{ file.status }} · {{ file.reviewStatus }}
-                    </button>
-                  </article>
-                  <article>
-                    <strong>Source chunks</strong>
-                    <p v-if="chunks.length === 0">No API chunks yet.</p>
-                    <ul>
-                      <li v-for="chunk in chunks" :key="chunk.id">
-                        {{ chunk.id }} · {{ chunk.sourceFile }} ·
-                        {{ chunk.section ?? 'section n/a' }} · confidence
-                        {{ chunk.confidence ?? 'n/a' }} · {{ chunk.reviewStatus }}
-                      </li>
-                    </ul>
-                  </article>
-                </div>
-              </section>
-
-              <section
-                v-if="uploadSession"
-                class="atlas-upload-review"
-                data-testid="vue-upload-review"
-              >
-                <header>
-                  <div>
-                    <h2>
-                      Upload Review · {{ uploadSession.kind === 'folder' ? 'Folder' : 'ZIP' }}
-                    </h2>
-                    <p>
-                      {{ uploadSession.packageName }} · detected
-                      {{ uploadSession.files.length }} files
-                    </p>
-                  </div>
-                  <button type="button" @click="cancelMockUpload">Cancel</button>
-                </header>
-                <div class="atlas-inventory-list">
-                  <article
-                    v-for="file in uploadSession.files"
-                    :key="file.id"
-                    class="atlas-inventory-row"
-                    data-testid="vue-inventory-row"
-                  >
-                    <strong>{{ file.path }}</strong>
-                    <span>{{ file.type }} · {{ file.size }}</span>
-                    <span
-                      :class="[
-                        'atlas-status-badge',
-                        file.status.toLowerCase().replaceAll('_', '-')
-                      ]"
-                    >
-                      {{ statusLabel(file.status) }}
-                    </span>
-                    <span
-                      >confidence {{ file.confidence.toFixed(2) }} · {{ file.reviewStatus }}</span
-                    >
-                    <small v-if="file.reason">{{ file.reason }}</small>
-                  </article>
-                </div>
-                <p
-                  v-if="uploadSession.files.every(file => !file.supported)"
-                  class="atlas-inline-warning"
-                >
-                  No supported files to process.
-                </p>
-                <button
-                  data-testid="vue-create-batch"
-                  type="button"
-                  :disabled="uploadSession.files.every(file => !file.supported)"
-                  @click="createProductBatch"
-                >
-                  Create Batch
-                </button>
-              </section>
-
-              <section class="atlas-batch-summary" data-testid="vue-batch-summary">
-                <header>
-                  <div>
-                    <h2>文件树与解析状态</h2>
-                    <p>Mock batch keeps source_trace, confidence, and review status visible.</p>
-                  </div>
-                  <span>{{
-                    activeProductBatchFiles.length > 0 ? 'Batch created' : 'Seeded preview'
-                  }}</span>
-                </header>
-                <div class="atlas-metric-strip">
-                  <span>Total {{ productBatchMetrics.total }}</span>
-                  <span>Failed {{ productBatchMetrics.failed }}</span>
-                  <span>OCR {{ productBatchMetrics.ocr }}</span>
-                  <span>Low confidence {{ productBatchMetrics.lowConfidence }}</span>
-                  <span>Published {{ productBatchMetrics.published }}</span>
-                </div>
-                <table>
-                  <tbody>
-                    <tr
-                      v-for="file in visibleProductBatchFiles"
-                      :key="file.id"
-                      data-testid="vue-file-row"
-                    >
-                      <td>{{ file.path }}</td>
-                      <td>{{ statusLabel(file.status) }}</td>
-                      <td>{{ file.confidence.toFixed(2) }}</td>
-                      <td>{{ file.sourceTrace }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-
-              <section
-                v-if="isProductReportOpen"
-                class="atlas-report-panel"
-                data-testid="vue-batch-report"
-              >
-                <header>
-                  <h2>Batch Report</h2>
-                  <button type="button" @click="isProductReportOpen = false">Close</button>
-                </header>
-                <div class="atlas-report-grid">
-                  <article v-for="section in reportSections" :key="section.label">
-                    <strong>{{ section.label }} · {{ section.files.length }}</strong>
-                    <p v-if="section.files.length === 0">No items.</p>
-                    <ul>
-                      <li v-for="file in section.files" :key="file.id">
-                        {{ file.path }} · {{ statusLabel(file.status) }} · confidence
-                        {{ file.confidence.toFixed(2) }} · {{ file.reviewStatus }}
-                        <br />
-                        source_trace: {{ file.sourceTrace }}
-                      </li>
-                    </ul>
-                  </article>
-                </div>
-              </section>
-            </div>
-          </div>
-          <div
-            v-else-if="activeSpaceTab === 'connectors'"
-            class="atlas-doc-layout"
-            data-testid="vue-connector-sync"
-          >
-            <aside>
-              <h3>Connector Registry</h3>
-              <button v-for="definition in connectorDefinitions" :key="definition.id" type="button">
-                {{ definition.name }} · {{ definition.status }}
-              </button>
-              <button v-if="connectorDefinitions.length === 0" type="button" disabled>
-                {{ isLoadingConnectors ? 'Loading connectors' : 'No connectors available' }}
-              </button>
-              <button
-                data-testid="vue-start-connector-sync"
-                type="button"
-                :disabled="
-                  isStartingConnectorSync || connectorDefinitions.length === 0 || !selectedSpaceId
-                "
-                @click="startMockConnectorSync"
-              >
-                {{ isStartingConnectorSync ? 'Syncing...' : 'Start mock sync' }}
-              </button>
-            </aside>
-            <div class="atlas-upload-workflow">
-              <section class="atlas-api-metadata">
-                <header>
-                  <div>
-                    <h2>Connector Sync v0</h2>
-                    <p>
-                      Local fixture connector only. Output artifacts remain review-required and do
-                      not become trusted Wiki, Ask, or Graph knowledge.
-                    </p>
-                  </div>
-                  <span>{{ connectorSyncRun?.status ?? 'No run yet' }}</span>
-                </header>
-                <p v-if="connectorError" class="atlas-inline-warning">{{ connectorError }}</p>
-                <div class="atlas-metric-strip" data-testid="vue-connector-run-status">
-                  <span>Items {{ connectorSyncRun?.itemCount ?? 0 }}</span>
-                  <span>Review {{ connectorSyncRun?.reviewRequiredCount ?? 0 }}</span>
-                  <span>Failed {{ connectorSyncRun?.failedCount ?? 0 }}</span>
-                  <span>{{ connectorSyncRun?.safeMessage ?? 'Awaiting local fixture sync' }}</span>
-                </div>
-                <table>
-                  <tbody>
-                    <tr
-                      v-for="item in connectorSyncItems"
-                      :key="item.id"
-                      data-testid="vue-connector-item"
-                      @click="selectedConnectorItemId = item.id"
-                    >
-                      <td>{{ item.title }}</td>
-                      <td>{{ item.itemStatus }}</td>
-                      <td>{{ item.sourceReference }}</td>
-                      <td>{{ item.safeErrorCategory }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <p v-if="connectorSyncItems.length === 0" class="atlas-inline-warning">
-                  No connector sync items yet.
-                </p>
-              </section>
-              <section
-                v-if="selectedConnectorItem"
-                class="atlas-batch-summary"
-                data-testid="vue-connector-trace"
-              >
-                <header>
-                  <div>
-                    <h2>{{ selectedConnectorItem.title }}</h2>
-                    <p>
-                      {{ selectedConnectorItem.itemStatus }} · confidence
-                      {{ selectedConnectorItem.confidence ?? 'n/a' }} · review eligible
-                      {{ selectedConnectorItem.reviewEligible ? 'yes' : 'no' }}
-                    </p>
-                  </div>
-                  <span>review-required handoff</span>
-                </header>
-                <p>
-                  source_trace:
-                  {{
-                    Object.entries(selectedConnectorItem.sourceTrace)
-                      .map(([key, value]) => `${key}=${value}`)
-                      .join(' · ')
-                  }}
-                </p>
-                <p>
-                  provenance:
-                  {{
-                    Object.entries(selectedConnectorItem.provenance)
-                      .map(([key, value]) => `${key}=${value}`)
-                      .join(' · ')
-                  }}
-                </p>
-                <ul>
-                  <li v-for="artifact in selectedConnectorItem.outputArtifacts" :key="artifact.id">
-                    {{ artifact.artifactType }} · {{ artifact.reviewStatus }} ·
-                    {{ artifact.targetPath }}
-                  </li>
-                </ul>
-                <p v-if="selectedConnectorItem.safeErrorMessage" class="atlas-inline-warning">
-                  {{ selectedConnectorItem.safeErrorMessage }}
-                </p>
-              </section>
-            </div>
-          </div>
-          <div v-else-if="activeSpaceTab === 'review'" class="atlas-review-layout">
-            <section class="atlas-processing-overview" data-testid="vue-processing-center">
-              <article>
-                <strong>{{ apiBlockedReviewCount }}</strong
-                ><span>API blocked queues</span>
-              </article>
-              <article>
-                <strong>{{ apiReadyToPublishCount }}</strong
-                ><span>API ready to publish</span>
-              </article>
-              <article data-testid="vue-processing-manual-url-count">
-                <strong>{{ manualUrlReviewRequiredCount }}</strong
-                ><span>manual URL review</span>
-              </article>
-              <article>
-                <strong>{{ productBatchMetrics.total }}</strong
-                ><span>total documents</span>
-              </article>
-              <article>
-                <strong>{{ productBatchMetrics.failed }}</strong
-                ><span>parse failures</span>
-              </article>
-              <article>
-                <strong>{{ productBatchMetrics.ocr }}</strong
-                ><span>OCR required</span>
-              </article>
-              <article>
-                <strong>{{ productBatchMetrics.lowConfidence }}</strong
-                ><span>low confidence</span>
-              </article>
-              <article><strong>2</strong><span>missing source_trace</span></article>
-              <article>
-                <strong>{{ productBatchMetrics.approved }}</strong
-                ><span>ready to publish</span>
-              </article>
-            </section>
-            <section class="atlas-api-review-queues" data-testid="vue-api-review-queues">
-              <header>
-                <h2>API review queues</h2>
-                <span>{{
-                  reviewQueueCards.length > 0 ? 'ApiEnvelope connected' : 'No API queues'
-                }}</span>
-                <button
-                  data-testid="vue-api-approve-file"
-                  type="button"
-                  :disabled="!canApprove || isReviewing"
-                  @click="approveSelectedFile"
-                >
-                  {{ isReviewing ? 'Approving...' : 'Approve API file' }}
-                </button>
-              </header>
-              <article v-for="issue in apiProcessingIssues" :key="issue.id">
-                <div>
-                  <strong>{{ issue.label }}</strong>
-                  <span>{{ issue.type }} · {{ issue.source }}</span>
-                </div>
-                <span>{{ issue.count }}</span>
-                <span>{{ issue.status }}</span>
-                <button type="button">{{ issue.action }}</button>
-              </article>
-            </section>
-            <section class="atlas-api-review-queues" data-testid="vue-dead-letter-ops">
-              <header>
-                <h2>Worker recovery</h2>
-                <span>{{
-                  deadLetterEntries.length > 0
-                    ? `${deadLetterEntries.length} dead-letter entries`
-                    : 'No dead letters'
-                }}</span>
-                <button
-                  type="button"
-                  :disabled="isLoadingDeadLetters"
-                  data-testid="vue-refresh-dead-letters"
-                  @click="loadDeadLetters"
-                >
-                  {{ isLoadingDeadLetters ? 'Refreshing...' : 'Refresh' }}
-                </button>
-              </header>
-              <p v-if="deadLetterError" class="atlas-inline-warning">{{ deadLetterError }}</p>
-              <article
-                v-for="entry in deadLetterEntries"
-                :key="entry.id"
-                data-testid="vue-dead-letter-entry"
-              >
-                <div>
-                  <strong>{{ entry.subjectType }} · {{ entry.subjectId }}</strong>
-                  <span>{{ entry.jobType }} · {{ entry.safeErrorCategory }}</span>
-                </div>
-                <span>{{ entry.attemptSummary }}</span>
-                <span>{{ entry.status }}</span>
-                <button type="button" @click="selectedDeadLetterId = entry.id">Inspect</button>
-              </article>
-              <div
-                v-if="selectedDeadLetterEntry"
-                class="atlas-api-detail"
-                data-testid="vue-dead-letter-detail"
-              >
-                <header>
-                  <div>
-                    <h3>{{ selectedDeadLetterEntry.safeErrorCode }}</h3>
-                    <p>
-                      {{ selectedDeadLetterEntry.safeErrorMessage }} ·
-                      {{ selectedDeadLetterEntry.job.status }}
-                    </p>
-                  </div>
-                  <span>{{ selectedDeadLetterEntry.status }}</span>
-                </header>
-                <dl>
-                  <div>
-                    <dt>Attempts</dt>
-                    <dd>
-                      {{ selectedDeadLetterEntry.job.attemptCount }}/{{
-                        selectedDeadLetterEntry.job.maxAttempts
-                      }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Retry delay</dt>
-                    <dd>
-                      {{
-                        selectedDeadLetterEntry.job.retryDelaySeconds === null
-                          ? 'terminal'
-                          : `${selectedDeadLetterEntry.job.retryDelaySeconds}s`
-                      }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Review</dt>
-                    <dd>{{ selectedDeadLetterEntry.reviewEligible ? 'eligible' : 'blocked' }}</dd>
-                  </div>
-                </dl>
-                <p data-testid="vue-dead-letter-trace">
-                  source_trace:
-                  {{
-                    Object.entries(selectedDeadLetterEntry.sourceTrace)
-                      .map(([key, value]) => `${key}=${value}`)
-                      .join(' · ')
-                  }}
-                </p>
-                <ul>
-                  <li
-                    v-for="attempt in selectedDeadLetterEntry.attempts"
-                    :key="attempt.id"
-                    data-testid="vue-dead-letter-attempt"
-                  >
-                    #{{ attempt.attemptNumber }} · {{ attempt.status }} ·
-                    {{ attempt.safeErrorCategory }} · {{ attempt.safeErrorMessage }}
-                  </li>
-                </ul>
-                <footer>
-                  <button
-                    type="button"
-                    :disabled="isRetryingDeadLetter || selectedDeadLetterEntry.status !== 'OPEN'"
-                    data-testid="vue-retry-dead-letter"
-                    @click="retrySelectedDeadLetter"
-                  >
-                    {{ isRetryingDeadLetter ? 'Retrying...' : 'Retry safely' }}
-                  </button>
-                  <button
-                    type="button"
-                    :disabled="
-                      isAcknowledgingDeadLetter || selectedDeadLetterEntry.status !== 'OPEN'
-                    "
-                    data-testid="vue-ack-dead-letter"
-                    @click="acknowledgeSelectedDeadLetter"
-                  >
-                    {{ isAcknowledgingDeadLetter ? 'Acknowledging...' : 'Acknowledge' }}
-                  </button>
-                </footer>
-              </div>
-            </section>
-            <section class="atlas-processing-queues">
-              <article
-                v-for="issue in productProcessingIssues"
-                :key="issue.id"
-                data-testid="vue-processing-issue"
-              >
-                <div>
-                  <strong>{{ issue.label }}</strong>
-                  <span>{{ issue.type }} · {{ issue.source }}</span>
-                </div>
-                <span>{{ issue.count }}</span>
-                <span>{{ issue.status }}</span>
-                <button type="button">{{ issue.action }}</button>
-              </article>
-            </section>
-          </div>
-          <div v-else-if="activeSpaceTab === 'wiki'" class="atlas-wiki-layout">
-            <aside data-testid="vue-wiki-index">
-              <input placeholder="搜索 Wiki 页面..." />
-              <button
-                v-for="page in visibleProductWikiPages"
-                :key="page.id"
-                :class="{ active: selectedProductWikiPage.id === page.id }"
-                type="button"
-                @click="selectProductWikiPage(page.id)"
-              >
-                <strong>{{ page.title }}</strong>
-                <span>{{ page.reviewStatus }} · confidence {{ page.confidence.toFixed(2) }}</span>
-              </button>
-            </aside>
-            <article data-testid="vue-wiki-page">
-              <header class="atlas-wiki-head">
-                <div>
-                  <h2>{{ selectedProductWikiPage.title }}</h2>
-                  <p>{{ selectedProductWikiPage.slug }} · {{ selectedProductWikiPage.owner }}</p>
-                </div>
-                <span>{{ selectedProductWikiPage.reviewStatus }}</span>
-                <button
-                  data-testid="vue-api-publish-file"
-                  type="button"
-                  :disabled="!canPublish || isPublishing"
-                  @click="publishSelectedFile"
-                >
-                  {{ isPublishing ? 'Publishing...' : 'Publish API Wiki' }}
-                </button>
-              </header>
-              <div class="atlas-wiki-meta">
-                <span>type {{ selectedProductWikiPage.pageType }}</span>
-                <span>version {{ selectedProductWikiPage.version }}</span>
-                <span>source {{ selectedProductWikiPage.sourceMode }}</span>
-                <span>refresh {{ selectedProductWikiPage.refreshPolicy }}</span>
-                <span>confidence {{ selectedProductWikiPage.confidence.toFixed(2) }}</span>
-                <span>updated {{ selectedProductWikiPage.updatedAt }}</span>
-                <span
-                  >aliases
-                  {{
-                    selectedProductWikiPage.aliases.length > 0
-                      ? selectedProductWikiPage.aliases.join(', ')
-                      : 'none'
-                  }}</span
-                >
-                <span
-                  >links in {{ selectedProductWikiPage.inLinks.length }} / out
-                  {{ selectedProductWikiPage.outLinks.length }}</span
-                >
-                <span>wiki warnings {{ selectedProductWikiPageIssues.length }}</span>
-                <span>source_trace: {{ selectedProductWikiPage.sourceTrace }}</span>
-                <span
-                  >chunk_refs
-                  {{
-                    selectedProductWikiPage.chunkRefs.length > 0
-                      ? selectedProductWikiPage.chunkRefs.join('; ')
-                      : 'none'
-                  }}</span
-                >
-              </div>
-              <section
-                v-if="selectedProductWikiPageIssues.length > 0"
-                data-testid="vue-wiki-issues"
-                class="atlas-wiki-section"
-              >
-                <h3>Wiki quality warnings</h3>
-                <div v-for="issue in selectedProductWikiPageIssues" :key="issue.id">
-                  <strong>{{ issue.issueType }}</strong>
-                  <span>{{ issue.severity }} · {{ issue.status }} · {{ issue.message }}</span>
-                </div>
-              </section>
-              <nav class="atlas-entity-links" aria-label="Wiki entity links">
-                <button
-                  v-for="entity in selectedProductWikiPage.entities"
-                  :key="entity"
-                  type="button"
-                >
-                  {{ entity }}
-                </button>
-              </nav>
-              <section
-                v-for="section in selectedProductWikiPage.sections"
-                :key="section.title"
-                class="atlas-wiki-section"
-              >
-                <h3>{{ section.title }}</h3>
-                <p>{{ section.body }}</p>
-                <div>
-                  <strong>source_trace</strong>
-                  <span>{{ section.sourceTrace }}</span>
-                  <span
-                    >{{ section.reviewStatus }} · confidence
-                    {{ section.confidence.toFixed(2) }}</span
-                  >
-                </div>
-              </section>
-            </article>
-          </div>
-          <div v-else class="atlas-graph-layout" data-testid="vue-product-graph">
-            <section>
-              <header class="atlas-product-graph-head">
-                <div>
-                  <h2>Knowledge Graph</h2>
-                  <p>Graph belongs to this Knowledge Space and keeps evidence visible.</p>
-                </div>
-                <input
-                  v-model="productGraphSearch"
-                  data-testid="vue-graph-search"
-                  placeholder="Search node, type, or review state"
-                />
-              </header>
-              <div class="atlas-graph-canvas">
-                <button
-                  v-for="node in visibleProductGraphNodes"
-                  :key="node.id"
-                  :class="[
-                    'atlas-product-node',
-                    node.reviewStatus.toLowerCase().replaceAll('_', '-'),
-                    { active: selectedProductGraphNode.id === node.id }
-                  ]"
-                  :style="productNodeStyle(node)"
-                  type="button"
-                  data-testid="vue-graph-node"
-                  @click="selectProductGraphNode(node.id)"
-                >
-                  <strong>{{ node.label }}</strong>
-                  <span>{{ node.type }}</span>
-                </button>
-                <span
-                  v-for="edge in visibleProductGraphEdges"
-                  :key="edge.id"
-                  class="atlas-product-edge"
-                >
-                  {{ edge.label }} · confidence {{ edge.confidence.toFixed(2) }}
-                </span>
-              </div>
-              <div class="atlas-graph-legend">
-                <span>Wiki Page</span>
-                <span>Entity</span>
-                <span>Concept</span>
-                <span>Document</span>
-                <span>Review Required</span>
-              </div>
-            </section>
-            <aside data-testid="vue-graph-detail">
-              <h3>{{ selectedProductGraphNode.label }}</h3>
-              <p>{{ selectedProductGraphNode.detail }}</p>
-              <dl>
-                <dt>Type</dt>
-                <dd>{{ selectedProductGraphNode.type }}</dd>
-                <dt>Review</dt>
-                <dd>{{ selectedProductGraphNode.reviewStatus }}</dd>
-                <dt>Confidence</dt>
-                <dd>{{ selectedProductGraphNode.confidence.toFixed(2) }}</dd>
-              </dl>
-              <strong>Evidence / source trace</strong>
-              <ul>
-                <li v-for="evidence in selectedProductGraphEvidence" :key="evidence">
-                  {{ evidence }}
-                </li>
-              </ul>
-              <p class="atlas-inline-warning">
-                Review Required nodes express trust boundaries and are excluded from trusted Ask.
-              </p>
-            </aside>
-          </div>
-        </section>
-      </template>
-    </section>
-
-    <section v-if="settingsOpen" class="atlas-settings-modal" role="dialog" aria-modal="true">
-      <div class="atlas-settings-window">
-        <aside class="vue-settings-rail" aria-label="Settings navigation">
-          <h2>设置</h2>
-          <p>账户</p>
-          <button
-            :class="{ active: settingsPanel === 'general' }"
-            type="button"
-            @click="settingsPanel = 'general'"
-          >
-            常规设置
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'profile' }"
-            type="button"
-            @click="settingsPanel = 'profile'"
-          >
-            用户信息
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'api' }"
-            type="button"
-            @click="settingsPanel = 'api'"
-          >
-            API 信息
-          </button>
-          <p>空间</p>
-          <button
-            :class="{ active: settingsPanel === 'spaceInfo' }"
-            type="button"
-            @click="settingsPanel = 'spaceInfo'"
-          >
-            空间信息
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'members' }"
-            type="button"
-            @click="settingsPanel = 'members'"
-          >
-            成员管理
-          </button>
-          <button
-            v-if="canReadGovernance"
-            :class="{ active: settingsPanel === 'audit' }"
-            type="button"
-            @click="openSettings('audit')"
-          >
-            审计日志
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'messages' }"
-            type="button"
-            @click="settingsPanel = 'messages'"
-          >
-            消息管理
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'registration' }"
-            type="button"
-            @click="settingsPanel = 'registration'"
-          >
-            注册配置
-          </button>
-          <p>模型</p>
-          <button
-            :class="{ active: settingsPanel === 'models' }"
-            type="button"
-            @click="settingsPanel = 'models'"
-          >
-            模型管理
-          </button>
-          <p>数据与扩展</p>
-          <button
-            :class="{ active: settingsPanel === 'vector' }"
-            type="button"
-            @click="settingsPanel = 'vector'"
-          >
-            向量数据库引擎
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'parser' }"
-            type="button"
-            @click="settingsPanel = 'parser'"
-          >
-            解析引擎
-          </button>
-          <button
-            :class="{ active: settingsPanel === 'storage' }"
-            type="button"
-            @click="settingsPanel = 'storage'"
-          >
-            存储引擎
-          </button>
-        </aside>
-
-        <section v-if="settingsPanel === 'general'" class="atlas-general-settings">
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-general-head" data-testid="vue-admin-panel">
-            <h1>常规设置</h1>
-            <p>配置语言、外观等基础选项</p>
-          </header>
-
-          <div class="atlas-general-form">
-            <section class="atlas-general-row">
-              <div>
-                <h2>语言</h2>
-                <p>选择界面显示语言</p>
-              </div>
-              <select
-                v-model="generalSettings.language"
-                data-testid="vue-general-language"
-                aria-label="语言"
-              >
-                <option v-for="option in languageOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </section>
-
-            <section class="atlas-general-row">
-              <div>
-                <h2>主题模式</h2>
-                <p>选择界面的显示主题，支持跟随系统自动切换</p>
-              </div>
-              <select
-                v-model="generalSettings.themeMode"
-                data-testid="vue-general-theme"
-                aria-label="主题模式"
-              >
-                <option v-for="option in themeOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </section>
-
-            <section class="atlas-general-row">
-              <div>
-                <h2>界面字体</h2>
-                <p>用于菜单、正文、按钮等界面大部分文字的字体</p>
-              </div>
-              <div class="atlas-general-control-stack">
-                <select
-                  v-model="generalSettings.interfaceFont"
-                  data-testid="vue-general-interface-font"
-                  aria-label="界面字体"
-                >
-                  <option
-                    v-for="option in interfaceFontOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-                <p class="atlas-font-preview">示例 Sample 字体 Font — Aa Gg Oo 0123</p>
-              </div>
-            </section>
-
-            <section class="atlas-general-row">
-              <div>
-                <h2>代码字体</h2>
-                <p>用于代码块、终端命令、API 密钥、文件路径等技术内容</p>
-              </div>
-              <div class="atlas-general-control-stack">
-                <select
-                  v-model="generalSettings.codeFont"
-                  data-testid="vue-general-code-font"
-                  aria-label="代码字体"
-                >
-                  <option
-                    v-for="option in codeFontOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-                <code class="atlas-code-preview">const source_trace = 'chunk-001'</code>
-              </div>
-            </section>
-
-            <section class="atlas-general-row">
-              <div>
-                <h2>字体大小</h2>
-                <p>整体缩放界面文字、图标、间距等</p>
-              </div>
-              <div class="atlas-size-segment" role="group" aria-label="字体大小">
-                <button
-                  v-for="option in fontSizeOptions"
-                  :key="option.value"
-                  :class="{ active: generalSettings.fontSize === option.value }"
-                  type="button"
-                  :data-testid="`vue-general-font-size-${option.value}`"
-                  @click="generalSettings.fontSize = option.value"
-                >
-                  {{ option.label }}
-                </button>
-              </div>
-            </section>
-
-            <section class="atlas-general-row">
-              <div>
-                <h2>开启记忆功能</h2>
-                <p>开启后，系统将记录对话历史，并在后续对话中自动回忆相关内容</p>
-              </div>
-              <button
-                class="atlas-switch"
-                :class="{ active: generalSettings.memoryEnabled }"
-                type="button"
-                role="switch"
-                :aria-checked="generalSettings.memoryEnabled"
-                data-testid="vue-general-memory"
-                @click="generalSettings.memoryEnabled = !generalSettings.memoryEnabled"
-              >
-                <span></span>
-              </button>
-            </section>
-          </div>
-
-          <section class="atlas-admin-boundary atlas-general-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              常规偏好仅作用于当前 Vue mock 会话；不写入真实账号配置、不执行生产 RBAC、
-              不保存真实密钥，也不会展示私有 endpoint 或本地绝对路径。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'profile'"
-          class="atlas-account-settings"
-          data-testid="vue-user-info-panel"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-admin-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>用户信息</h1>
-              <p>查看当前 mock 账号资料、空间身份和最近活动。</p>
-            </div>
-            <span>Mock account</span>
-          </header>
-
-          <section class="atlas-profile-card">
-            <span class="atlas-profile-avatar" aria-hidden="true">L</span>
-            <div>
-              <strong>leo</strong>
-              <p>Atlas Delivery · Workspace Owner</p>
-            </div>
-          </section>
-
-          <section class="atlas-admin-grid">
-            <article v-for="row in accountProfileRows" :key="row.key" :data-testid="row.testId">
-              <strong>{{ row.label }}</strong>
-              <span>{{ row.value }}</span>
-              <p>{{ row.note }}</p>
-            </article>
-          </section>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              用户信息只用于当前 Vue mock 演示；不连接真实身份系统、不保存个人资料、
-              不展示真实组织目录，也不执行生产 RBAC。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'spaceInfo'"
-          class="atlas-space-info-panel"
-          data-testid="vue-space-info-panel"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-admin-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>空间信息</h1>
-              <p>查看当前知识空间的详细配置与 mock 运营状态。</p>
-            </div>
-            <span>{{
-              selectedProductSpace.source === 'api' ? 'API-backed Space' : 'Mock Space'
-            }}</span>
-          </header>
-
-          <section class="atlas-space-info-list" aria-label="空间信息">
-            <article
-              v-for="row in selectedSpaceInfoRows"
-              :key="row.key"
-              class="atlas-space-info-row"
-              :data-testid="`vue-space-info-${row.key}`"
-            >
-              <div>
-                <strong>{{ row.label }}</strong>
-                <p>{{ row.note }}</p>
-              </div>
-
-              <div
-                v-if="row.field && activeSpaceInfoEditField === row.field"
-                class="atlas-space-info-edit"
-              >
-                <input
-                  v-if="row.field === 'name'"
-                  v-model="spaceInfoDraft.name"
-                  data-testid="vue-space-info-name-input"
-                  aria-label="空间名称"
-                />
-                <textarea
-                  v-else
-                  v-model="spaceInfoDraft.description"
-                  data-testid="vue-space-info-description-input"
-                  aria-label="空间描述"
-                  rows="2"
-                ></textarea>
-                <div class="atlas-space-info-actions">
-                  <button
-                    type="button"
-                    data-testid="vue-space-info-save"
-                    @click="saveSpaceInfoEdit"
-                  >
-                    保存
-                  </button>
-                  <button type="button" @click="cancelSpaceInfoEdit">取消</button>
-                </div>
-              </div>
-
-              <div v-else class="atlas-space-info-value">
-                <span :class="{ 'atlas-space-status': row.key === 'status' }">{{ row.value }}</span>
-                <button
-                  v-if="row.field"
-                  type="button"
-                  :aria-label="`编辑${row.label}`"
-                  :title="`编辑${row.label}`"
-                  :data-testid="`vue-space-info-edit-${row.field}`"
-                  @click="beginSpaceInfoEdit(row.field)"
-                >
-                  ✎
-                </button>
-              </div>
-            </article>
-          </section>
-
-          <p
-            v-if="spaceInfoStatus"
-            class="atlas-inline-success"
-            data-testid="vue-space-info-save-status"
-            role="status"
-          >
-            {{ spaceInfoStatus }}
-          </p>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              空间信息当前只更新 Vue mock
-              会话状态；真实空间元数据、存储额度、审计日志和权限校验必须由后端 API 与 RBAC 控制。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'members'"
-          class="atlas-member-settings"
-          data-testid="vue-member-manager"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-member-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>
-                成员管理
-                <span title="当前为 mock RBAC 说明">ⓘ</span>
-                <button
-                  class="atlas-text-link"
-                  type="button"
-                  @click="memberActionStatus = '审计日志入口为 mock。'"
-                >
-                  审计日志
-                </button>
-              </h1>
-              <p>
-                邀请伙伴加入当前空间并分配角色。只有 Owner/Admin 后续才能新增或移除成员。
-                <a href="#" aria-label="了解 RBAC">了解 RBAC ↗</a>
-              </p>
-            </div>
-          </header>
-
-          <section class="atlas-member-block" aria-label="待接受的邀请">
-            <header class="atlas-member-section-head">
-              <div>
-                <h2>
-                  待接受的邀请 <span>{{ pendingInvitationCount }}</span>
-                </h2>
-                <p>发出后等待对方在站内确认。7 天未响应将自动过期。</p>
-              </div>
-            </header>
-            <div v-if="pendingInvitationCount === 0" class="atlas-member-empty">
-              暂无待接受的邀请。
-            </div>
-            <div v-else class="atlas-member-invite-list">
-              <article v-for="invite in pendingInvitations" :key="invite.id">
-                <strong>{{ invite.email }}</strong>
-                <span>{{ memberRoleLabel(invite.role) }} · {{ invite.invitedAt }}</span>
-                <small>邀请人：{{ invite.inviter }}</small>
-              </article>
-            </div>
-          </section>
-
-          <section class="atlas-member-block" aria-label="空间成员">
-            <header class="atlas-member-toolbar">
-              <div>
-                <h2>
-                  空间成员 <span>{{ spaceMembers.length }}</span>
-                </h2>
-              </div>
-              <div class="atlas-member-actions">
-                <label class="atlas-member-search">
-                  <span>搜索成员</span>
-                  <input
-                    v-model="memberSearch"
-                    data-testid="vue-member-search"
-                    placeholder="按姓名或邮箱搜索"
-                  />
-                </label>
-                <button
-                  class="atlas-icon-button"
-                  data-testid="vue-member-invite"
-                  type="button"
-                  aria-label="邀请成员"
-                  title="邀请成员"
-                  :disabled="!canManageMembers"
-                  @click="inviteMockMember"
-                >
-                  +人
-                </button>
-                <button
-                  class="atlas-icon-button"
-                  data-testid="vue-member-copy-link"
-                  type="button"
-                  aria-label="复制邀请链接"
-                  title="复制邀请链接"
-                  :disabled="!canManageMembers"
-                  @click="copyInviteMockLink"
-                >
-                  ⌁
-                </button>
-              </div>
-            </header>
-
-            <div class="atlas-member-table-wrap">
-              <table class="atlas-member-table">
-                <thead>
-                  <tr>
-                    <th>姓名与邮箱</th>
-                    <th>角色</th>
-                    <th>加入时间</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="member in filteredSpaceMembers" :key="member.id">
-                    <td>
-                      <strong>{{ member.name }}</strong>
-                      <span>{{ member.email }}</span>
-                    </td>
-                    <td>
-                      <span
-                        v-if="!member.removable"
-                        class="atlas-role-badge"
-                        :class="memberRoleClass(member.role)"
-                      >
-                        {{ memberRoleLabel(member.role) }}
-                      </span>
-                      <select
-                        v-else
-                        :value="member.role"
-                        :aria-label="`${member.name} 角色`"
-                        @change="handleMemberRoleChange(member.id, readSelectValue($event))"
-                      >
-                        <option
-                          v-for="option in memberRoleOptions"
-                          :key="option.value"
-                          :value="option.value"
-                        >
-                          {{ option.label }}
-                        </option>
-                      </select>
-                    </td>
-                    <td>{{ member.joinedAt }}</td>
-                    <td>
-                      <button
-                        class="atlas-member-remove"
-                        type="button"
-                        :disabled="!member.removable"
-                        :aria-label="`移除 ${member.name}`"
-                        @click="removeSpaceMember(member.id)"
-                      >
-                        移除
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-if="filteredSpaceMembers.length === 0">
-                    <td colspan="4">没有匹配的成员。</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p
-              v-if="memberActionStatus"
-              class="atlas-inline-success"
-              data-testid="vue-member-status"
-              role="status"
-            >
-              {{ memberActionStatus }}
-            </p>
-          </section>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              当前成员管理为 mock-only：不发送邀请、不提交真实公司域名、不保存真实账号、 不执行生产
-              RBAC，后续权限与审计必须由后端强制执行。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'audit'"
-          class="atlas-audit-log-panel"
-          data-testid="vue-audit-log-panel"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-admin-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>审计日志</h1>
-              <p>{{ selectedProductSpace.name }} · {{ auditSummary.total }} events</p>
-            </div>
-            <span>Governance read</span>
-          </header>
-
-          <section class="atlas-admin-grid">
-            <article>
-              <strong>{{ auditSummary.security }}</strong>
-              <span>SECURITY</span>
-            </article>
-            <article>
-              <strong>{{ auditSummary.denied }}</strong>
-              <span>DENIED</span>
-            </article>
-            <article>
-              <strong>{{ auditEvents[0]?.createdAt ?? 'n/a' }}</strong>
-              <span>latest</span>
-            </article>
-          </section>
-
-          <section class="atlas-audit-list" aria-label="审计事件">
-            <p v-if="isLoadingAuditEvents" role="status">Loading audit events</p>
-            <p v-else-if="auditError" class="atlas-inline-success" role="status">
-              {{ auditError }}
-            </p>
-            <article v-for="event in auditEvents" :key="event.id" class="atlas-audit-event">
-              <header>
-                <strong>{{ event.action }}</strong>
-                <span>{{ event.category }} · {{ event.result }} · {{ event.severity }}</span>
-              </header>
-              <p>{{ event.safeSummary }}</p>
-              <dl>
-                <div>
-                  <dt>actor</dt>
-                  <dd>{{ event.actorDisplay }} · {{ event.actorUserId ?? 'anonymous' }}</dd>
-                </div>
-                <div>
-                  <dt>target</dt>
-                  <dd>{{ event.targetType }} · {{ event.targetId }}</dd>
-                </div>
-                <div>
-                  <dt>metadata</dt>
-                  <dd>{{ auditMetadataLabel(event.metadata) }}</dd>
-                </div>
-              </dl>
-            </article>
-            <p v-if="!isLoadingAuditEvents && !auditError && auditEvents.length === 0">
-              No audit events.
-            </p>
-          </section>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              审计事件只显示后端返回的安全摘要与 allow-listed
-              metadata；原始正文、prompt、密钥和私有路径不进入此面板。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'api'"
-          class="atlas-api-info-panel"
-          data-testid="vue-api-info-panel"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-admin-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>API 信息</h1>
-              <p>查看和管理 Atlas API 调用信息，密钥默认为脱敏显示。</p>
-            </div>
-            <span>Mock-safe API</span>
-          </header>
-
-          <section class="atlas-api-info-list">
-            <article class="atlas-api-info-row">
-              <div>
-                <strong>API Key</strong>
-                <p>用于 API 调用的密钥，请妥善保管；当前仅展示 mock key 状态。</p>
-              </div>
-              <div class="atlas-api-control">
-                <input
-                  :key="apiKeyDisplayValue"
-                  :value="apiKeyDisplayValue"
-                  data-testid="vue-api-key-value"
-                  readonly
-                  aria-label="API Key"
-                />
-                <div class="atlas-api-icon-row">
-                  <button
-                    data-testid="vue-api-key-reveal"
-                    type="button"
-                    aria-label="确认 API Key 保持隐藏"
-                    title="确认 API Key 保持隐藏"
-                    @click="toggleApiKeyVisibility"
-                  >
-                    ◉
-                  </button>
-                  <button
-                    data-testid="vue-api-key-copy"
-                    type="button"
-                    aria-label="复制 API Key"
-                    title="复制 API Key"
-                    @click="copyApiInfoValue('API Key 已复制')"
-                  >
-                    ⧉
-                  </button>
-                  <button
-                    data-testid="vue-api-key-refresh"
-                    type="button"
-                    aria-label="刷新 API Key"
-                    title="刷新 API Key"
-                    @click="refreshApiKey"
-                  >
-                    ↻
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article class="atlas-api-info-row">
-              <div>
-                <strong>API 地址</strong>
-                <p>REST API 的基础路径，请求时在末尾拼接具体接口路径。</p>
-              </div>
-              <div class="atlas-api-control">
-                <input
-                  :value="apiInfo.baseUrl"
-                  data-testid="vue-api-base-url"
-                  readonly
-                  aria-label="API 地址"
-                />
-                <div class="atlas-api-icon-row">
-                  <button
-                    data-testid="vue-api-base-copy"
-                    type="button"
-                    aria-label="复制 API 地址"
-                    title="复制 API 地址"
-                    @click="copyApiInfoValue('API 地址已复制')"
-                  >
-                    ⧉
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article class="atlas-api-info-row">
-              <div>
-                <strong>API 文档</strong>
-                <p>查看完整的 API 调用文档和示例。</p>
-              </div>
-              <div class="atlas-api-doc-actions">
-                <a
-                  :href="apiInfo.docsPath"
-                  data-testid="vue-api-doc-link"
-                  @click.prevent="openApiDocumentation"
-                >
-                  打开文档 ↗
-                </a>
-              </div>
-            </article>
-          </section>
-
-          <section class="atlas-api-safe-errors" data-testid="vue-safe-error-states">
-            <header>
-              <strong>Safe Error States</strong>
-              <span>Atlas API contract</span>
-            </header>
-            <div>
-              <article
-                v-for="state in safeErrorPreviews"
-                :key="state.code"
-                :data-testid="`vue-safe-error-state-${state.code}`"
-              >
-                <strong>{{ state.code }}</strong>
-                <span>{{ state.title }}</span>
-                <p>{{ state.description }}</p>
-              </article>
-            </div>
-          </section>
-
-          <p
-            v-if="apiInfo.status"
-            class="atlas-inline-success"
-            data-testid="vue-api-info-status"
-            role="status"
-          >
-            {{ apiInfo.status }}
-          </p>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              API Key 仍是前端 mock 信息；真实密钥必须由后端生成、脱敏返回并审计刷新。
-              当前界面不会连接外部 provider、不会保存明文 token，也不会展示公司内网 endpoint。
-            </p>
-          </section>
-        </section>
-
-        <section
-          v-else-if="settingsPanel === 'messages'"
-          class="atlas-message-settings"
-          data-testid="vue-message-management"
-        >
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-general-head" data-testid="vue-admin-panel">
-            <h1>消息管理</h1>
-            <p>配置聊天历史知识库，将对话消息自动向量化索引，实现语义搜索</p>
-          </header>
-
-          <div class="atlas-message-form">
-            <section class="atlas-message-row">
-              <div>
-                <h2>启用消息索引</h2>
-                <p>开启后，新的对话消息将自动索引到知识库，支持向量搜索</p>
-              </div>
-              <button
-                class="atlas-switch"
-                :class="{ active: messageIndexEnabled }"
-                type="button"
-                role="switch"
-                :aria-checked="messageIndexEnabled"
-                data-testid="vue-message-index-toggle"
-                @click="toggleMessageIndexing"
-              >
-                <span></span>
-              </button>
-            </section>
-
-            <section v-if="messageIndexEnabled" class="atlas-message-row">
-              <div>
-                <h2>Embedding 模型</h2>
-                <p>选择用于聊天历史语义检索的 Embedding 模型</p>
-              </div>
-              <select
-                :value="messageEmbeddingModel"
-                data-testid="vue-message-embedding-model"
-                aria-label="消息索引 Embedding 模型"
-                @change="messageEmbeddingModel = readSelectValue($event)"
-              >
-                <option
-                  v-for="option in messageEmbeddingOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-            </section>
-          </div>
-
-          <section class="atlas-message-stats" data-testid="vue-message-index-stats">
-            <h2>索引统计</h2>
-            <div v-if="!messageIndexConfigured" class="atlas-message-empty">
-              <strong>消息索引未配置</strong>
-              <p>启用并选择 Embedding 模型后，对话消息将自动向量化索引</p>
-            </div>
-            <div v-else class="atlas-admin-grid">
-              <article v-for="stat in messageIndexStats" :key="stat.label">
-                <strong>{{ stat.label }}</strong>
-                <span>{{ stat.value }}</span>
-                <p>{{ stat.note }}</p>
-              </article>
-            </div>
-          </section>
-
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              当前消息管理仅保存本地 mock 开关；不持久化真实聊天历史、不执行真实 embedding、
-              不写入真实向量库，也不会绕过 ModelAdapter 或 VectorAdapter 边界。
-            </p>
-          </section>
-        </section>
-
-        <section v-else-if="currentSettingsSurface" class="atlas-settings-placeholder">
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="atlas-admin-head" data-testid="vue-admin-panel">
-            <div>
-              <h1>{{ currentSettingsSurface?.title }}</h1>
-              <p>{{ currentSettingsSurface?.summary }}</p>
-            </div>
-            <span>{{ currentSettingsSurface?.status }}</span>
-          </header>
-          <section class="atlas-admin-grid">
-            <article v-for="row in currentSettingsSurface?.rows" :key="row.label">
-              <strong>{{ row.label }}</strong>
-              <span>{{ row.value }}</span>
-              <p>{{ row.note }}</p>
-            </article>
-          </section>
-          <section class="atlas-admin-boundary">
-            <strong>Production boundary</strong>
-            <p>
-              当前面板只展示 mock-safe 配置状态；不会保存真实密钥、不会调用外部 provider、
-              不执行生产 RBAC，也不会展示私有 endpoint 或本地绝对路径。
-            </p>
-          </section>
-        </section>
-
-        <section v-else class="vue-model-content" data-testid="vue-model-manager">
-          <button class="atlas-settings-close" type="button" @click="closeSettings">×</button>
-          <header class="vue-model-head">
-            <div>
-              <h1>模型配置</h1>
-              <p>管理不同类型的 AI 模型，支持 Ollama 本地模型和远程 API。</p>
-            </div>
-            <div class="vue-model-actions">
-              <button
-                class="vue-add-model"
-                data-testid="vue-add-model"
-                type="button"
-                @click="isModelAddMenuOpen = !isModelAddMenuOpen"
-              >
-                + 添加模型
-              </button>
-              <div v-if="isModelAddMenuOpen" class="vue-add-menu" role="menu">
-                <button
-                  v-for="category in addableModelTypes"
-                  :key="category.key"
-                  :data-testid="`vue-add-${category.key}`"
-                  type="button"
-                  disabled
-                  data-coming-soon="true"
-                >
-                  {{ category.label }} · coming soon
-                </button>
-              </div>
-            </div>
-          </header>
-
-          <section class="vue-model-info">
-            <strong>内置模型</strong>
-            <span data-testid="vue-api-model-status">{{ modelApiStatus }}</span>
-            <p>内置模型对所有租户可见，敏感信息会被隐藏，当前界面不会展示完整密钥。</p>
-            <p
-              v-if="modelSaveStatus"
-              class="atlas-inline-success"
-              data-testid="vue-model-save-status"
-              role="status"
-            >
-              {{ modelSaveStatus }}
-            </p>
-            <p v-if="modelApiError" class="atlas-inline-warning">{{ modelApiError }}</p>
-            <a href="#" aria-label="查看内置模型管理指南">查看内置模型管理指南 ↗</a>
-          </section>
-
-          <nav class="vue-model-tabs" aria-label="Model categories">
-            <button
-              v-for="category in modelCategories"
-              :key="category.key"
-              :class="{ active: activeModelCategory === category.key }"
-              :data-testid="`vue-model-tab-${category.key}`"
-              type="button"
-              @click="activeModelCategory = category.key"
-            >
-              {{ category.label }}({{ modelCount(category.key) }})
-            </button>
-          </nav>
-
-          <section class="vue-model-grid" aria-label="Configured models">
-            <button
-              v-for="model in visibleModels"
-              :key="model.id"
-              class="vue-model-card"
-              :data-testid="`vue-model-card-${model.id}`"
-              type="button"
-              @click="openModelEditor(model)"
-            >
-              <span class="vue-model-icon">{{ modelIcon(model.category) }}</span>
-              <span>
-                <strong>{{ model.displayName }}</strong>
-                <small
-                  >{{ model.name }} · {{ model.provider }}{{ modelDetail(model) }} ·
-                  {{ model.sourceLabel ?? 'sample' }}</small
-                >
-              </span>
-            </button>
-          </section>
-        </section>
-      </div>
-    </section>
-
-    <div v-if="modelDraft" class="vue-editor-scrim" @click="closeModelEditor"></div>
-    <aside
-      v-if="modelDraft"
-      class="vue-model-editor"
-      data-testid="vue-model-editor"
-      role="dialog"
-      aria-modal="true"
-      aria-label="编辑模型"
+    <SettingsModal
+      v-if="settingsOpen"
+      :settings-panel="settingsPanel"
+      :can-read-governance="canReadGovernance"
+      @close="closeSettings"
+      @select-panel="panel => (settingsPanel = panel)"
+      @open-panel="openSettings"
     >
-      <header class="vue-editor-head">
-        <span class="vue-model-icon">{{ modelIcon(modelDraft.category) }}</span>
-        <div>
-          <h2>编辑模型</h2>
-          <p>配置用于对话的大语言模型</p>
-        </div>
-      </header>
+      <GeneralSettingsPanel
+        v-if="settingsPanel === 'general'"
+        :general-settings="generalSettings"
+        :language-options="languageOptions"
+        :theme-options="themeOptions"
+        :interface-font-options="interfaceFontOptions"
+        :code-font-options="codeFontOptions"
+        :font-size-options="fontSizeOptions"
+        @close="closeSettings"
+        @update-general-settings="settings => (generalSettings = settings)"
+      />
+      <ProfileSettingsPanel
+        v-else-if="settingsPanel === 'profile'"
+        :account-profile-rows="accountProfileRows"
+        @close="closeSettings"
+      />
+      <SpaceInfoSettingsPanel
+        v-else-if="settingsPanel === 'spaceInfo'"
+        :selected-product-space="selectedProductSpace"
+        :selected-space-info-rows="selectedSpaceInfoRows"
+        :active-space-info-edit-field="activeSpaceInfoEditField"
+        :space-info-draft="spaceInfoDraft"
+        :space-info-status="spaceInfoStatus"
+        @close="closeSettings"
+        @begin-space-info-edit="beginSpaceInfoEdit"
+        @cancel-space-info-edit="cancelSpaceInfoEdit"
+        @save-space-info-edit="saveSpaceInfoEdit"
+        @update-space-info-draft="draft => (spaceInfoDraft = draft)"
+      />
+      <MembersSettingsPanel
+        v-else-if="settingsPanel === 'members'"
+        :pending-invitation-count="pendingInvitationCount"
+        :pending-invitations="pendingInvitations"
+        :space-members="spaceMembers"
+        :filtered-space-members="filteredSpaceMembers"
+        :member-search="memberSearch"
+        :can-manage-members="canManageMembers"
+        :member-action-status="memberActionStatus"
+        :member-role-options="memberRoleOptions"
+        @close="closeSettings"
+        @update-member-search="query => (memberSearch = query)"
+        @note-audit-entry="memberActionStatus = '审计日志入口为 mock。'"
+        @invite-mock-member="inviteMockMember"
+        @copy-invite-mock-link="copyInviteMockLink"
+        @handle-member-role-change="handleMemberRoleChange"
+        @remove-space-member="removeSpaceMember"
+      />
+      <AuditLogSettingsPanel
+        v-else-if="settingsPanel === 'audit'"
+        :selected-product-space="selectedProductSpace"
+        :audit-summary="auditSummary"
+        :audit-events="auditEvents"
+        :is-loading-audit-events="isLoadingAuditEvents"
+        :audit-error="auditError"
+        @close="closeSettings"
+      />
+      <ApiInfoSettingsPanel
+        v-else-if="settingsPanel === 'api'"
+        :api-info="apiInfo"
+        :api-key-display-value="apiKeyDisplayValue"
+        :safe-error-previews="safeErrorPreviews"
+        @close="closeSettings"
+        @toggle-api-key-visibility="toggleApiKeyVisibility"
+        @copy-api-info-value="copyApiInfoValue"
+        @refresh-api-key="refreshApiKey"
+        @open-api-documentation="openApiDocumentation"
+      />
+      <MessageSettingsPanel
+        v-else-if="settingsPanel === 'messages'"
+        :message-index-enabled="messageIndexEnabled"
+        :message-embedding-model="messageEmbeddingModel"
+        :message-embedding-options="messageEmbeddingOptions"
+        :message-index-configured="messageIndexConfigured"
+        :message-index-stats="messageIndexStats"
+        @close="closeSettings"
+        @toggle-message-indexing="toggleMessageIndexing"
+        @update-message-embedding-model="model => (messageEmbeddingModel = model)"
+      />
+      <PlaceholderSettingsPanelView
+        v-else-if="currentSettingsSurface"
+        :settings-surface="currentSettingsSurface"
+        @close="closeSettings"
+      />
+      <ModelsSettingsPanel
+        v-else
+        :is-model-add-menu-open="isModelAddMenuOpen"
+        :addable-model-types="addableModelTypes"
+        :model-api-status="modelApiStatus"
+        :model-save-status="modelSaveStatus"
+        :model-api-error="modelApiError"
+        :model-categories="modelCategories"
+        :active-model-category="activeModelCategory"
+        :models="models"
+        :visible-models="visibleModels"
+        @close="closeSettings"
+        @toggle-model-add-menu="isModelAddMenuOpen = !isModelAddMenuOpen"
+        @update-active-model-category="category => (activeModelCategory = category)"
+        @open-model-editor="openModelEditor"
+      />
+    </SettingsModal>
 
-      <div class="vue-editor-body">
-        <section>
-          <h3>模型来源</h3>
-          <div class="vue-source-toggle">
-            <button
-              :class="{ active: modelDraft.source === 'Ollama' }"
-              type="button"
-              @click="setModelSource('Ollama')"
-            >
-              Ollama
-            </button>
-            <button
-              :class="{ active: modelDraft.source === 'API' }"
-              type="button"
-              @click="setModelSource('API')"
-            >
-              API
-            </button>
-          </div>
-        </section>
-
-        <section>
-          <h3>接入配置</h3>
-          <label>
-            服务商
-            <select v-model="modelDraft.provider" data-testid="vue-model-provider">
-              <option v-for="provider in modelProviderOptions" :key="provider" :value="provider">
-                {{ provider }}
-              </option>
-            </select>
-          </label>
-          <label class="required">
-            模型名称
-            <input v-model="modelDraft.name" data-testid="vue-model-name" />
-          </label>
-          <label>
-            显示名称（可选）
-            <input v-model="modelDraft.displayName" data-testid="vue-model-display-name" />
-            <small>仅用于界面展示，实际调用仍使用上面的模型名称。</small>
-          </label>
-          <label class="required">
-            Base URL
-            <input v-model="modelDraft.baseUrl" data-testid="vue-model-base-url" />
-          </label>
-          <div class="vue-key-field">
-            <strong>API Key（可选）</strong>
-            <div class="vue-key-row">
-              <span
-                :class="{ empty: modelDraft.apiKeyStatus !== 'configured' }"
-                data-testid="vue-key-status"
-              >
-                {{ modelSecretLabel(modelDraft) }}
-              </span>
-              <span>
-                <button data-testid="vue-key-replace" type="button" @click="startApiKeyReplace">
-                  更换
-                </button>
-                <button class="danger" type="button" @click="removeApiKey">移除</button>
-              </span>
-            </div>
-            <div v-if="modelDraft.apiKeyEditing" class="vue-key-editor">
-              <input
-                v-model="apiKeyInput"
-                data-testid="vue-key-input"
-                type="password"
-                autocomplete="off"
-                placeholder="输入新的 API Key（不会在原型中保存明文）"
-              />
-              <button data-testid="vue-key-confirm" type="button" @click="confirmApiKeyReplace">
-                确认
-              </button>
-              <button type="button" @click="cancelApiKeyReplace">取消</button>
-            </div>
-            <small>出于安全考虑，API Key 保存后将不再显示，仅显示配置状态。</small>
-          </div>
-        </section>
-
-        <section>
-          <h3>高级选项</h3>
-          <div class="vue-switch-row">
-            <strong>支持视觉/多模态</strong>
-            <button
-              class="vue-switch"
-              :class="{ active: modelDraft.supportsMultimodal }"
-              type="button"
-              @click="toggleModelMultimodal"
-            ></button>
-          </div>
-          <label>
-            思考模式参数格式
-            <select v-model="modelDraft.thinkingFormat" data-testid="vue-model-thinking">
-              <option v-for="option in thinkingOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </label>
-        </section>
-      </div>
-
-      <footer class="vue-editor-foot">
-        <button
-          class="secondary"
-          data-testid="vue-test-model"
-          type="button"
-          @click="testModelConnection"
-        >
-          测试连接
-        </button>
-        <small v-if="modelTestStatus" data-testid="vue-model-test-status">{{
-          modelTestStatus
-        }}</small>
-        <span>
-          <button class="secondary" type="button" @click="closeModelEditor">取消</button>
-          <button data-testid="vue-save-model" type="button" @click="saveModelEditor">保存</button>
-        </span>
-      </footer>
-    </aside>
+    <ModelEditor
+      v-if="modelDraft"
+      :model-draft="modelDraft"
+      :model-provider-options="modelProviderOptions"
+      :thinking-options="thinkingOptions"
+      :api-key-input="apiKeyInput"
+      :model-test-status="modelTestStatus"
+      @close="closeModelEditor"
+      @update-model-draft="draft => (modelDraft = draft)"
+      @update-api-key-input="value => (apiKeyInput = value)"
+      @set-model-source="setModelSource"
+      @start-api-key-replace="startApiKeyReplace"
+      @remove-api-key="removeApiKey"
+      @confirm-api-key-replace="confirmApiKeyReplace"
+      @cancel-api-key-replace="cancelApiKeyReplace"
+      @toggle-model-multimodal="toggleModelMultimodal"
+      @test-model-connection="testModelConnection"
+      @save-model-editor="saveModelEditor"
+    />
 
     <button class="prototype-entry" type="button" @click="activeExperience = 'prototype'">
       Prototype iframe
@@ -4827,7 +2494,7 @@ function isDeepSeekDraft(model: VueModelConfig) {
     <button class="workbench-entry" type="button" @click="activeExperience = 'p0'">
       Full-stack P0 workbench
     </button>
-  </main>
+  </ProductShell>
 
   <main
     v-if="activeExperience === 'prototype'"

@@ -6,6 +6,8 @@ Implement behavior-preserving structural componentization for `frontend/src/App.
 
 This slice is intentionally frontend-only. It does not include `vue-router`, backend/API changes, provider calls, real data, new dependencies, or visual redesign.
 
+Status: T-FRONTEND-COMPONENTIZATION-001 through T-FRONTEND-COMPONENTIZATION-007 implemented and locally verified on 2026-07-08. The slice is a behavior-preserving frontend structural checkpoint, not a production-readiness claim.
+
 ## Task Details
 
 ### T-FRONTEND-COMPONENTIZATION-001: Accept SDD contract and baseline selectors

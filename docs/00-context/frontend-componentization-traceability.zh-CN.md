@@ -5,7 +5,7 @@
 - Slice: `frontend-componentization`
 - Goal: 对单体 Vue `App.vue` 做行为不变的结构性拆分。
 - Phase: 1 前端结构加固。
-- Status: 2026-07-08 已生成 SDD 草案；实现需要先接受 SDD。
+- Status: 2026-07-08 已接受 SDD；T-FRONTEND-COMPONENTIZATION-001 至 T-FRONTEND-COMPONENTIZATION-007 已实现并完成本地验证。本切片是行为不变的前端结构化 checkpoint，不是 production-readiness 声明。
 
 ## 来源文档
 
@@ -54,6 +54,39 @@ API guide 省略。本切片仅前端，不新增或修改后端端点、request
 - 对变更文件做 focused secret/private-path scan。
 - 对变更文件做 focused new-network/dependency scan。
 - `npm run agent:closeout`
+
+## 实现证据
+
+| Task IDs | Status | Evidence |
+|---|---|---|
+| T-FRONTEND-COMPONENTIZATION-001 | Completed | 用户已于 2026-07-08 接受 SDD；实现前 `npm run agent:check-sdd -- --slice frontend-componentization --report docs/00-context/frontend-componentization-sdd-completion-report.md` 已通过。 |
+| T-FRONTEND-COMPONENTIZATION-002 | Completed | 新增 `frontend/src/domain/viewModels.ts` 与 `frontend/src/domain/viewModels.test.ts`；抽取 Ask governance labels、metric ratios、Wiki/Graph source trace formatting、graph/model labels 和 secret status labels 等纯 view-model 类型与 helpers。 |
+| T-FRONTEND-COMPONENTIZATION-003 | Completed | 新增 `ProductShell`、`ProductSidebar`、`ProductHomeView` 与 `GlobalChatView`；`App.vue` 保留 `productView` 与 handler 所有权，通过类型化 props/events 委托 shell/home/chat 模板。 |
+| T-FRONTEND-COMPONENTIZATION-004 | Completed | 新增 `SpaceDetailView`、`SpaceDocumentsTab`、`SpaceConnectorsTab`、`SpaceReviewTab`、`SpaceWikiTab` 与 `SpaceGraphTab`。`App.vue` 仍拥有 `activeSpaceTab`、选中 ID、表单 draft、API 调用和 handler 副作用，Space 组件通过类型化 props/events 接线。 |
+| T-FRONTEND-COMPONENTIZATION-005 | Completed | 新增 `SettingsModal`、带行为的 settings panel components 与 `ModelEditor`。`App.vue` 仍拥有 `settingsOpen`、`settingsPanel`、capability gates、表单状态、API/model 副作用和脱敏展示状态，settings 组件通过类型化 props/events 接线。 |
+| T-FRONTEND-COMPONENTIZATION-006 | Completed | 新增 `frontend/src/composables/useProductUploadWorkflow.ts`，并为 mock upload/processing/report workflow 增加 focused tests。`App.vue` 仍拥有产品导航并传入 documents-tab callback；没有改变 API helper usage、后端契约、新依赖或 runtime 行为。 |
+| T-FRONTEND-COMPONENTIZATION-007 | Completed | 已运行最终 frontend regression、Atlas workflow gates、closeout gate、diff hygiene、dependency scan、focused new-network/private-path scan 与 focused secret scan。由于本切片未触碰 backend/API/provider runtime 行为，未运行 backend/provider checks。 |
+
+2026-07-08 已运行验证：
+
+- `npm --prefix frontend run typecheck` 通过。
+- `npm --prefix frontend run test -- --run` 通过，5 个文件 / 30 个测试。
+- `npm --prefix frontend run build` 通过。
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/full-stack-productization.spec.ts --project=chromium` 通过，2 个测试。
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts tests/e2e/full-stack-productization.spec.ts --project=chromium` 在 Space tab-content 抽取后通过，3 个测试。
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-h-settings-administration.spec.ts --project=chromium` 在 settings 抽取后通过，2 个测试。
+- `npm --prefix frontend run test -- --run src/composables/useProductUploadWorkflow.test.ts` 在 mock upload workflow composable 抽取后通过，1 个文件 / 2 个测试。
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts --project=chromium` 在 mock upload workflow composable 抽取后通过，2 个测试。
+- `npm --prefix frontend run e2e` 通过，16 个测试。
+- `npm run agent:check-sdd -- --slice frontend-componentization --report docs/00-context/frontend-componentization-sdd-completion-report.md` 通过，保留预期的 frontend-only optional API guide warning。
+- `npm run agent:check-workflow -- --changed-slices` 通过。
+- `npm run agent:closeout` 通过。
+- `git diff --check` 通过。
+- Focused dependency、new-network/private-path 与 secret scans 通过。
+
+跳过：
+
+- Backend/API/provider checks，因为本 frontend-only 切片没有改变后端端点、request/response payload、持久化、adapter contract、provider/runtime 行为或部署行为。
 
 ## SDD 质量门
 

@@ -81,11 +81,11 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 |---|---|
 | Wave | Wave 6 / Frontend Maintainability |
 | Slice | `frontend-componentization` |
-| 文档状态 | 双语 SDD、tasks、traceability、execution manifest 与 completion report 已生成；实现前需要接受 SDD |
-| 工作区状态 | 已建立行为不变的结构性拆分合同，目标是把单体 Vue `App.vue` 拆成特性组件/composables，并保留当前选择器、API 边界、mock/sample-safe 数据与可见行为 |
-| 成熟度 | Frontend structural hardening contract；不等于 router、URL 语义、后端/API、视觉重设计或新产品能力 |
+| 文档状态 | SDD 已接受；T-FRONTEND-COMPONENTIZATION-001 至 T-FRONTEND-COMPONENTIZATION-007 已实现并完成本地验证 |
+| 工作区状态 | 已抽取 domain view-model helpers/tests，将 shell/sidebar/home/chat 拆成组件，并新增 Space detail/tab-content、settings modal/panel 组件、focused mock upload workflow composable 与最终 frontend regression/closeout evidence；`App.vue` 仍保留 `productView`、`activeSpaceTab`、`settingsOpen/settingsPanel` 与 handler 所有权 |
+| 成熟度 | Frontend structural hardening checkpoint；不等于 router、URL 语义、后端/API、视觉重设计或新产品能力 |
 | 前置依赖 | 当前 Vue 产品路径、`frontend/src/api.ts`、`frontend/src/types.ts`、`frontend/src/data/atlasMock.ts`、现有 frontend tests/E2E |
-| 下一门禁 | 人工接受 `frontend-componentization` SDD；接受后按 `docs/06-tasks/frontend-componentization-tasks.md` ID 顺序实现 |
+| 下一门禁 | review 并提交 `frontend-componentization` 本地 checkpoint；任何 URL/Router/API/视觉/真实数据能力另开 slice |
 | 实现规则 | 不引入 `vue-router`、URL 语义、deep link、browser back/forward、Pinia/Vuex、后端/API 变更、新依赖、provider/runtime 行为、真实公司数据或视觉重设计 |
 
 ## 7. Slice / Wave 队列
@@ -124,7 +124,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 9 | `deployment-monitoring-runbook` | ✅ documentation-only deployment monitoring operations contract 已交付 | Real monitoring platforms、alert channels、production deployment automation、production health/SLO dashboards、connector/worker automation 与 production incident tooling 保留为未来工作 |
 | 10 | `connector-sync-v0` | ✅ adapter-first mock/local connector sync foundation 已实现并通过本地验证 | Real providers、OAuth/API keys、scheduled/background sync、webhooks、external network fetch、connector marketplace、connector secrets 与 direct approved Wiki/Ask/Graph use 保留为未来工作 |
 | 11 | `worker-retry-dead-letter` | ✅ deterministic local retry/dead-letter foundation 已实现并通过本地验证 | Production MQ、distributed worker cluster、scheduled production worker、exactly-once semantics、alert automation 与 real connector retry operations 保留为未来工作 |
-| 12 | `frontend-componentization` | 🔨 SDD 草案已生成，等待接受后实现 | 行为不变拆分 `App.vue`；`vue-router`、URL 语义、deep link、browser history、后端/API 变更、新依赖、视觉重设计、provider 调用与真实数据均不在范围内 |
+| 12 | `frontend-componentization` | ✅ SDD 已接受；T-001 至 T-007 已实现并本地验证 | 已抽取 domain helpers/tests、shell/sidebar/home/chat、Space detail/tab-content、settings modal/panel 组件与 focused mock upload workflow composable，并已完成最终 frontend regression/closeout；`vue-router`、URL 语义、deep link、browser history、后端/API 变更、新依赖、视觉重设计、provider 调用与真实数据均不在范围内 |
 
 ### 后续产品化方向
 
@@ -149,8 +149,8 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 ## 9. 当前建议执行顺序
 
-1. 人工 review 并接受 `frontend-componentization` SDD，重点确认“行为不变、无 `vue-router`、无后端/API 变化、无视觉重设计”的边界。
-2. 接受后按 `docs/06-tasks/frontend-componentization-tasks.md` ID 顺序实现组件化，并运行 frontend verification + safety scans。
+1. Review 并提交 `frontend-componentization` 本地 checkpoint；提交前注意 evidence screenshot 副作用是否要纳入本次提交。
+2. 每个拆分阶段运行 frontend verification + focused Playwright，并保持“行为不变、无 `vue-router`、无后端/API 变化、无视觉重设计”的边界。
 3. 后续若需要 URL 语义、deep link 或 browser history，另开独立 slice，不在本轮组件化中顺手加入。
 
 不要同时推进多个 slice。Master roadmap 可以管理队列，但执行必须一次一个 slice。

@@ -5,7 +5,7 @@
 - Slice: `frontend-componentization`
 - Goal: Behavior-preserving structural extraction of the monolithic Vue `App.vue`.
 - Phase: 1 FE structural hardening.
-- Status: SDD draft generated on 2026-07-08; implementation requires SDD acceptance.
+- Status: SDD accepted on 2026-07-08; T-FRONTEND-COMPONENTIZATION-001 through T-FRONTEND-COMPONENTIZATION-007 implemented and locally verified. This is a behavior-preserving frontend structural checkpoint, not a production-readiness claim.
 
 ## Source Documents
 
@@ -54,6 +54,39 @@ API guide omitted. This slice is frontend-only and does not add or change backen
 - Focused secret/private-path scan over changed files.
 - Focused new-network/dependency scan over changed files.
 - `npm run agent:closeout`
+
+## Implementation Evidence
+
+| Task IDs | Status | Evidence |
+|---|---|---|
+| T-FRONTEND-COMPONENTIZATION-001 | Completed | User accepted the SDD on 2026-07-08; `npm run agent:check-sdd -- --slice frontend-componentization --report docs/00-context/frontend-componentization-sdd-completion-report.md` passed before implementation. |
+| T-FRONTEND-COMPONENTIZATION-002 | Completed | Added `frontend/src/domain/viewModels.ts` and `frontend/src/domain/viewModels.test.ts`; extracted pure view-model types and helpers for Ask governance labels, metric ratios, Wiki/Graph source trace formatting, graph/model labels, and secret status labels. |
+| T-FRONTEND-COMPONENTIZATION-003 | Completed | Added `ProductShell`, `ProductSidebar`, `ProductHomeView`, and `GlobalChatView`; `App.vue` keeps `productView` and handler ownership while delegating shell/home/chat templates through typed props/events. |
+| T-FRONTEND-COMPONENTIZATION-004 | Completed | Added `SpaceDetailView`, `SpaceDocumentsTab`, `SpaceConnectorsTab`, `SpaceReviewTab`, `SpaceWikiTab`, and `SpaceGraphTab`. `App.vue` still owns `activeSpaceTab`, selected IDs, form drafts, API calls, and handler side effects while the Space components receive typed props/events. |
+| T-FRONTEND-COMPONENTIZATION-005 | Completed | Added `SettingsModal`, behavior-bearing settings panel components, and `ModelEditor`. `App.vue` still owns `settingsOpen`, `settingsPanel`, capability gates, form state, API/model side effects, and masked display state while settings components receive typed props/events. |
+| T-FRONTEND-COMPONENTIZATION-006 | Completed | Added `frontend/src/composables/useProductUploadWorkflow.ts` and focused tests for the mock upload/processing/report workflow. `App.vue` still owns product navigation and passes the documents-tab callback; no API helper usage, backend contract, dependency, or runtime behavior changed. |
+| T-FRONTEND-COMPONENTIZATION-007 | Completed | Ran final frontend regression, Atlas workflow gates, closeout gate, diff hygiene, dependency scan, focused new-network/private-path scan, and focused secret scan. No backend/provider checks were run because this slice did not touch backend/API/provider runtime behavior. |
+
+Verification run on 2026-07-08:
+
+- `npm --prefix frontend run typecheck` passed.
+- `npm --prefix frontend run test -- --run` passed, 5 files / 30 tests.
+- `npm --prefix frontend run build` passed.
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/full-stack-productization.spec.ts --project=chromium` passed, 2 tests.
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts tests/e2e/full-stack-productization.spec.ts --project=chromium` passed after the Space tab-content extraction, 3 tests.
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-h-settings-administration.spec.ts --project=chromium` passed after settings extraction, 2 tests.
+- `npm --prefix frontend run test -- --run src/composables/useProductUploadWorkflow.test.ts` passed after the mock upload workflow composable extraction, 1 file / 2 tests.
+- `cd frontend && npx playwright test tests/e2e/phase-a-b-product-shell.spec.ts tests/e2e/phase-c-d-upload-processing.spec.ts --project=chromium` passed after the mock upload workflow composable extraction, 2 tests.
+- `npm --prefix frontend run e2e` passed, 16 tests.
+- `npm run agent:check-sdd -- --slice frontend-componentization --report docs/00-context/frontend-componentization-sdd-completion-report.md` passed with the expected optional frontend-only API guide warning.
+- `npm run agent:check-workflow -- --changed-slices` passed.
+- `npm run agent:closeout` passed.
+- `git diff --check` passed.
+- Focused dependency, new-network/private-path, and secret scans passed.
+
+Skipped:
+
+- Backend/API/provider checks, because this frontend-only slice did not change backend endpoints, request/response payloads, persistence, adapter contracts, provider/runtime behavior, or deployment behavior.
 
 ## SDD Quality Gate
 

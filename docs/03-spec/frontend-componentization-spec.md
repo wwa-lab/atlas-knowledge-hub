@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for SDD acceptance. Source of truth for slice `frontend-componentization`.
+Accepted for implementation on 2026-07-08. Source of truth for slice `frontend-componentization`.
 
 ## Overview
 

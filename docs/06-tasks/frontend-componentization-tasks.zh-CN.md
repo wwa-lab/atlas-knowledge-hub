@@ -6,6 +6,8 @@
 
 本切片明确为仅前端切片。不包含 `vue-router`、后端/API 变更、provider 调用、真实数据、新依赖或视觉重设计。
 
+状态：T-FRONTEND-COMPONENTIZATION-001 至 T-FRONTEND-COMPONENTIZATION-007 已于 2026-07-08 实现并完成本地验证。本切片是行为不变的前端结构化 checkpoint，不是 production-readiness 声明。
+
 ## 任务详情
 
 ### T-FRONTEND-COMPONENTIZATION-001：接受 SDD 契约并建立选择器基线

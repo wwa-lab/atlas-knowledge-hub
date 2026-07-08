@@ -15,9 +15,9 @@ Atlas is still not production-ready. This repository does not yet provide produc
 |---|---|
 | Wave | Wave 6 / Frontend Maintainability |
 | Slice | `frontend-componentization` |
-| Status | SDD draft generated; implementation requires SDD acceptance |
-| Maturity | Frontend structural hardening contract only; no product behavior, router, backend/API, or visual redesign change |
-| Delivered | Bilingual requirements, stories, spec, architecture, data flow, data model, design, tasks, traceability, execution manifest, and SDD completion report |
+| Status | Locally verified after accepted SDD; T-001 through T-007 implemented |
+| Maturity | Frontend structural hardening checkpoint; no product behavior, router, backend/API, or visual redesign change |
+| Delivered | Bilingual SDD set, domain view-model helpers/tests, shell/sidebar/home/chat components, Space detail/tab-content components, settings modal/panel components, focused mock upload workflow composable, and final frontend regression/closeout evidence |
 | Deferred | `vue-router`, URL semantics, deep links, browser back/forward behavior, Pinia/Vuex/global store, visual redesign, backend/API changes, provider/runtime changes, and real company data |
 
 ## Wave 5 Operations Queue
@@ -33,7 +33,7 @@ Atlas is still not production-ready. This repository does not yet provide produc
 
 | Slice | Status | Notes |
 |---|---|---|
-| `frontend-componentization` | SDD draft ready for acceptance | Behavior-preserving structural extraction of `frontend/src/App.vue`; no `vue-router`, URL semantics, backend/API changes, new dependencies, visual redesign, provider calls, or real data. |
+| `frontend-componentization` | Locally verified frontend structural checkpoint | T-001 through T-007 are implemented and locally verified. No `vue-router`, URL semantics, backend/API changes, new dependencies, visual redesign, provider calls, or real data. |
 
 ## Reading Order
 
@@ -47,4 +47,4 @@ Atlas is still not production-ready. This repository does not yet provide produc
 
 ## Next Gate
 
-Review and accept the `frontend-componentization` SDD contract. After acceptance, implement tasks in `docs/06-tasks/frontend-componentization-tasks.md` in ID order, preserving behavior and stopping if implementation requires router, URL, backend/API, provider/runtime, dependency, real-data, or visual redesign changes.
+Review and commit the `frontend-componentization` local checkpoint when ready. Any URL semantics, deep links, browser history, backend/API changes, provider/runtime work, dependency additions, real-data ingestion, or visual redesign must be opened as a separate accepted slice.

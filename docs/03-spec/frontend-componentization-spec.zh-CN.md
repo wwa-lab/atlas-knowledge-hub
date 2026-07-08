@@ -2,7 +2,7 @@
 
 ## 状态
 
-待 SDD 验收草案。切片 `frontend-componentization` 的行为真相源。
+已于 2026-07-08 接受并进入实现。切片 `frontend-componentization` 的行为真相源。
 
 ## 概述
 
