@@ -1,6 +1,6 @@
 # Atlas Repo 一页总览与统一 Roadmap
 
-最后更新：2026-07-07
+最后更新：2026-07-08
 定位：本文件是当前仓库状态、产品成熟度、slice 队列和下一步门禁的**唯一阅读入口**。
 
 如果只想看一份文档，请看这一份。其他 roadmap、progress、traceability、acceptance report 都作为明细和证据存在，不再作为第一入口。
@@ -13,7 +13,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 当前最准确的表述是：
 
-> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation，`deployment-monitoring-runbook` 已完成 documentation-only operations contract，`connector-sync-v0` 已完成 adapter-first mock/local connector sync foundation，`worker-retry-dead-letter` 已完成 deterministic local retry/dead-letter reliability contract foundation。它们仍不是 real connector providers、OAuth/API key/cookie/service account flow、scheduled/background/webhook sync、真实 external fetch/crawl、production MQ、distributed worker cluster、exactly-once delivery、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、真实 alerting/SLO、SSO/OIDC、SIEM/export、生产部署自动化或 production incident tooling 系统。
+> Atlas 已达到“可进入用户验收评审”的 evidence package；Wave 3 Trust And Governance 的 `secret-manager-integration` 与 `rate-limit-safe-errors` 已完成 prototype foundation；Wave 4 Ask And Graph Productization 的 `ask-session-citations`、`graph-from-wiki-extraction`、`answer-review-governance` 与 `retrieval-quality-metrics` 已完成 mock/sample-safe foundation；Wave 5 Connector And Operations 的 `manual-url-knowledge-ingest` 已完成 metadata-only manual URL source registration foundation，`deployment-monitoring-runbook` 已完成 documentation-only operations contract，`connector-sync-v0` 已完成 adapter-first mock/local connector sync foundation，`worker-retry-dead-letter` 已完成 deterministic local retry/dead-letter reliability contract foundation。当前 active work 已切到 Wave 6 Frontend Maintainability 的 `frontend-componentization` SDD 门：对单体 Vue `App.vue` 做行为不变的结构性拆分，不引入 `vue-router` 或产品行为变化。它们仍不是 real connector providers、OAuth/API key/cookie/service account flow、scheduled/background/webhook sync、真实 external fetch/crawl、production MQ、distributed worker cluster、exactly-once delivery、production compliance scanning、connector secret management、production approval operations、reviewer queue、answer reuse indexing、production retrieval governance、model-assisted extraction、production graph layout/optimization、manual graph editor、external graph service、production RBAC/audit automation、production secret manager、production distributed quota、真实 alerting/SLO、SSO/OIDC、SIEM/export、生产部署自动化或 production incident tooling 系统。
 
 ## 2. 目前应该如何读仓库
 
@@ -79,14 +79,14 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 | 字段 | 当前值 |
 |---|---|
-| Wave | Wave 5 / Connector And Operations |
-| Slice | `worker-retry-dead-letter` |
-| 文档状态 | 双语 SDD、tasks、traceability、API guide 与 completion report 已生成并按预授权接受 |
-| 工作区状态 | Deterministic local retry/dead-letter foundation 已交付，覆盖 worker job/attempt/dead-letter model、retry policy、terminal failure classification、safe error snapshot、source trace preservation、inspection API、manual retry/ack v0 与 Vue Processing Center recovery surface |
-| 成熟度 | Prototype reliability contract；不等于 production MQ、distributed worker、scheduled worker 或 exactly-once readiness |
-| 前置依赖 | `connector-sync-v0`、source trace / review-required rules、safe error envelope、adapter boundary、upload/review/Wiki/Ask/Graph product surfaces |
-| 下一门禁 | 推送 `develop-leo` 并进行人工 review；后续 production MQ、distributed worker cluster、scheduled production worker、real connector retry operations 与 alert automation 需独立 slice |
-| 实现规则 | 不接入 Kafka/RabbitMQ/SQS/PubSub/Redis Queue、真实 scheduled worker、distributed worker、真实 connector provider、OAuth/API key/cookie/service account、真实 external API、真实公司数据、外部 network dependency、production secret、auth/RBAC/audit/secret-manager/provider behavior 或 destructive migration |
+| Wave | Wave 6 / Frontend Maintainability |
+| Slice | `frontend-componentization` |
+| 文档状态 | 双语 SDD、tasks、traceability、execution manifest 与 completion report 已生成；实现前需要接受 SDD |
+| 工作区状态 | 已建立行为不变的结构性拆分合同，目标是把单体 Vue `App.vue` 拆成特性组件/composables，并保留当前选择器、API 边界、mock/sample-safe 数据与可见行为 |
+| 成熟度 | Frontend structural hardening contract；不等于 router、URL 语义、后端/API、视觉重设计或新产品能力 |
+| 前置依赖 | 当前 Vue 产品路径、`frontend/src/api.ts`、`frontend/src/types.ts`、`frontend/src/data/atlasMock.ts`、现有 frontend tests/E2E |
+| 下一门禁 | 人工接受 `frontend-componentization` SDD；接受后按 `docs/06-tasks/frontend-componentization-tasks.md` ID 顺序实现 |
+| 实现规则 | 不引入 `vue-router`、URL 语义、deep link、browser back/forward、Pinia/Vuex、后端/API 变更、新依赖、provider/runtime 行为、真实公司数据或视觉重设计 |
 
 ## 7. Slice / Wave 队列
 
@@ -124,6 +124,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | 9 | `deployment-monitoring-runbook` | ✅ documentation-only deployment monitoring operations contract 已交付 | Real monitoring platforms、alert channels、production deployment automation、production health/SLO dashboards、connector/worker automation 与 production incident tooling 保留为未来工作 |
 | 10 | `connector-sync-v0` | ✅ adapter-first mock/local connector sync foundation 已实现并通过本地验证 | Real providers、OAuth/API keys、scheduled/background sync、webhooks、external network fetch、connector marketplace、connector secrets 与 direct approved Wiki/Ask/Graph use 保留为未来工作 |
 | 11 | `worker-retry-dead-letter` | ✅ deterministic local retry/dead-letter foundation 已实现并通过本地验证 | Production MQ、distributed worker cluster、scheduled production worker、exactly-once semantics、alert automation 与 real connector retry operations 保留为未来工作 |
+| 12 | `frontend-componentization` | 🔨 SDD 草案已生成，等待接受后实现 | 行为不变拆分 `App.vue`；`vue-router`、URL 语义、deep link、browser history、后端/API 变更、新依赖、视觉重设计、provider 调用与真实数据均不在范围内 |
 
 ### 后续产品化方向
 
@@ -132,6 +133,7 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 | Wave 2 / Wiki Hardening | Wiki 可维护、可刷新、可撤回、可审核 | `wiki-index-log`、`wiki-refresh-retract`、`wiki-review-gate`、`knowledge-graph-quality` |
 | Wave 4 / Ask And Graph Productization | Ask/Graph 的会话、引用、审核和质量指标 | `ask-session-citations`、`answer-review-governance`、`graph-from-wiki-extraction`、`retrieval-quality-metrics` |
 | Wave 5 / Connector And Operations | 来源扩展、worker recovery、部署监控 | `manual-url-knowledge-ingest`、`connector-sync-v0`、`worker-retry-dead-letter`、`deployment-monitoring-runbook` |
+| Wave 6 / Frontend Maintainability | 前端结构治理和组件边界 | `frontend-componentization` |
 
 ## 8. 生产就绪缺口
 
@@ -147,9 +149,9 @@ Atlas Knowledge Hub 当前已经完成 mock/sample-safe 的 A-J 产品路线图�
 
 ## 9. 当前建议执行顺序
 
-1. 推送 `worker-retry-dead-letter` 到 `develop-leo` 并进行人工 review。
-2. 按 Wave 5 方向继续 production observability / deployment automation、real connector operations 或 production worker automation 后续切片，但必须先生成并接受各自 SDD。
-3. 根据治理优先级继续 production secret-manager hardening、production quota/observability 或其他 operations 后续切片。
+1. 人工 review 并接受 `frontend-componentization` SDD，重点确认“行为不变、无 `vue-router`、无后端/API 变化、无视觉重设计”的边界。
+2. 接受后按 `docs/06-tasks/frontend-componentization-tasks.md` ID 顺序实现组件化，并运行 frontend verification + safety scans。
+3. 后续若需要 URL 语义、deep link 或 browser history，另开独立 slice，不在本轮组件化中顺手加入。
 
 不要同时推进多个 slice。Master roadmap 可以管理队列，但执行必须一次一个 slice。
 
