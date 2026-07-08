@@ -9,10 +9,10 @@ This runbook is the hands-on path for running Atlas Knowledge Hub locally. It is
 | Static prototype | Product shape and mock UX. | Browser only. |
 | Frontend dev server | Vue shell and frontend behavior. | Node.js/npm. |
 | Mock E2E loop | Local first-layer acceptance with mock/sample data. | Node.js/npm and Playwright browsers from frontend install. |
-| Backend tests | API, adapter, Flyway, PostgreSQL contract behavior. | Java 21, Maven, Docker for Testcontainers. |
-| Second-layer E2E | Local full-stack browser plus API plus PostgreSQL loop. | Node.js/npm, Java 21, Maven, Docker Desktop. |
-| Third-layer E2E | Opt-in provider-backed Ask loop through a configured ModelAdapter provider, still using mock/sample knowledge data. | Node.js/npm, Java 21, Maven, Docker Desktop, local provider key in `.env` or shell env. |
-| Backend local API | Spring Boot API against your own PostgreSQL. | Java 21, Maven, PostgreSQL config. |
+| Backend tests | API, adapter, Flyway, PostgreSQL contract behavior. | Java 21, Maven Wrapper, Docker for Testcontainers. |
+| Second-layer E2E | Local full-stack browser plus API plus PostgreSQL loop. | Node.js/npm, Java 21, Maven Wrapper, Docker Desktop. |
+| Third-layer E2E | Opt-in provider-backed Ask loop through a configured ModelAdapter provider, still using mock/sample knowledge data. | Node.js/npm, Java 21, Maven Wrapper, Docker Desktop, local provider key in `.env` or shell env. |
+| Backend local API | Spring Boot API against your own PostgreSQL. | Java 21, Maven Wrapper, PostgreSQL config. |
 
 The fastest path is the static prototype. The safest first verification path is `npm run e2e:first-layer`; use `npm run e2e:second-layer` when you want to prove the local browser is wired to the live Spring Boot API. Use `npm run e2e:third-layer` only when you intentionally want one real provider-backed Ask call from the backend adapter.
 
@@ -32,7 +32,7 @@ Expected:
 
 - Node.js with npm.
 - Java 21 for backend.
-- Maven for backend commands.
+- Maven Wrapper for backend commands.
 - Docker Desktop running if you want to run backend integration tests with Testcontainers.
 
 No real company data, private paths, or secrets are required for mock mode.
@@ -86,6 +86,7 @@ Expected result:
 
 - Vite starts successfully.
 - The Vue app displays the Atlas prototype shell.
+- In dev mode the API base defaults to `http://127.0.0.1:8080`; use `npm run dev:mock` for explicit mock fallback review or `npm run dev:fullstack` when the backend is running locally.
 
 Stop it with `Ctrl+C`.
 
@@ -154,7 +155,8 @@ At the time this runbook was written, full frontend Playwright includes:
 From the repository root:
 
 ```bash
-mvn -f backend/pom.xml verify
+cd backend
+./mvnw verify
 ```
 
 Expected result:
@@ -312,7 +314,8 @@ export ATLAS_DB_SCHEMA='atlas'
 Start the backend:
 
 ```bash
-mvn -f backend/pom.xml spring-boot:run
+cd backend
+./mvnw spring-boot:run
 ```
 
 Expected result:
@@ -443,7 +446,8 @@ Or stop the conflicting local process before rerunning.
 Start Docker Desktop, then rerun:
 
 ```bash
-mvn -f backend/pom.xml verify
+cd backend
+./mvnw verify
 ```
 
 ### Backend local run fails with missing datasource values
@@ -486,7 +490,7 @@ Run this minimum set:
 npm run e2e:first-layer
 npm run e2e:second-layer
 if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then npm run e2e:third-layer; fi
-mvn -f backend/pom.xml verify
+(cd backend && ./mvnw verify)
 git diff --check
 git status --short
 ```

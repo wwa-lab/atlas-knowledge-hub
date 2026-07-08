@@ -10,4 +10,13 @@ Stack:
 
 The backend is already implemented (controllers, services, repositories, Flyway migrations, and tests). Do not expand backend scope, schema, authentication/RBAC, or permission systems beyond what accepted SDD slices and `PROJECT_RULES.md` allow. Backend APIs cover workspaces, batches, files, reviews, Wiki pages, source chunks, and graph metadata, among others.
 
+## Commands
+
+```bash
+./mvnw verify
+./mvnw spring-boot:run
+```
+
+Run these commands from the `backend/` directory. `verify` uses Testcontainers for PostgreSQL-backed integration tests, so Docker must be running.
+
 See [BACKEND_CODING_STANDARD.md](../docs/BACKEND_CODING_STANDARD.md) for Java/Spring layering, envelope, Flyway, and testing standards. The metadata-api slice is specified under `docs/**/metadata-api*` (spec, data model, and API guide).

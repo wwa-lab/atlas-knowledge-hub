@@ -65,14 +65,17 @@ export class ApiError extends Error {
 
 const DEFAULT_DEV_API_BASE_URL = 'http://127.0.0.1:8080'
 
-const atlasApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
+const atlasApiMockMode = isMockApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
+const atlasApiBaseUrl = atlasApiMockMode
+  ? ''
+  : normalizeApiBaseUrl(import.meta.env.VITE_ATLAS_API_BASE_URL)
 
 const authHeaders = {
   'X-Atlas-User': import.meta.env.VITE_ATLAS_MOCK_USER || 'frontend-demo'
 }
 
 export function apiBaseUrl() {
-  return atlasApiBaseUrl
+  return atlasApiMockMode ? 'mock' : atlasApiBaseUrl
 }
 
 export async function getCurrentUser() {
@@ -425,6 +428,9 @@ interface AtlasFetchOptions {
 }
 
 async function atlasFetch<T>(path: string, options: AtlasFetchOptions = {}): Promise<T> {
+  if (atlasApiMockMode) {
+    throw new ApiError('Atlas API disabled for mock dev mode.', 503, 'SAFE_SYSTEM_ERROR')
+  }
   const isFormData = options.body instanceof FormData
   const requestBody = buildRequestBody(options.body)
   const response = await globalThis.fetch(apiUrl(path), {
@@ -474,4 +480,9 @@ function normalizeApiBaseUrl(value?: string) {
     return normalized.replace(/\/+$/, '')
   }
   return import.meta.env.DEV ? DEFAULT_DEV_API_BASE_URL : ''
+}
+
+function isMockApiBaseUrl(value?: string) {
+  const normalized = value?.trim().toLowerCase()
+  return normalized === 'mock' || normalized === 'off' || normalized === 'disabled'
 }

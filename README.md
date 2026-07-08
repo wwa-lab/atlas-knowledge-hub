@@ -125,7 +125,9 @@ Reusable acceptance findings are captured in `docs/00-context/lessons-learned.md
 
 ```bash
 npm --prefix frontend install
-npm --prefix frontend run dev        # Vite dev server on 127.0.0.1
+npm --prefix frontend run dev        # Vite dev server on 127.0.0.1; defaults to local API in dev
+npm --prefix frontend run dev:mock   # Vite dev server with API calls disabled for mock fallback review
+npm --prefix frontend run dev:fullstack # Vite dev server explicitly pointed at http://127.0.0.1:8080
 npm --prefix frontend run build      # lint + typecheck + production build
 npm --prefix frontend run test       # Vitest unit tests
 npm --prefix frontend run e2e        # Playwright end-to-end specs
@@ -133,11 +135,11 @@ npm --prefix frontend run e2e        # Playwright end-to-end specs
 
 ### Backend (Spring Boot)
 
-The backend uses the system Maven (no wrapper is committed) and requires Java 21 and a PostgreSQL instance.
+The backend uses the Maven Wrapper committed under `backend/` and requires Java 21. Integration tests use Testcontainers, so Docker must be running for `verify`.
 
 ```bash
-mvn -f backend spring-boot:run        # starts the metadata-api on its configured port
-mvn -f backend test                   # backend unit/integration tests
+cd backend && ./mvnw spring-boot:run  # starts the metadata-api on its configured port
+cd backend && ./mvnw verify           # backend unit/integration tests
 ```
 
 For a deterministic full-stack run with PostgreSQL, use the second-layer acceptance script (it provisions PostgreSQL via Docker):

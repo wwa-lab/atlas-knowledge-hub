@@ -9,10 +9,10 @@
 | 静态原型 | 产品形态和 mock UX。 | 浏览器。 |
 | 前端开发服务 | Vue 前端壳和前端交互。 | Node.js/npm。 |
 | Mock E2E 闭环 | 本地第一层自动验收，不需要真实公司环境。 | Node.js/npm、Playwright 浏览器。 |
-| 后端测试 | API、adapter、Flyway、PostgreSQL 合约。 | Java 21、Maven、Docker Desktop。 |
-| 第二层 E2E | 本地浏览器 + Spring Boot API + PostgreSQL 全栈闭环。 | Node.js/npm、Java 21、Maven、Docker Desktop。 |
-| 第三层 E2E | Opt-in provider-backed Ask，通过 configured ModelAdapter provider 验证真实 provider 调用，知识数据仍只用 mock/sample。 | Node.js/npm、Java 21、Maven、Docker Desktop、本地 `.env` 或 shell 里的 provider key。 |
-| 后端本地 API | Spring Boot API 连接你自己的 PostgreSQL。 | Java 21、Maven、本地 PostgreSQL 配置。 |
+| 后端测试 | API、adapter、Flyway、PostgreSQL 合约。 | Java 21、Maven Wrapper、Docker Desktop。 |
+| 第二层 E2E | 本地浏览器 + Spring Boot API + PostgreSQL 全栈闭环。 | Node.js/npm、Java 21、Maven Wrapper、Docker Desktop。 |
+| 第三层 E2E | Opt-in provider-backed Ask，通过 configured ModelAdapter provider 验证真实 provider 调用，知识数据仍只用 mock/sample。 | Node.js/npm、Java 21、Maven Wrapper、Docker Desktop、本地 `.env` 或 shell 里的 provider key。 |
+| 后端本地 API | Spring Boot API 连接你自己的 PostgreSQL。 | Java 21、Maven Wrapper、本地 PostgreSQL 配置。 |
 
 最快看产品：打开静态原型。
 
@@ -61,7 +61,7 @@ docker --version
 
 - Node.js + npm。
 - Java 21。
-- Maven。
+- Maven Wrapper。
 - Docker Desktop 已启动，后端集成测试需要 Testcontainers。
 
 如果你只是看静态原型，不需要 Java/Maven/Docker。
@@ -145,7 +145,7 @@ npm run e2e:first-layer
 3. 准备 `samples/input/e2e`。
 4. 构建 frontend。
 5. 启动完整 frontend Playwright E2E。
-6. 运行后端 `mvn -f backend/pom.xml verify` 合约验证。
+6. 运行后端 `cd backend && ./mvnw verify` 合约验证。
 7. 检查 diff whitespace 和生成文件是否被误跟踪。
 
 预期输出包含：
@@ -200,12 +200,13 @@ npm run e2e
 
 ## 8. 跑后端验证
 
-后端验证需要 Java 21、Maven 和 Docker Desktop。
+后端验证需要 Java 21、Maven Wrapper 和 Docker Desktop。
 
 在仓库根目录运行：
 
 ```bash
-mvn -f backend/pom.xml verify
+cd backend
+./mvnw verify
 ```
 
 预期结果：
@@ -487,7 +488,8 @@ export ATLAS_DB_SCHEMA='atlas'
 启动后端：
 
 ```bash
-mvn -f backend/pom.xml spring-boot:run
+cd backend
+./mvnw spring-boot:run
 ```
 
 预期结果：
@@ -575,17 +577,18 @@ Terminal 1: frontend dev server
   npm run dev
 
 Terminal 2: backend API
+  cd backend
   export ATLAS_DB_URL=...
   export ATLAS_DB_USERNAME=...
   export ATLAS_DB_PASSWORD=...
-  mvn -f backend/pom.xml spring-boot:run
+  ./mvnw spring-boot:run
 
 Terminal 3: tests / git
   npm run e2e:first-layer
   npm run e2e:second-layer
   npm run e2e:third-layer  # only after exporting ATLAS_MODEL_API_KEY
   npm --prefix frontend run e2e
-  mvn -f backend/pom.xml verify
+  (cd backend && ./mvnw verify)
   git status --short
 ```
 
@@ -698,7 +701,8 @@ npm run e2e:third-layer
 确认 Docker Desktop 已启动，然后重跑：
 
 ```bash
-mvn -f backend/pom.xml verify
+cd backend
+./mvnw verify
 ```
 
 ### 后端启动报 datasource 缺失
@@ -741,7 +745,7 @@ samples/output/
 npm run e2e:first-layer
 npm run e2e:second-layer
 if [ -n "${ATLAS_MODEL_API_KEY:-}" ]; then npm run e2e:third-layer; fi
-mvn -f backend/pom.xml verify
+(cd backend && ./mvnw verify)
 git diff --check
 git status --short
 ```

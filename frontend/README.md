@@ -32,7 +32,9 @@ The `prepare` script automatically runs `../scripts/setup-hooks.sh` after `npm i
 ## Commands
 
 ```bash
-npm run dev                # Start Vite dev server
+npm run dev                # Start Vite dev server; dev API base defaults to http://127.0.0.1:8080
+npm run dev:mock           # Start Vite with API calls disabled for mock fallback review
+npm run dev:fullstack      # Start Vite explicitly pointed at http://127.0.0.1:8080
 npm run lint              # ESLint and Prettier check
 npm run lint:fix          # ESLint and Prettier auto-fix
 npm run format            # Format with Prettier
