@@ -8,6 +8,8 @@
 
 状态：T-FRONTEND-COMPONENTIZATION-001 至 T-FRONTEND-COMPONENTIZATION-007 已于 2026-07-08 实现并完成本地验证。本切片是行为不变的前端结构化 checkpoint，不是 production-readiness 声明。
 
+追加状态：`frontend-state-extraction` 扩展这个已接受切片，在保持已组件化 UI 行为不变的前提下，将 `App.vue` 根状态迁移到领域 composables。
+
 ## 任务详情
 
 ### T-FRONTEND-COMPONENTIZATION-001：接受 SDD 契约并建立选择器基线
@@ -98,9 +100,60 @@
   - 对变更文件做 focused new-network/dependency scan
   - `npm run agent:closeout`
 
+### T-FRONTEND-COMPONENTIZATION-008：扩展 frontend 状态抽取的 SDD 契约
+
+- Requirement: REQ-FRONTEND-COMPONENTIZATION-009 through REQ-FRONTEND-COMPONENTIZATION-011
+- Owner type: documentation / frontend
+- Priority: Must
+- Dependencies: T-FRONTEND-COMPONENTIZATION-007
+- Scope: 将 `frontend-state-extraction` 记录为本切片的行为不变扩展。记录八个目标领域 composables、工厂函数所有权、显式 props/events 数据流、`App.vue` 行数目标、不引入 Pinia/router/provide-inject 的约束，以及每个 composable 的测试要求。
+- Verification:
+  - `npm run agent:check-sdd -- --slice frontend-componentization`
+  - `git diff --check`
+
+### T-FRONTEND-COMPONENTIZATION-009：抽取领域状态 composables
+
+- Requirement: REQ-FRONTEND-COMPONENTIZATION-004, REQ-FRONTEND-COMPONENTIZATION-009, REQ-FRONTEND-COMPONENTIZATION-010
+- Owner type: frontend
+- Priority: Must
+- Dependencies: T-FRONTEND-COMPONENTIZATION-008
+- Scope: 将集中在 `App.vue` 的 `ref`/`computed`/API workflow 所有权迁移到 `frontend/src/composables/useSpaces.ts`、`useBatches.ts`、`useReviewQueue.ts`、`useWikiPages.ts`、`useGraph.ts`、`useAsk.ts`、`useSettings.ts` 与 `useGlobalChat.ts`。API 访问继续通过 `frontend/src/api.ts`；不得创建模块级单例；跨域依赖通过显式 options/callbacks 传递。
+- Verification:
+  - 每完成一个领域抽取后，运行 `npm --prefix frontend run test -- --run <domain composable test>` 与 `npm --prefix frontend run typecheck`
+  - `npm --prefix frontend run test -- --run src/composables`
+
+### T-FRONTEND-COMPONENTIZATION-010：将 App.vue 瘦身为编排外壳
+
+- Requirement: REQ-FRONTEND-COMPONENTIZATION-001, REQ-FRONTEND-COMPONENTIZATION-002, REQ-FRONTEND-COMPONENTIZATION-009, REQ-FRONTEND-COMPONENTIZATION-010
+- Owner type: frontend
+- Priority: Must
+- Dependencies: T-FRONTEND-COMPONENTIZATION-009
+- Scope: 重新接线 `App.vue`，让它在顶层调用各领域 composables 一次，并继续通过现有组件 props/events 下发状态。保留内存态 `home`/`chat`/`space` 导航、settings 挂载、稳定 E2E 选择器和 P0/workbench 行为。必要时将遗留 workbench view 抽成子组件，以保证 `App.vue` 少于 600 行。
+- Verification:
+  - `wc -l frontend/src/App.vue` 显示少于 600 行
+  - `npm --prefix frontend run typecheck`
+  - `npm --prefix frontend run test -- --run src/App.test.ts`
+
+### T-FRONTEND-COMPONENTIZATION-011：增加 composable 覆盖并完成最终回归
+
+- Requirement: REQ-FRONTEND-COMPONENTIZATION-007, REQ-FRONTEND-COMPONENTIZATION-011
+- Owner type: frontend / QA
+- Priority: Must
+- Dependencies: T-FRONTEND-COMPONENTIZATION-009, T-FRONTEND-COMPONENTIZATION-010
+- Scope: 为每个拆出的 composable 增加相邻 focused tests，并让 `App.test.ts` 聚焦渲染编排/用户流程，而不是根组件私有状态实现。运行请求的 frontend regression、diff hygiene 与安全扫描。
+- Verification:
+  - `npm --prefix frontend run lint`
+  - `npm --prefix frontend run typecheck`
+  - `npm --prefix frontend run test`
+  - `npm --prefix frontend run build`
+  - `npm --prefix frontend run e2e`
+  - `git diff --check`
+  - `frontend/src` 下 focused no-`any` scan
+  - 对变更文件做 focused secret/private-path 与 new-network/dependency scans
+
 ## 依赖计划
 
-关键路径：T-FRONTEND-COMPONENTIZATION-001 -> T-FRONTEND-COMPONENTIZATION-002 -> T-FRONTEND-COMPONENTIZATION-003 -> T-FRONTEND-COMPONENTIZATION-004 -> T-FRONTEND-COMPONENTIZATION-006 -> T-FRONTEND-COMPONENTIZATION-007。
+关键路径：T-FRONTEND-COMPONENTIZATION-001 -> T-FRONTEND-COMPONENTIZATION-002 -> T-FRONTEND-COMPONENTIZATION-003 -> T-FRONTEND-COMPONENTIZATION-004 -> T-FRONTEND-COMPONENTIZATION-006 -> T-FRONTEND-COMPONENTIZATION-007 -> T-FRONTEND-COMPONENTIZATION-008 -> T-FRONTEND-COMPONENTIZATION-009 -> T-FRONTEND-COMPONENTIZATION-010 -> T-FRONTEND-COMPONENTIZATION-011。
 
 T-FRONTEND-COMPONENTIZATION-005 可在 T-FRONTEND-COMPONENTIZATION-003 后并行推进，并在最终 closeout 前完成。
 
@@ -110,6 +163,7 @@ T-FRONTEND-COMPONENTIZATION-005 可在 T-FRONTEND-COMPONENTIZATION-003 后并行
 - 现有 `App.test.ts` 需要谨慎拆分，避免降低覆盖。
 - Playwright 选择器必须跨组件边界保持稳定。
 - 任何 URL/deep-link/browser-history 需求都需要单独接受的切片后才能做 router。
+- 选择空间、刷新 review/Wiki 状态、发布选中文件等跨域操作必须使用显式 composable options/callbacks。如果某个领域无法在不造成行为漂移的前提下干净拆分，应先在此记录阻塞点再继续。
 
 ## 未决问题
 

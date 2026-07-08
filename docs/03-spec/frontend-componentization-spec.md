@@ -31,6 +31,12 @@ This slice does not introduce `vue-router`. Current in-memory state remains the 
 - FR-FRONTEND-COMPONENTIZATION-009: Existing non-trivial computed mappings and side-effect workflows may be extracted into composables or domain helpers when doing so makes ownership clearer.
 - FR-FRONTEND-COMPONENTIZATION-010: Extracted composables must preserve current API sequencing, loading flags, safe errors, and fallback behavior.
 - FR-FRONTEND-COMPONENTIZATION-011: API access remains behind `frontend/src/api.ts`; no extracted composable may call provider/runtime/parser/converter/vector/storage engines directly.
+- FR-FRONTEND-COMPONENTIZATION-018: The follow-up slice `frontend-state-extraction` extracts `App.vue` root state into factory-function composables under `frontend/src/composables/`: `useSpaces`, `useBatches`, `useReviewQueue`, `useWikiPages`, `useGraph`, `useAsk`, `useSettings`, and `useGlobalChat`.
+- FR-FRONTEND-COMPONENTIZATION-019: Each state composable owns its domain reactive state, API calls through `frontend/src/api.ts`, derived computed values, and domain business methods. Composables must not be module-level singletons.
+- FR-FRONTEND-COMPONENTIZATION-020: `App.vue` remains a thin orchestration layer for composing the domain composables, switching the top-level product views (`home`, `chat`, `space`), and mounting settings/modal surfaces. The target size for `App.vue` after the state extraction is fewer than 600 lines.
+- FR-FRONTEND-COMPONENTIZATION-021: Domain data flow remains explicit through props/events and top-level composable return values. This slice does not introduce `provide`/`inject`, Pinia, Vuex, `vue-router`, or new runtime dependencies.
+- FR-FRONTEND-COMPONENTIZATION-022: Existing P0/workbench selectors and user-visible behavior remain available after root thinning; if needed for the line-count target, the workbench may move behind a child component while keeping behavior delegated through typed props/events.
+- FR-FRONTEND-COMPONENTIZATION-023: Each extracted composable has a focused `*.test.ts` file covering core state transitions and mocked API interactions. App-level tests should focus on rendered orchestration and user flows instead of private root-state implementation details.
 
 ### Behavior Preservation
 
@@ -68,6 +74,9 @@ These remain in-memory state rules. They are not route contracts.
 | REQ-FRONTEND-COMPONENTIZATION-006 | Behavior Preservation | No real data, secrets, private paths, or external calls are introduced. |
 | REQ-FRONTEND-COMPONENTIZATION-007 | Tests And Verification | Focused tests and frontend verification suite pass. |
 | REQ-FRONTEND-COMPONENTIZATION-008 | Composables And Helpers, Tests And Verification | Backend/API/adapters/provider-backed E2E behavior remains unchanged. |
+| REQ-FRONTEND-COMPONENTIZATION-009 | Composables And Helpers | `App.vue` is below 600 lines and delegates domain state to the eight named factory composables. |
+| REQ-FRONTEND-COMPONENTIZATION-010 | Composables And Helpers, Behavior Preservation | Composables use `frontend/src/api.ts`, preserve explicit props/events, and do not introduce Pinia, router, `provide`/`inject`, runtime dependencies, or provider/adapter calls. |
+| REQ-FRONTEND-COMPONENTIZATION-011 | Tests And Verification | Every extracted state composable has focused unit coverage and the full frontend verification suite passes. |
 
 ## Explicit Non-Goals
 
